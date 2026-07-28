@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strings"
 
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
 	"github.com/filz0r/jat/internal/database"
@@ -35,6 +37,7 @@ type Model struct {
 	setup         Setup
 	editModal     EditModal
 	editModalOpen bool
+	helpBar       help.Model
 }
 
 // NewModel builds the top-level model with all tabs in bar order and the
@@ -49,9 +52,9 @@ func NewModel(cfg *config.ConfigFile) Model {
 			NewApplicationStatusTab(cfg),
 			NewSettingsTab(cfg),
 		},
-		active: TabJobApplications,
-		setup:  NewSetup(),
-		//editSettingsModal: NewEditModal(),
+		active:  TabJobApplications,
+		setup:   NewSetup(),
+		helpBar: help.New(),
 	}
 }
 
@@ -96,12 +99,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.editModalOpen {
 			return m.updateEditModal(msg)
 		}
-		switch msg.String() {
-		case "ctrl+c", "q":
+		switch {
+		case key.Matches(msg, quitHard, quitKey):
 			return m, tea.Quit
-		case "tab", "left", "h":
+		case key.Matches(msg, tabNext):
 			return switchTab(m, 1), nil
-		case "shift+tab", "right", "l":
+		case key.Matches(msg, tabPrev):
 			return switchTab(m, -1), nil
 		}
 		// route everything else to the active tab
@@ -113,11 +116,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		if s, ok := m.tabs[TabSettings].(SettingsTab); ok {
-			m.tabs[TabSettings] = s.resizeTo(bodyDims(msg.Width, msg.Height))
-		}
-		if s, ok := m.tabs[TabApplicationStatus].(ApplicationStatusTab); ok {
-			m.tabs[TabApplicationStatus] = s.resizeTo(bodyDims(msg.Width, msg.Height))
+		bodyW, bodyH := bodyDims(msg.Width, msg.Height)
+		m.helpBar.SetWidth(bodyW)
+		for i := range m.tabs {
+			m.tabs[i] = m.tabs[i].Resize(bodyW, bodyH)
 		}
 	case editRequestMsg:
 		m.editModal = newEditModal(msg.req)
@@ -189,12 +191,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// updateSetup handles keys while the first-run overlay is up.
+// updateSetup handles keys while the first-run overlay is up. Everything that
+// is not an explicit control key is typed into the focused input.
 func (m Model) updateSetup(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	switch msg.String() {
-	case "ctrl+c":
+	switch {
+	case key.Matches(msg, quitHard):
 		return m, tea.Quit
-	case "enter":
+	case key.Matches(msg, confirmKey):
 		return m.setupEnter()
 	}
 	var cmd tea.Cmd
@@ -286,14 +289,16 @@ func (m Model) setupEnter() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// updateEditModal handles keys while the edit modal is open. Only ctrl+c
+// quits here — plain letters (including q) belong to the text input.
 func (m Model) updateEditModal(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	switch msg.String() {
-	case "ctrl+c", "q":
+	switch {
+	case key.Matches(msg, quitHard):
 		return m, tea.Quit
-	case "esc":
+	case key.Matches(msg, escKey):
 		m.editModalOpen = false
 		return m, nil
-	case "enter":
+	case key.Matches(msg, confirmKey):
 		if m.editModal.req.kind == modalLocked {
 			m.editModalOpen = false
 			return m, nil
@@ -318,47 +323,44 @@ func (m Model) View() tea.View {
 	if m.width == 0 {
 		return tea.NewView("")
 	}
-	contentW := m.width
+	bodyW, _ := bodyDims(m.width, m.height)
 	body := ""
 	if len(m.tabs) > 0 {
 		body = m.tabs[m.active].View()
 	}
-	bg := renderLayout(m, renderTitle(contentW), renderTabBar(m, contentW), body)
+
+	// The hint row lives below the border and only in normal tab mode — the
+	// edit modal and setup wizard carry their own hints inside their boxes.
+	var hints string
+	if m.Config != nil && m.Config.IsInitialized() && !m.editModalOpen {
+		bindings := make([]key.Binding, 0, 8)
+		bindings = append(bindings, m.tabs[m.active].ShortHelp()...)
+		bindings = append(bindings, globalHelp()...)
+		hints = m.helpBar.ShortHelpView(bindings)
+	}
+
+	bg := renderLayout(m, renderTitle(bodyW), renderTabBar(m, bodyW), body, hints)
 
 	if m.editModalOpen {
-		modal := m.editModal.View()
-		mw := lipgloss.Width(modal)
-		mh := lipgloss.Height(modal)
-		cx := max(0, (m.width-mw)/2)
-		cy := max(0, (m.height-mh)/2)
-		comp := lipgloss.NewCompositor(
-			lipgloss.NewLayer(bg).Z(0),
-			lipgloss.NewLayer(modal).X(cx).Y(cy).Z(1),
-		)
-		bg = comp.Render()
+		bg = centerOverlay(bg, m.editModal.View(), m.width, m.height)
 	}
 
 	// composite the setup overlay on top while the config is uninitialized
 	if m.Config != nil && !m.Config.IsInitialized() {
-		modal := m.setup.View()
-		mw := lipgloss.Width(modal)
-		mh := lipgloss.Height(modal)
-		cx := (m.width - mw) / 2
-		cy := (m.height - mh) / 2
-		if cx < 0 {
-			cx = 0
-		}
-		if cy < 0 {
-			cy = 0
-		}
-		comp := lipgloss.NewCompositor(
-			lipgloss.NewLayer(bg).Z(0),
-			lipgloss.NewLayer(modal).X(cx).Y(cy).Z(1),
-		)
-		bg = comp.Render()
+		bg = centerOverlay(bg, m.setup.View(), m.width, m.height)
 	}
 
 	view := tea.NewView(bg)
 	view.AltScreen = true
 	return view
+}
+
+// centerOverlay renders overlay centered on top of bg.
+func centerOverlay(bg, overlay string, w, h int) string {
+	ow := lipgloss.Width(overlay)
+	oh := lipgloss.Height(overlay)
+	return lipgloss.NewCompositor(
+		lipgloss.NewLayer(bg).Z(0),
+		lipgloss.NewLayer(overlay).X(max(0, (w-ow)/2)).Y(max(0, (h-oh)/2)).Z(1),
+	).Render()
 }

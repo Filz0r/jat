@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
@@ -16,14 +17,11 @@ import (
 	"github.com/google/uuid"
 )
 
-//type editStatusMsg struct {
-//	item statusItem
-//}
-
 type applicationsDataMsg struct {
 	data []database.ApplicationStatus
 	err  error
 }
+
 type styles struct {
 	title        lipgloss.Style
 	item         lipgloss.Style
@@ -37,7 +35,7 @@ func newStyles(darkBG bool) styles {
 	var s styles
 	s.title = lipgloss.NewStyle().MarginLeft(2)
 	s.item = lipgloss.NewStyle().PaddingLeft(4)
-	s.selectedItem = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+	s.selectedItem = lipgloss.NewStyle().PaddingLeft(2).Foreground(colorHighlight)
 	s.pagination = list.DefaultStyles(darkBG).PaginationStyle.PaddingLeft(4)
 	s.help = list.DefaultStyles(darkBG).HelpStyle.PaddingLeft(4).PaddingBottom(1)
 	s.quitText = lipgloss.NewStyle().Margin(1, 0, 2, 4)
@@ -75,12 +73,9 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	fmt.Fprint(w, fn(str))
 }
 
-// ApplicationStatusTab is the Application Status region. Same list-navigation
-// structure as the other tabs; renders only its name for now.
+// ApplicationStatusTab is the Application Status region.
 type ApplicationStatusTab struct {
-	//items    []string
-	err error
-	//selected int
+	err     error
 	cfg     *config.ConfigFile
 	loading bool
 	list    list.Model
@@ -109,12 +104,14 @@ func NewApplicationStatusTab(cfg *config.ConfigFile) ApplicationStatusTab {
 	return t
 }
 
-func (t ApplicationStatusTab) resizeTo(width, height int) ApplicationStatusTab {
-	t.width = width
-	t.height = height
-	// Size the list to a centered block, smaller than the body so Place can
-	// actually center it (see note below). Tune to taste.
-	t.list.SetSize(width, height)
+func (t ApplicationStatusTab) ShortHelp() []key.Binding {
+	return []key.Binding{navUp, navDown, enterEdit, newKey, refreshKey}
+}
+
+func (t ApplicationStatusTab) Resize(w, h int) Tab {
+	t.width = w
+	t.height = h
+	t.list.SetSize(w, h)
 	return t
 }
 
@@ -130,7 +127,6 @@ func (t ApplicationStatusTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 		t.loading = false
 		if msg.err != nil {
 			t.err = msg.err
-			//t.items = nil
 			return t, nil
 		}
 		t.err = nil
@@ -147,12 +143,8 @@ func (t ApplicationStatusTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 		t.spinner, cmd = t.spinner.Update(msg)
 		return t, cmd
 	case tea.KeyPressMsg:
-		switch msg.String() {
-		//case "j", "down":
-		//	t.selected = navigateList(t.items, t.selected, 1)
-		//case "k", "up":
-		//	t.selected = navigateList(t.items, t.selected, -1)
-		case "enter":
+		switch {
+		case key.Matches(msg, enterEdit):
 			it, ok := t.list.SelectedItem().(statusItem)
 			if !ok {
 				return t, nil
@@ -188,11 +180,11 @@ func (t ApplicationStatusTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 				},
 			}
 			return t, func() tea.Msg { return editRequestMsg{req: req} }
-		case "r":
+		case key.Matches(msg, refreshKey):
 			t.loading = true
 			t.err = nil
 			return t, tea.Batch(t.fetch(), t.spinner.Tick)
-		case "n":
+		case key.Matches(msg, newKey):
 			cfg := t.cfg
 			req := editRequest{
 				title: "New Application Status",
@@ -223,7 +215,6 @@ func (t ApplicationStatusTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 				},
 			}
 			return t, func() tea.Msg { return editRequestMsg{req: req} }
-			//return t, tea.Batch(t.fetch(), t.spinner.Tick)
 		}
 	}
 	var cmd tea.Cmd
@@ -246,7 +237,6 @@ func (t ApplicationStatusTab) View() string {
 		return lipgloss.Place(t.width, t.height, lipgloss.Center, lipgloss.Center, msg)
 
 	default:
-		//return lipgloss.NewStyle().AlignHorizontal(lipgloss.Center).Render(t.list.View())
 		return lipgloss.Place(t.width, t.height, lipgloss.Center, lipgloss.Top, t.list.View())
 	}
 }

@@ -1,15 +1,22 @@
 package ui
 
 import (
+	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 )
 
-// Tab is a single switchable region rendered below the tab bar. Each tab owns
-// its own state and behaviour; the layout only renders the active one.
+// Tab is a single switchable region rendered below the tab bar. Every tab
+// owns its state, reports the size it renders into, and declares the
+// keybindings shown in the hint bar below the border while it is active.
 type Tab interface {
 	Update(tea.Msg) (Tab, tea.Cmd)
 	View() string
+	// ShortHelp returns the tab-specific bindings for the hint bar. The root
+	// model appends the global bindings after these.
+	ShortHelp() []key.Binding
+	// Resize gives the tab the exact body dimensions computed by the layout.
+	Resize(w, h int) Tab
 }
 
 // Tab identifiers, in the order they appear in the tab bar.
@@ -28,21 +35,20 @@ var tabLabels = []string{
 	"Settings",
 }
 
-// renderTabBar renders the row of tab labels; the active tab is bold and
-// underlined, the rest are plain. The bar is sized to width so it spans the
-// full content width.
+// renderTabBar renders the row of tab labels centered on a single line; the
+// active tab is highlighted, the rest are plain.
 func renderTabBar(m Model, width int) string {
 	labels := make([]string, len(tabLabels))
 	for i, name := range tabLabels {
-		style := lipgloss.NewStyle().PaddingRight(1).PaddingLeft(1)
+		style := inactiveTabStyle
 		if i == m.active {
-			style = style.Background(lipgloss.Yellow).Bold(true).Underline(true)
+			style = activeTabStyle
 		}
 		labels[i] = style.Render(name)
 	}
 
 	row := lipgloss.JoinHorizontal(lipgloss.Left, labels...)
-	return lipgloss.NewStyle().Width(width).PaddingRight(10).PaddingTop(1).PaddingBottom(1).Align(lipgloss.Center).Render(row)
+	return lipgloss.NewStyle().Width(width).Align(lipgloss.Center).Render(row)
 }
 
 // switchTab advances the active tab by delta, wrapping around the ends.

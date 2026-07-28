@@ -160,8 +160,7 @@ func (s Setup) View() string {
 		Render("First-run Setup")
 	stack := lipgloss.JoinVertical(lipgloss.Left, title, body)
 	if s.err != "" {
-		errLine := lipgloss.NewStyle().
-			Foreground(lipgloss.Red).
+		errLine := errorStyle.
 			PaddingTop(1).
 			Render(s.err)
 		stack = lipgloss.JoinVertical(lipgloss.Top, stack, errLine)
@@ -181,8 +180,8 @@ func (s Setup) viewMode() string {
 		}
 		rows[i] = style.Render(c)
 	}
-	hint := lipgloss.NewStyle().Faint(true).PaddingTop(1).
-		Render("↑/↓ or j/k to select, Enter to confirm")
+	hint := lipgloss.NewStyle().PaddingTop(1).
+		Render(modalHint(navUp, navDown, confirmKey))
 	return lipgloss.JoinVertical(lipgloss.Top,
 		lipgloss.NewStyle().PaddingBottom(1).Render("Choose your mode"),
 		lipgloss.JoinVertical(lipgloss.Top, rows...),
@@ -202,6 +201,7 @@ func (s Setup) viewUrl() string {
 	return lipgloss.JoinVertical(lipgloss.Top,
 		lipgloss.NewStyle().PaddingBottom(1).Render(label),
 		s.urlInput.View(),
+		lipgloss.NewStyle().PaddingTop(1).Render(modalHint(confirmKey)),
 	)
 }
 
@@ -238,7 +238,7 @@ func (s Setup) viewAccount() string {
 	for i, f := range fields {
 		lbl := lipgloss.NewStyle().Width(10)
 		if i == s.acctField {
-			lbl = lbl.Bold(true).Foreground(lipgloss.Yellow)
+			lbl = lbl.Bold(true).Foreground(colorAccent)
 		}
 		rows[i] = lipgloss.JoinHorizontal(
 			lipgloss.Top,
@@ -246,9 +246,8 @@ func (s Setup) viewAccount() string {
 			f.input.View(),
 		)
 	}
-	hint := lipgloss.NewStyle().
-		Faint(true).
-		Render("Tab to move, Enter to advance / submit on the last field")
+	hint := lipgloss.NewStyle().PaddingTop(1).
+		Render(modalHint(fieldNext, confirmKey))
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
 		lipgloss.NewStyle().
