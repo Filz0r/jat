@@ -34,6 +34,12 @@ type Company struct {
 	Name    string `gorm:"uniqueIndex"`
 	Website *string
 
+	CreatedBy     uuid.UUID `gorm:"type:uuid;not null;index"`
+	CreatedByUser User      `gorm:"foreignKey:CreatedBy"`
+
+	EditedBy     uuid.UUID `gorm:"type:uuid;not null;index"`
+	EditedByUser User      `gorm:"foreignKey:EditedBy"`
+
 	JobApplications []JobApplication `gorm:"constraints:OnDelete:CASCADE;many2many:company_application;joinForeignKey:company_id;joinReferences:application_id"`
 }
 
@@ -80,4 +86,21 @@ type StatusHistory struct {
 	Status   ApplicationStatus `gorm:"foreignKey:StatusID"`
 
 	CreatedAt time.Time
+}
+
+type CompanyChangeHistory struct {
+	ID        uint    `gorm:"primaryKey"`
+	CompanyID uint    `gorm:"not null;index"`
+	Company   Company `gorm:"constraints:OnDelete:CASCADE;foreignKey:CompanyID"`
+
+	OldNameValue    *string // nullable, old value may be null
+	NewNameValue    *string // nullable, new value may be null
+	OldWebsiteValue *string // nullable, old value may be null
+	NewWebsiteValue *string // nullable, new value may be null
+
+	ChangedBy     uuid.UUID `gorm:"type:uuid;not null;index"`
+	ChangedByUser User      `gorm:"foreignKey:ChangedBy"`
+
+	CreatedAt time.Time
+	Reverted  bool `gorm:"default:false"`
 }
