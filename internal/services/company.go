@@ -137,3 +137,12 @@ func (sm *ServiceManager) GetAllCompaniesSuggestions() ([]utils.SuggestionRecord
 	}
 	return suggestions, nil
 }
+
+func (sm *ServiceManager) GetCompanyByID(id int) (database.Company, error) {
+	if sm.db == nil {
+		return database.Company{}, errors.New("database not initialized")
+	}
+	var company database.Company
+	result := sm.db.First(&company, id)
+	return company, result.Error
+}
