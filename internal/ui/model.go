@@ -59,6 +59,9 @@ func NewModel(cfg *config.ConfigFile) Model {
 }
 
 func (m Model) Init() tea.Cmd {
+	if !m.Config.IsInitialized() {
+		return nil
+	}
 	if s, ok := m.tabs[TabApplicationStatus].(ApplicationStatusTab); ok {
 		s.loading = true
 		m.tabs[TabApplicationStatus] = s
