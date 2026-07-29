@@ -18,8 +18,8 @@ const DefaultApplicationStatus = "Applied"
 // resolveCompany returns the company matching name (case-insensitive),
 // creating it when none exists. Companies are global records shared by every
 // user, so a mismatch in casing must never produce a duplicate row.
-func resolveCompany(tx *gorm.DB, name string) (database.Company, error) {
-	company, err := findCompanyByName(tx, name)
+func (sm *ServiceManager) resolveCompany(name string) (database.Company, error) {
+	company, err := sm.FindCompanyByName(name)
 	if err == nil {
 		return company, nil
 	}
@@ -27,7 +27,7 @@ func resolveCompany(tx *gorm.DB, name string) (database.Company, error) {
 		return database.Company{}, err
 	}
 	company = database.Company{Name: name}
-	if err := tx.Create(&company).Error; err != nil {
+	if err := sm.db.Create(&company).Error; err != nil {
 		return database.Company{}, err
 	}
 	return company, nil
@@ -72,7 +72,7 @@ func (sm *ServiceManager) CreateJobApplication(
 
 	var app database.JobApplication
 	err := sm.db.Transaction(func(tx *gorm.DB) error {
-		company, err := resolveCompany(tx, companyName)
+		company, err := sm.resolveCompany(companyName)
 		if err != nil {
 			return err
 		}
@@ -165,7 +165,7 @@ func (sm *ServiceManager) UpdateJobApplication(
 			return err
 		}
 
-		company, err := resolveCompany(tx, companyName)
+		company, err := sm.resolveCompany(companyName)
 		if err != nil {
 			return err
 		}
