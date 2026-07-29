@@ -73,7 +73,21 @@ func (sm *ServiceManager) GetApplicationStatus(
 	}
 	var applicationStatus database.ApplicationStatus
 	result := sm.db.
-		Where("name = ? and user_id = ?", name, userID).
+		Where("status = ? and user_id = ?", name, userID).
+		First(&applicationStatus)
+	return applicationStatus, result.Error
+}
+
+func (sm *ServiceManager) FindApplicationStatusByName(
+	userID uuid.UUID,
+	name string,
+) (database.ApplicationStatus, error) {
+	if sm.db == nil {
+		return database.ApplicationStatus{}, errors.New("database not initialized")
+	}
+	var applicationStatus database.ApplicationStatus
+	result := sm.db.
+		Where("lower(status) = lower(?) and user_id = ?", name, userID).
 		First(&applicationStatus)
 	return applicationStatus, result.Error
 }
@@ -100,7 +114,7 @@ func (sm *ServiceManager) DeleteApplicationStatus(
 	}
 	var applicationStatus database.ApplicationStatus
 	result := sm.db.
-		Delete(&applicationStatus, "name = ? and user_id = ?", name, userID)
+		Delete(&applicationStatus, "status = ? and user_id = ?", name, userID)
 	return result.Error
 }
 
@@ -111,7 +125,7 @@ func (sm *ServiceManager) GetSuggestionForApplicationStatus(
 		return []utils.SuggestionRecord{}, errors.New("database not initialized")
 	}
 	var data []database.ApplicationStatus
-	result := sm.db.Table("application_status").Where("user_id = ?", userID).Find(&data)
+	result := sm.db.Where("user_id = ?", userID).Find(&data)
 	if result.Error != nil {
 		return []utils.SuggestionRecord{}, result.Error
 	}

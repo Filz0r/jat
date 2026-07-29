@@ -34,6 +34,6 @@ func (sm *ServiceManager) UpdateUser(user database.User) (database.User, error) 
 		}
 		user.Password = password
 	}
-	result := sm.db.Updates(&user)
+	result := sm.db.Save(&user)
 	return user, result.Error
 }
