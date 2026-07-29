@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/filz0r/jat/internal/database"
 	"github.com/filz0r/jat/internal/services"
 	"github.com/filz0r/jat/internal/utils"
 	"gorm.io/gorm"
@@ -37,12 +38,14 @@ type ConfigFile struct {
 	initialized  bool
 	mode         JatMode
 	serverURL    *string
+	serverPort   *string
 	dbUri        *string
 	userID       *string
 	userToken    *string
 	refreshToken *string
 	db           *gorm.DB
 	Services     *services.ServiceManager
+	SecretJWT    *string
 }
 
 type rawFile struct {
@@ -53,6 +56,8 @@ type rawFile struct {
 	UserToken    *string `json:"user_token,omitempty"`
 	RefreshToken *string `json:"refresh_token,omitempty"`
 	UserID       *string `json:"user_id,omitempty"`
+	ServerPort   *string `json:"server_port,omitempty"`
+	SecretJWT    *string `json:"secret_jwt,omitempty"`
 }
 
 func (c *ConfigFile) getConfigFilePath() (string, error) {
@@ -72,7 +77,7 @@ func (c *ConfigFile) exists(path string) bool {
 	return true
 }
 
-func (c *ConfigFile) create(path string) error {
+func (c *ConfigFile) create(path string, isServer bool) error {
 	err := os.MkdirAll(filepath.Dir(path), 0755)
 	if err != nil {
 		return err
@@ -89,10 +94,15 @@ func (c *ConfigFile) create(path string) error {
 		// this will become selectable in the future
 		Mode:         StandaloneMode,
 		ServerURL:    nil,
-		DbUri:        nil,
+		DbUri:        c.dbUri,
 		UserToken:    nil,
 		RefreshToken: nil,
 		UserID:       nil,
+		ServerPort:   c.serverPort,
+		SecretJWT:    c.SecretJWT,
+	}
+	if isServer {
+		raw.Mode = ServerMode
 	}
 	data, err := json.MarshalIndent(raw, "", "  ")
 	if err != nil {
@@ -111,10 +121,10 @@ func (c *ConfigFile) create(path string) error {
 	return nil
 }
 
-func (c *ConfigFile) load(path string) error {
+func (c *ConfigFile) load(path string, isServer bool) error {
 	file, err := os.ReadFile(path)
 	if len(file) == 0 {
-		err = c.create(path)
+		err = c.create(path, isServer)
 		if err != nil {
 			return err
 		}
@@ -138,6 +148,8 @@ func (c *ConfigFile) load(path string) error {
 	c.userToken = raw.UserToken
 	c.refreshToken = raw.RefreshToken
 	c.userID = raw.UserID
+	c.serverPort = raw.ServerPort
+	c.SecretJWT = raw.SecretJWT
 	return nil
 }
 
@@ -148,12 +160,12 @@ func (c *ConfigFile) LoadData() error {
 	}
 	// check if the file exists
 	if !c.exists(path) {
-		err = c.create(path)
+		err = c.create(path, false)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = c.load(path)
+		err = c.load(path, false)
 		if err != nil {
 			return err
 		}
@@ -191,7 +203,7 @@ func (c *ConfigFile) Update() error {
 	if err != nil {
 		return err
 	}
-	err = c.load(path)
+	err = c.load(path, false)
 	if err != nil {
 		return err
 	}
@@ -246,6 +258,7 @@ func (c *ConfigFile) writeToDisk() error {
 		UserToken:    c.userToken,
 		RefreshToken: c.refreshToken,
 		UserID:       c.userID,
+		ServerPort:   c.serverPort,
 	}
 	data, err := json.MarshalIndent(raw, "", "  ")
 	if err != nil {
@@ -317,6 +330,54 @@ func (c *ConfigFile) GetUserID() (string, error) {
 
 func (c *ConfigFile) SetUserID(userID string) {
 	c.userID = &userID
+}
+
+func (c *ConfigFile) LoadFromEnv() error {
+	dbUri := os.Getenv("DATABASE_URL")
+	port := os.Getenv("PORT")
+	secretJWT := os.Getenv("SECRET_JWT")
+
+	if dbUri == "" || port == "" || secretJWT == "" {
+		return fmt.Errorf("DATABASE_URL, SECRET_JWT and PORT must be set")
+	}
+	path, err := c.getConfigFilePath()
+	if err != nil {
+		return err
+	}
+	if !c.exists(path) {
+
+		c.dbUri = &dbUri
+		c.serverPort = &port
+		c.SecretJWT = &secretJWT
+		err = c.create(path, true)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = c.load(path, true)
+		if err != nil {
+			return err
+		}
+		if c.dbUri == nil || c.serverPort == nil {
+			return fmt.Errorf("could not load required values from the config file")
+		}
+	}
+	if c.dbUri == nil {
+		return fmt.Errorf("DATABASE_URL must be set")
+	}
+	devMode := os.Getenv("JAT_DEV") != ""
+	c.db, err = database.ConnectDb(*c.dbUri, devMode)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *ConfigFile) GetPort() (string, error) {
+	if c.serverPort == nil {
+		return "", errors.New("port is not initialized")
+	}
+	return *c.serverPort, nil
 }
 
 func New() *ConfigFile {
