@@ -34,16 +34,31 @@ func (s *Server) loadRoutes() {
 
 	// user handlers
 	s.mux.Handle("POST /api/users", s.handleUserCreate())
-	s.mux.Handle("GET /api/users/{userID}", s.middlewareAuth(s.handleGetSingleUser()))
+	s.mux.Handle("GET /api/users/{userID}",
+		s.middlewareAuth(s.handleGetSingleUser()))
 	s.mux.Handle("POST /api/users/auth/login", s.handleUserLogin())
 	s.mux.Handle("POST /api/users/auth/logout",
 		s.middlewareAuth(s.middlewareRefreshToken(s.handleUserLogout())))
-	s.mux.Handle("GET /api/users/auth/refresh_token", s.middlewareRefreshToken(s.handleUserTokenRefresh()))
-	s.mux.Handle("GET /api/users/auth/revoke_token", s.middlewareRefreshToken(s.handleUserRevokeToken()))
+	s.mux.Handle("GET /api/users/auth/refresh_token",
+		s.middlewareRefreshToken(s.handleUserTokenRefresh()))
+	s.mux.Handle("GET /api/users/auth/revoke_token",
+		s.middlewareRefreshToken(s.handleUserRevokeToken()))
 	s.mux.Handle("PUT /api/users", s.middlewareAuth(s.handleUserUpdate()))
+
+	// Company handlers
+	s.mux.Handle("POST /api/company", s.middlewareAuth(s.handleCreateCompany()))
+	s.mux.Handle("GET /api/company", s.middlewareAuth(s.handleGetAllCompanies()))
+	s.mux.Handle("GET /api/company/{companyID}", s.middlewareAuth(s.handleGetACompany()))
+	s.mux.Handle("PUT /api/company/{companyID}", s.middlewareAuth(s.handleUpdateACompany()))
+	s.mux.Handle("DELETE /api/company/{companyID}", s.middlewareAdminUser(s.handleDeleteACompany()))
+
+	// Application Statuses
+
 	// admin handlers
 	s.mux.Handle("GET /api/admin/users", s.middlewareAdminUser(s.handleGetAllUsers()))
 	s.mux.Handle("GET /api/admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin()))
+	// TODO: add a DELETE method to remove user admin rights
+	// TODO: add a restore company change endpoint for admins
 }
 
 func New(cfg *config.ConfigFile) (*Server, error) {
