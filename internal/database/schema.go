@@ -49,3 +49,35 @@ type JobApplication struct {
 
 	Companies []Company `gorm:"constraints:OnDelete:CASCADE;many2many:company_application;joinForeignKey:application_id;joinReferences:company_id"`
 }
+
+type RefreshToken struct {
+	Token  string    `gorm:"primaryKey"`
+	UserID uuid.UUID `gorm:"index"`
+	User   User      `gorm:"constraints:OnDelete:CASCADE;foreignKey:UserID"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	ExpiresAt time.Time
+	ExpiredAt *time.Time
+}
+
+type ApplicationNote struct {
+	gorm.Model
+	Body          string
+	ApplicationID uint
+	Application   JobApplication `gorm:"constraints:OnDelete:CASCADE;foreignKey:ApplicationID"`
+
+	StatusID *uint
+	Status   *ApplicationStatus `gorm:"foreignKey:StatusID"`
+}
+
+type StatusHistory struct {
+	ID            uint `gorm:"primaryKey"`
+	ApplicationID uint
+	Application   JobApplication `gorm:"constraints:OnDelete:CASCADE;foreignKey:ApplicationID"`
+
+	StatusID uint
+	Status   ApplicationStatus `gorm:"foreignKey:StatusID"`
+
+	CreatedAt time.Time
+}
