@@ -1,0 +1,56 @@
+### health
+GET http://localhost:4200/api/health
+X-Jat-Client-Type: web-client
+
+
+### initialized
+GET http://localhost:4200/api/initialized
+X-Jat-Client-Type: web-client
+
+### Doesn't exist
+GET http://localhost:4200/api/doesnt_exist
+X-Jat-Client-Type: web-client
+
+### Create User
+POST http://localhost:4200/api/users
+X-Jat-Client-Type: web-client
+Content-Type: application/json
+
+{
+    "email": "test@test.com",
+    "password": "password",
+    "username": "test"
+}
+
+### Login user
+POST http://localhost:4200/api/users/auth/login
+Content-Type: application/json
+X-Jat-Client-Type: web-client
+
+{
+  "email": "test@test.com",
+  "password": "password"
+}
+
+> {%
+	client.global.set("token", response.body.data.token);
+	client.global.set("refresh_token", response.body.data.refresh_token);
+	client.global.set("userId", response.body.data.user_id);
+%}
+
+### Get all users (admin route)
+GET http://localhost:4200/api/admin/users
+X-Jat-Client-Type: web-client
+
+### Refresh token
+GET http://localhost:4200/api/users/auth/refresh_token
+X-Jat-Client-Type: web-client
+#Authorization: Bearer {{refresh_token}}
+
+### Revoke Refresh token
+GET http://localhost:4200/api/users/auth/revoke_token
+X-Jat-Client-Type: web-client
+
+### Get User Data
+GET http://localhost:4200/api/users/{{userId}}
+X-Jat-Client-Type: web-client
