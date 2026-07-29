@@ -38,7 +38,7 @@ func (sm *ServiceManager) GetValidRefreshToken(token string) (database.RefreshTo
 	var refreshToken database.RefreshToken
 	result := sm.db.Where("token = ?", token).First(&refreshToken)
 	if result.Error != nil {
-		return refreshToken, result.Error
+		return database.RefreshToken{}, result.Error
 	}
 	if refreshToken.ExpiredAt != nil {
 		return database.RefreshToken{}, errors.New("refresh token has been revoked")
