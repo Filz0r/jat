@@ -113,6 +113,16 @@ func (c *ConfigFile) create(path string) error {
 
 func (c *ConfigFile) load(path string) error {
 	file, err := os.ReadFile(path)
+	if len(file) == 0 {
+		err = c.create(path)
+		if err != nil {
+			return err
+		}
+		file, err = os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+	}
 	if err != nil {
 		return err
 	}
