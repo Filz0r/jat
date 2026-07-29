@@ -72,3 +72,17 @@ func (sm *ServiceManager) DeleteExpiredRefreshTokens() error {
 		Delete(&database.RefreshToken{})
 	return result.Error
 }
+
+func (sm *ServiceManager) UpdateRefreshToken(token string, newTimeStamp time.Time) error {
+	if sm.db == nil {
+		return errors.New("database not initialized")
+	}
+	var refreshToken database.RefreshToken
+	result := sm.db.Where("token = ?", token).First(&refreshToken)
+	if result.Error != nil {
+		return result.Error
+	}
+	refreshToken.UpdatedAt = newTimeStamp
+	result = sm.db.Save(&refreshToken)
+	return result.Error
+}
