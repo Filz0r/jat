@@ -146,3 +146,24 @@ func (sm *ServiceManager) GetCompanyByID(id int) (database.Company, error) {
 	result := sm.db.First(&company, id)
 	return company, result.Error
 }
+
+func (sm *ServiceManager) DeleteCompanyByID(id uint, userID uuid.UUID) error {
+	if sm.db == nil {
+		return errors.New("database not initialized")
+	}
+	var company database.Company
+	result := sm.db.Delete(&company, "id = ?", id)
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("company not found")
+	}
+	company.EditedBy = userID
+	result = sm.db.Save(&company)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
