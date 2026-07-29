@@ -63,20 +63,3 @@ func switchTab(m Model, delta int) Model {
 	}
 	return m
 }
-
-// navigateList moves a selection index by delta within items, clamped to the
-// valid range. Shared by every tab so they all honour the same j/k/arrow
-// contract.
-func navigateList(items []string, selected, delta int) int {
-	if len(items) == 0 {
-		return 0
-	}
-	selected += delta
-	if selected < 0 {
-		selected = 0
-	}
-	if selected >= len(items) {
-		selected = len(items) - 1
-	}
-	return selected
-}
