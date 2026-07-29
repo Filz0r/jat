@@ -37,6 +37,18 @@ var (
 		key.WithHelp("esc/enter", "close"),
 	)
 	fieldNext = key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next field"))
+	fieldPrev = key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "prev field"))
+
+	// openKey shares enter with enterEdit/confirmKey but is labelled for
+	// tabs where enter opens a view rather than editing a single value.
+	openKey    = key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "open"))
+	editKey    = key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit"))
+	addNoteKey = key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "add note"))
+
+	// arrowUp/arrowDown are behaviour-only bindings (no hint row): suggest
+	// fields use them to move the match highlight while j/k stay typed text.
+	arrowUp   = key.NewBinding(key.WithKeys("up"))
+	arrowDown = key.NewBinding(key.WithKeys("down"))
 
 	newKey     = key.NewBinding(key.WithKeys("n"), key.WithHelp("n", "new"))
 	refreshKey = key.NewBinding(key.WithKeys("r"), key.WithHelp("r", "refresh"))

@@ -11,35 +11,13 @@ import (
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/filz0r/jat/internal/config"
 	"github.com/filz0r/jat/internal/database"
-	"github.com/google/uuid"
 )
 
 type applicationsDataMsg struct {
 	data []database.ApplicationStatus
 	err  error
-}
-
-type styles struct {
-	title        lipgloss.Style
-	item         lipgloss.Style
-	selectedItem lipgloss.Style
-	pagination   lipgloss.Style
-	help         lipgloss.Style
-	quitText     lipgloss.Style
-}
-
-func newStyles(darkBG bool) styles {
-	var s styles
-	s.title = lipgloss.NewStyle().MarginLeft(2)
-	s.item = lipgloss.NewStyle().PaddingLeft(4)
-	s.selectedItem = lipgloss.NewStyle().PaddingLeft(2).Foreground(colorHighlight)
-	s.pagination = list.DefaultStyles(darkBG).PaginationStyle.PaddingLeft(4)
-	s.help = list.DefaultStyles(darkBG).HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	s.quitText = lipgloss.NewStyle().Margin(1, 0, 2, 4)
-	return s
 }
 
 type statusItem struct {
@@ -48,14 +26,12 @@ type statusItem struct {
 
 func (i statusItem) FilterValue() string { return i.row.Status }
 
-type itemDelegate struct {
-	styles *styles
+type statusDelegate struct {
+	listDelegate
+	styles listStyles
 }
 
-func (d itemDelegate) Height() int                             { return 1 }
-func (d itemDelegate) Spacing() int                            { return 0 }
-func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
-func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+func (d statusDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	i, ok := listItem.(statusItem)
 	if !ok {
 		return
@@ -80,27 +56,16 @@ type ApplicationStatusTab struct {
 	loading bool
 	list    list.Model
 	spinner spinner.Model
-	styles  styles
+	styles  listStyles
 	width   int
 	height  int
 }
 
 func NewApplicationStatusTab(cfg *config.ConfigFile) ApplicationStatusTab {
 	t := ApplicationStatusTab{cfg: cfg}
-	t.styles = newStyles(true) // dark
-	t.spinner = spinner.New()
-	t.spinner.Spinner = spinner.Dot
-
-	l := list.New(nil, itemDelegate{styles: &t.styles}, 20, 14)
-	l.Title = "Application Status"
-	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(false)
-	l.SetShowHelp(false)
-	l.DisableQuitKeybindings()
-	l.Styles.Title = t.styles.title
-	l.Styles.PaginationStyle = t.styles.pagination
-	l.Styles.HelpStyle = t.styles.help
-	t.list = l
+	t.styles = newListStyles(true) // dark
+	t.spinner = newLoadingSpinner()
+	t.list = newStyledList("Application Status", statusDelegate{styles: t.styles}, t.styles)
 	return t
 }
 
@@ -162,15 +127,11 @@ func (t ApplicationStatusTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 						}
 						existing.Status = value
 						existing.UpdatedAt = time.Now()
-						userId, err := cfg.GetUserID()
+						userID, err := parseConfigUserID(cfg)
 						if err != nil {
 							return editResultMsg{err: err}
 						}
-						parsedID, err := uuid.Parse(userId)
-						if err != nil {
-							return editResultMsg{err: err}
-						}
-						_, err = cfg.Services.UpdateApplicationStatus(parsedID, existing)
+						_, err = cfg.Services.UpdateApplicationStatus(userID, existing)
 						if err != nil {
 							return editResultMsg{err: err}
 						}
@@ -195,11 +156,7 @@ func (t ApplicationStatusTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 						if value == "" {
 							return editResultMsg{err: errors.New("status cannot be empty")}
 						}
-						id, err := cfg.GetUserID()
-						if err != nil {
-							return editResultMsg{err: err}
-						}
-						parsedID, err := uuid.Parse(id)
+						parsedID, err := parseConfigUserID(cfg)
 						if err != nil {
 							return editResultMsg{err: err}
 						}
@@ -223,34 +180,22 @@ func (t ApplicationStatusTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 }
 
 func (t ApplicationStatusTab) View() string {
-	switch {
-	case t.loading:
-		content := lipgloss.JoinVertical(lipgloss.Center, t.spinner.View(), "Loading…")
-		return lipgloss.Place(t.width, t.height, lipgloss.Center, lipgloss.Center, content)
-
-	case t.err != nil:
-		msg := t.styles.quitText.Render(fmt.Sprintf("error: %v\n\npress r to retry", t.err))
-		return lipgloss.Place(t.width, t.height, lipgloss.Center, lipgloss.Center, msg)
-
-	case len(t.list.Items()) == 0:
-		msg := t.styles.quitText.Render("no statuses — press r to load or n to create a new one")
-		return lipgloss.Place(t.width, t.height, lipgloss.Center, lipgloss.Center, msg)
-
-	default:
-		return lipgloss.Place(t.width, t.height, lipgloss.Center, lipgloss.Top, t.list.View())
+	if t.loading || t.err != nil || len(t.list.Items()) == 0 {
+		return renderListState(
+			t.styles, t.width, t.height,
+			t.loading, t.spinner.View(), t.err,
+			"no statuses — press r to load or n to create a new one",
+		)
 	}
+	return placeListView(t.width, t.height, t.list.View())
 }
 
 func (t ApplicationStatusTab) fetch() tea.Cmd {
 	cfg := t.cfg
 	return func() tea.Msg {
-		id, err := cfg.GetUserID()
+		parsedID, err := parseConfigUserID(cfg)
 		if err != nil {
 			return applicationsDataMsg{err: fmt.Errorf("get user id: %w", err)}
-		}
-		parsedID, err := uuid.Parse(id)
-		if err != nil {
-			return applicationsDataMsg{err: fmt.Errorf("parse user id: %w", err)}
 		}
 		data, err := cfg.Services.GetAllApplicationStatus(parsedID)
 		if err != nil {

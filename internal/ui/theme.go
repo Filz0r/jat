@@ -1,6 +1,9 @@
 package ui
 
-import "charm.land/lipgloss/v2"
+import (
+	"charm.land/bubbles/v2/list"
+	"charm.land/lipgloss/v2"
+)
 
 // Palette — named lipgloss color constants only, never hex/ANSI numbers.
 var (
@@ -33,3 +36,25 @@ var (
 // purpose: bubbles' table measures row width from the raw string, and wrapping
 // rows in a lipgloss style breaks that measurement.
 func faint(s string) string { return "\x1b[2m" + s + "\x1b[22m" }
+
+// listStyles is the shared look of every bubbles/list in the app (the
+// data-driven tabs and their modal pickers).
+type listStyles struct {
+	title        lipgloss.Style
+	item         lipgloss.Style
+	selectedItem lipgloss.Style
+	pagination   lipgloss.Style
+	help         lipgloss.Style
+	quitText     lipgloss.Style
+}
+
+func newListStyles(darkBG bool) listStyles {
+	var s listStyles
+	s.title = lipgloss.NewStyle().MarginLeft(2)
+	s.item = lipgloss.NewStyle().PaddingLeft(4)
+	s.selectedItem = lipgloss.NewStyle().PaddingLeft(2).Foreground(colorHighlight)
+	s.pagination = list.DefaultStyles(darkBG).PaginationStyle.PaddingLeft(4)
+	s.help = list.DefaultStyles(darkBG).HelpStyle.PaddingLeft(4).PaddingBottom(1)
+	s.quitText = lipgloss.NewStyle().Margin(1, 0, 2, 4)
+	return s
+}

@@ -1,12 +1,15 @@
 package ui
 
 import (
+	"fmt"
+	"io"
 	"strings"
 
 	"charm.land/bubbles/v2/key"
-	"charm.land/bubbles/v2/table"
+	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 	"github.com/filz0r/jat/internal/config"
 	"github.com/filz0r/jat/internal/utils"
 	"golang.org/x/text/cases"
@@ -19,26 +22,63 @@ type settingEntry struct {
 	Editable func() bool
 }
 
-type SettingsTab struct {
-	items    []settingEntry
-	selected int
-	cfg      *config.ConfigFile
-	table    table.Model
-	width    int
-	height   int
+// settingLabelWidth is the fixed width of the label column, matching what the
+// old table used for its Setting column.
+const settingLabelWidth = 18
+
+type settingItem struct {
+	entry settingEntry
 }
 
-func buildSettingsRows(items []settingEntry) []table.Row {
-	res := make([]table.Row, 0, len(items))
-	for _, entry := range items {
-		label, value := entry.Label, entry.Value()
-		if !entry.Editable() {
-			label = faint(label)
-			value = faint(value)
-		}
-		res = append(res, table.Row{label, value})
+func (i settingItem) FilterValue() string { return i.entry.Label }
+
+func buildSettingItems(entries []settingEntry) []list.Item {
+	items := make([]list.Item, 0, len(entries))
+	for _, entry := range entries {
+		items = append(items, settingItem{entry: entry})
 	}
-	return res
+	return items
+}
+
+type settingsDelegate struct {
+	listDelegate
+	styles listStyles
+}
+
+func (d settingsDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	i, ok := listItem.(settingItem)
+	if !ok {
+		return
+	}
+	label, value := i.entry.Label, i.entry.Value()
+
+	// Rows get 4 columns of left padding from the item styles, so the value
+	// must fit in what remains after the label column.
+	valueMax := max(m.Width()-4-settingLabelWidth, 1)
+	value = ansi.Truncate(value, valueMax, "…")
+	if !i.entry.Editable() {
+		label = faint(label)
+		value = faint(value)
+	}
+	str := lipgloss.NewStyle().Width(settingLabelWidth).Render(label) + value
+
+	fn := d.styles.item.Render
+	if index == m.Index() {
+		fn = func(s ...string) string {
+			return d.styles.selectedItem.Render("> " + strings.Join(s, " "))
+		}
+	}
+
+	fmt.Fprint(w, fn(str))
+}
+
+type SettingsTab struct {
+	items  []settingEntry
+	cfg    *config.ConfigFile
+	list   list.Model
+	styles listStyles
+	width  int
+	height int
 }
 
 func NewSettingsTab(cfg *config.ConfigFile) SettingsTab {
@@ -63,32 +103,11 @@ func NewSettingsTab(cfg *config.ConfigFile) SettingsTab {
 			return val
 		}, Editable: func() bool { return cfg.IsClient() }},
 	}
-	columns := []table.Column{
-		{Title: "Setting", Width: 18},
-		{Title: "Value", Width: 32},
-	}
-	rows := buildSettingsRows(items)
-	styles := table.DefaultStyles()
-	styles.Header = styles.Header.
-		Foreground(colorInfo).
-		PaddingTop(1).
-		MarginBottom(1).
-		Bold(false)
-	styles.Selected = styles.Selected.
-		Background(colorSurface).
-		Foreground(colorAccent).
-		PaddingLeft(1).
-		Bold(true).PaddingChar('>')
-	styles.Cell = styles.Cell.PaddingLeft(1)
-	t := table.New(
-		table.WithColumns(columns),
-		table.WithRows(rows),
-		table.WithFocused(true),
-		table.WithWidth(18+32),
-		table.WithHeight(len(rows)+1),
-		table.WithStyles(styles),
-	)
-	return SettingsTab{cfg: cfg, items: items, table: t}
+	t := SettingsTab{cfg: cfg, items: items}
+	t.styles = newListStyles(true)
+	t.list = newStyledList("Settings", settingsDelegate{styles: t.styles}, t.styles)
+	t.list.SetItems(buildSettingItems(items))
+	return t
 }
 
 func (t SettingsTab) ShortHelp() []key.Binding {
@@ -182,39 +201,31 @@ func (t SettingsTab) editRequestFor(label string) editRequest {
 
 func (t SettingsTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 	if kp, ok := msg.(tea.KeyPressMsg); ok && key.Matches(kp, enterEdit) {
-		idx := t.table.Cursor()
-		req := t.editRequestFor(t.items[idx].Label)
+		req := t.editRequestFor(t.items[t.list.Index()].Label)
 		return t, func() tea.Msg { return editRequestMsg{req: req} }
 	}
 	var cmd tea.Cmd
-	t.table, cmd = t.table.Update(msg)
+	t.list, cmd = t.list.Update(msg)
 	return t, cmd
 }
 
 func (t SettingsTab) View() string {
-	tableStyle := lipgloss.NewStyle().MarginLeft(2)
-	return tableStyle.Render(t.table.View())
+	return placeListView(t.width, t.height, t.list.View())
 }
 
 func (t SettingsTab) refresh() SettingsTab {
-	t.table.SetRows(buildSettingsRows(t.items))
+	t.list.SetItems(buildSettingItems(t.items))
 	return t
 }
 
-// Resize sizes the table to fill the available body width. The Value column
-// absorbs the remaining width after the 18-char Setting column and the cell
-// padding.
+// Resize sizes the list to fill the available body dimensions; the delegate
+// truncates the value column against the list width.
 func (t SettingsTab) Resize(w, h int) Tab {
 	if w < 30 {
 		w = 30
 	}
 	t.width = w
 	t.height = h
-	t.table.SetHeight(h - 10)
-	t.table.SetWidth(w)
-	t.table.SetColumns([]table.Column{
-		{Title: "Setting", Width: 18},
-		{Title: "Value", Width: w - 30},
-	})
+	t.list.SetSize(w, h)
 	return t
 }

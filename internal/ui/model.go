@@ -8,14 +8,13 @@ import (
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
+	"github.com/filz0r/jat/internal/config"
 	"github.com/filz0r/jat/internal/database"
 	"github.com/filz0r/jat/internal/services"
 	"github.com/filz0r/jat/internal/utils"
-
-	"charm.land/lipgloss/v2"
-	"github.com/filz0r/jat/internal/config"
 )
 
+// TODO: delete this and usages
 const (
 	ListView uint = iota
 	ApplicationView
@@ -40,15 +39,13 @@ type Model struct {
 	helpBar       help.Model
 }
 
-// NewModel builds the top-level model with all tabs in bar order and the
-// Job Applications tab selected by default.
 func NewModel(cfg *config.ConfigFile) Model {
 	return Model{
 		ActiveView: LoginView,
 		Config:     cfg,
 		tabs: []Tab{
-			NewJobApplicationsTab(),
-			NewCompaniesTab(),
+			NewJobApplicationsTab(cfg),
+			NewCompaniesTab(cfg),
 			NewApplicationStatusTab(cfg),
 			NewSettingsTab(cfg),
 		},
@@ -62,22 +59,37 @@ func (m Model) Init() tea.Cmd {
 	if !m.Config.IsInitialized() {
 		return nil
 	}
+	var cmds []tea.Cmd
+	if s, ok := m.tabs[TabJobApplications].(JobApplicationsTab); ok {
+		s.loading = true
+		m.tabs[TabJobApplications] = s
+		cmds = append(cmds, s.fetch(), s.spinner.Tick)
+	}
+	if s, ok := m.tabs[TabCompanies].(CompaniesTab); ok {
+		s.loading = true
+		m.tabs[TabCompanies] = s
+		cmds = append(cmds, s.fetch(), s.spinner.Tick)
+	}
 	if s, ok := m.tabs[TabApplicationStatus].(ApplicationStatusTab); ok {
 		s.loading = true
 		m.tabs[TabApplicationStatus] = s
-		return tea.Batch(s.fetch(), s.spinner.Tick)
+		cmds = append(cmds, s.fetch(), s.spinner.Tick)
 	}
-	return nil
+	return tea.Batch(cmds...)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case spinner.TickMsg:
-		if s, ok := m.tabs[TabApplicationStatus].(ApplicationStatusTab); ok {
+		var cmds []tea.Cmd
+		for i := range m.tabs {
 			var cmd tea.Cmd
-			m.tabs[TabApplicationStatus], cmd = s.Update(msg)
-			return m, cmd
+			m.tabs[i], cmd = m.tabs[i].Update(msg)
+			if cmd != nil {
+				cmds = append(cmds, cmd)
+			}
 		}
+		return m, tea.Batch(cmds...)
 	case tea.PasteMsg:
 		if !m.Config.IsInitialized() {
 			var cmd tea.Cmd
@@ -95,7 +107,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 	case tea.KeyPressMsg:
-		// While the config is uninitialized the setup overlay owns input.
 		if !m.Config.IsInitialized() {
 			return m.updateSetup(msg)
 		}
@@ -110,7 +121,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, tabPrev):
 			return switchTab(m, -1), nil
 		}
-		// route everything else to the active tab
 		if len(m.tabs) > 0 {
 			var cmd tea.Cmd
 			m.tabs[m.active], cmd = m.tabs[m.active].Update(msg)
@@ -136,17 +146,50 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.editModalOpen = false
 		var cmd tea.Cmd
 		switch msg.refreshTab {
+		case TabJobApplications:
+			if s, ok := m.tabs[msg.refreshTab].(JobApplicationsTab); ok {
+				s, cmd = s.refresh()
+				m.tabs[TabJobApplications] = s
+			}
+		case TabCompanies:
+			if s, ok := m.tabs[msg.refreshTab].(CompaniesTab); ok {
+				s, cmd = s.refresh()
+				m.tabs[TabCompanies] = s
+			}
 		case TabSettings:
-			if s, ok := m.tabs[m.active].(SettingsTab); ok {
+			if s, ok := m.tabs[msg.refreshTab].(SettingsTab); ok {
 				m.tabs[TabSettings] = s.refresh()
 			}
 		case TabApplicationStatus:
-			if s, ok := m.tabs[m.active].(ApplicationStatusTab); ok {
+			if s, ok := m.tabs[msg.refreshTab].(ApplicationStatusTab); ok {
 				s, cmd = s.refresh()
 				m.tabs[TabApplicationStatus] = s
 			}
 		}
 		return m, cmd
+	case jobApplicationsMsg:
+		if s, ok := m.tabs[TabJobApplications].(JobApplicationsTab); ok {
+			var cmd tea.Cmd
+			m.tabs[TabJobApplications], cmd = s.Update(msg)
+			return m, cmd
+		}
+	case companiesMsg:
+		if s, ok := m.tabs[TabCompanies].(CompaniesTab); ok {
+			var cmd tea.Cmd
+			m.tabs[TabCompanies], cmd = s.Update(msg)
+			return m, cmd
+		}
+	case appNotesMsg:
+		// Note-submit results only matter to an open application modal.
+		if m.editModalOpen && m.editModal.req.kind == modalApplication {
+			var cmd tea.Cmd
+			m.editModal, cmd = m.editModal.Update(msg)
+			return m, cmd
+		}
+		return m, nil
+	case closeModalMsg:
+		m.editModalOpen = false
+		return m, nil
 	case applicationsDataMsg:
 		if s, ok := m.tabs[TabApplicationStatus].(ApplicationStatusTab); ok {
 			var cmd tea.Cmd
@@ -169,8 +212,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if s, ok := m.tabs[TabSettings].(SettingsTab); ok {
 			m.tabs[TabSettings] = s.refresh()
 		}
+		var cmds []tea.Cmd
+		if s, ok := m.tabs[TabJobApplications].(JobApplicationsTab); ok {
+			s, cmd := s.refresh()
+			m.tabs[TabJobApplications] = s
+			cmds = append(cmds, cmd)
+		}
+		if s, ok := m.tabs[TabCompanies].(CompaniesTab); ok {
+			s, cmd := s.refresh()
+			m.tabs[TabCompanies] = s
+			cmds = append(cmds, cmd)
+		}
+		if s, ok := m.tabs[TabApplicationStatus].(ApplicationStatusTab); ok {
+			s, cmd := s.refresh()
+			m.tabs[TabApplicationStatus] = s
+			cmds = append(cmds, cmd)
+		}
 		m.setup.step = stepDone
-		return m, nil
+		return m, tea.Batch(cmds...)
 	case database.ConnectResult:
 		if msg.Err != nil {
 			m.setup.err = msg.Err.Error()
@@ -194,8 +253,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// updateSetup handles keys while the first-run overlay is up. Everything that
-// is not an explicit control key is typed into the focused input.
 func (m Model) updateSetup(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, quitHard):
@@ -292,12 +349,18 @@ func (m Model) setupEnter() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// updateEditModal handles keys while the edit modal is open. Only ctrl+c
-// quits here — plain letters (including q) belong to the text input.
 func (m Model) updateEditModal(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	switch {
-	case key.Matches(msg, quitHard):
+	if key.Matches(msg, quitHard) {
 		return m, tea.Quit
+	}
+
+	switch m.editModal.req.kind {
+	case modalForm, modalDetail, modalApplication:
+		var cmd tea.Cmd
+		m.editModal, cmd = m.editModal.Update(msg)
+		return m, cmd
+	}
+	switch {
 	case key.Matches(msg, escKey):
 		m.editModalOpen = false
 		return m, nil
@@ -332,8 +395,6 @@ func (m Model) View() tea.View {
 		body = m.tabs[m.active].View()
 	}
 
-	// The hint row lives below the border and only in normal tab mode — the
-	// edit modal and setup wizard carry their own hints inside their boxes.
 	var hints string
 	if m.Config != nil && m.Config.IsInitialized() && !m.editModalOpen {
 		bindings := make([]key.Binding, 0, 8)
@@ -348,7 +409,6 @@ func (m Model) View() tea.View {
 		bg = centerOverlay(bg, m.editModal.View(), m.width, m.height)
 	}
 
-	// composite the setup overlay on top while the config is uninitialized
 	if m.Config != nil && !m.Config.IsInitialized() {
 		bg = centerOverlay(bg, m.setup.View(), m.width, m.height)
 	}
@@ -356,14 +416,4 @@ func (m Model) View() tea.View {
 	view := tea.NewView(bg)
 	view.AltScreen = true
 	return view
-}
-
-// centerOverlay renders overlay centered on top of bg.
-func centerOverlay(bg, overlay string, w, h int) string {
-	ow := lipgloss.Width(overlay)
-	oh := lipgloss.Height(overlay)
-	return lipgloss.NewCompositor(
-		lipgloss.NewLayer(bg).Z(0),
-		lipgloss.NewLayer(overlay).X(max(0, (w-ow)/2)).Y(max(0, (h-oh)/2)).Z(1),
-	).Render()
 }
