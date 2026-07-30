@@ -61,10 +61,6 @@ func (s *Server) respondWithError(w http.ResponseWriter, code int, msg string, e
 	if err != nil {
 		s.logger.Println(err)
 	}
-	if code > 499 {
-		s.logger.Printf("Responding with 5XX error: %s", msg)
-	}
-
 	s.respondWithJSON(w, code, apiResponse{
 		Error: msg,
 		Ok:    false,
