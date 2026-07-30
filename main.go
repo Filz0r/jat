@@ -52,6 +52,7 @@ func main() {
 		if _, err := p.Run(); err != nil {
 			log.Fatal(err)
 		}
+		return
 	}
 	if cmd == "" && len(args) == 2 {
 		log.Fatal("nice try")
