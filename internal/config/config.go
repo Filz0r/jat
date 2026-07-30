@@ -61,12 +61,13 @@ type rawFile struct {
 }
 
 func (c *ConfigFile) getConfigFilePath() (string, error) {
-	configs, err := os.UserConfigDir()
+	configFilePath, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
 	}
-	path := filepath.Join(configs, "jat", "jat.json")
-	return path, nil
+	configFilePath = filepath.Join(configFilePath, "jat")
+	configFilePath = filepath.Join(configFilePath, "config.json")
+	return configFilePath, nil
 }
 
 func (c *ConfigFile) exists(path string) bool {
@@ -77,7 +78,7 @@ func (c *ConfigFile) exists(path string) bool {
 	return true
 }
 
-func (c *ConfigFile) create(path string, isServer bool) error {
+func (c *ConfigFile) create(path string) error {
 	err := os.MkdirAll(filepath.Dir(path), 0755)
 	if err != nil {
 		return err
@@ -101,9 +102,6 @@ func (c *ConfigFile) create(path string, isServer bool) error {
 		ServerPort:   c.serverPort,
 		SecretJWT:    c.SecretJWT,
 	}
-	if isServer {
-		raw.Mode = ServerMode
-	}
 	data, err := json.MarshalIndent(raw, "", "  ")
 	if err != nil {
 		return err
@@ -121,10 +119,10 @@ func (c *ConfigFile) create(path string, isServer bool) error {
 	return nil
 }
 
-func (c *ConfigFile) load(path string, isServer bool) error {
+func (c *ConfigFile) load(path string) error {
 	file, err := os.ReadFile(path)
 	if len(file) == 0 {
-		err = c.create(path, isServer)
+		err = c.create(path)
 		if err != nil {
 			return err
 		}
@@ -160,12 +158,12 @@ func (c *ConfigFile) LoadData() error {
 	}
 	// check if the file exists
 	if !c.exists(path) {
-		err = c.create(path, false)
+		err = c.create(path)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = c.load(path, false)
+		err = c.load(path)
 		if err != nil {
 			return err
 		}
@@ -203,7 +201,7 @@ func (c *ConfigFile) Update() error {
 	if err != nil {
 		return err
 	}
-	err = c.load(path, false)
+	err = c.load(path)
 	if err != nil {
 		return err
 	}
@@ -340,36 +338,15 @@ func (c *ConfigFile) LoadFromEnv() error {
 	if dbUri == "" || port == "" || secretJWT == "" {
 		return fmt.Errorf("DATABASE_URL, SECRET_JWT and PORT must be set")
 	}
-	path, err := c.getConfigFilePath()
-	if err != nil {
-		return err
-	}
-	if !c.exists(path) {
-
-		c.dbUri = &dbUri
-		c.serverPort = &port
-		c.SecretJWT = &secretJWT
-		err = c.create(path, true)
-		if err != nil {
-			return err
-		}
-	} else {
-		err = c.load(path, true)
-		if err != nil {
-			return err
-		}
-		if c.dbUri == nil || c.serverPort == nil {
-			return fmt.Errorf("could not load required values from the config file")
-		}
-	}
-	if c.dbUri == nil {
-		return fmt.Errorf("DATABASE_URL must be set")
-	}
+	c.dbUri = &dbUri
+	c.serverPort = &port
+	c.SecretJWT = &secretJWT
 	devMode := os.Getenv("JAT_DEV") != ""
-	c.db, err = database.ConnectDb(*c.dbUri, devMode)
+	db, err := database.ConnectDb(*c.dbUri, devMode)
 	if err != nil {
 		return err
 	}
+	c.db = db
 	return nil
 }
 
