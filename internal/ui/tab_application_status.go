@@ -15,6 +15,8 @@ import (
 	"github.com/filz0r/jat/internal/database"
 )
 
+//TODO: THIS FILE IS BROKEN AS IT DOESN'T CONFORM WITH API DESIGN
+
 type applicationsDataMsg struct {
 	data []database.ApplicationStatus
 	err  error
@@ -127,11 +129,11 @@ func (t ApplicationStatusTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 						}
 						existing.Status = value
 						existing.UpdatedAt = time.Now()
-						userID, err := parseConfigUserID(cfg)
-						if err != nil {
-							return editResultMsg{err: err}
-						}
-						_, err = cfg.Services.UpdateApplicationStatus(userID, existing)
+						//userID, err := parseConfigUserID(cfg)
+						//if err != nil {
+						//	return editResultMsg{err: err}
+						//}
+						_, err := cfg.Services.UpdateApplicationStatus(existing)
 						if err != nil {
 							return editResultMsg{err: err}
 						}
@@ -161,8 +163,8 @@ func (t ApplicationStatusTab) Update(msg tea.Msg) (Tab, tea.Cmd) {
 							return editResultMsg{err: err}
 						}
 						_, err = cfg.Services.CreateApplicationStatus(
-							parsedID,
-							database.ApplicationStatus{Status: value},
+							//parsedID,
+							database.ApplicationStatus{Status: value, UserID: parsedID},
 						)
 						if err != nil {
 							return editResultMsg{err: err}
