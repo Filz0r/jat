@@ -26,7 +26,8 @@ type ApplicationStatus struct {
 	gorm.Model
 	Status string `gorm:"index"`
 	UserID uuid.UUID
-	User   User `gorm:"constraints:OnDelete:CASCADE;foreignKey:UserID"`
+	User   User                  `gorm:"constraints:OnDelete:CASCADE;foreignKey:UserID"`
+	Kind   ApplicationStatusKind `gorm:"type:string;not null"`
 }
 
 type Company struct {
