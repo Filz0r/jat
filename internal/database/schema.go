@@ -13,10 +13,12 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	Email    string `gorm:"uniqueIndex"`
-	Username string `gorm:"uniqueIndex"`
-	Password string
-	IsAdmin  bool `gorm:"default:false"`
+	Email                      string `gorm:"uniqueIndex"`
+	Username                   string `gorm:"uniqueIndex"`
+	Password                   string
+	IsAdmin                    bool               `gorm:"default:false"`
+	DefaultApplicationStatusID *uint              `gorm:"index"`
+	DefaultApplicationStatus   *ApplicationStatus `gorm:"foreignKey:DefaultApplicationStatusID;references:ID"`
 
 	StatusList      []ApplicationStatus `gorm:"foreignKey:UserID"`
 	JobApplications []JobApplication    `gorm:"foreignKey:UserID"`
