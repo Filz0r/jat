@@ -59,8 +59,8 @@ func (s *Server) loadRoutes() {
 
 	// admin handlers
 	s.mux.Handle("GET /api/admin/users", s.middlewareAdminUser(s.handleGetAllUsers()))
-	s.mux.Handle("GET /api/admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin()))
-	// TODO: add a DELETE method to remove user admin rights
+	s.mux.Handle("GET /api/admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(true)))
+	s.mux.Handle("DELETE /api/admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(false)))
 	// TODO: add a restore company change endpoint for admins
 }
 

@@ -403,7 +403,7 @@ func (s *Server) handleUserUpdate() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleMakeUserAdmin() http.HandlerFunc {
+func (s *Server) handleMakeUserAdmin(give bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		param := r.PathValue("userID")
 		paramUUID, err := uuid.Parse(param)
@@ -413,7 +413,7 @@ func (s *Server) handleMakeUserAdmin() http.HandlerFunc {
 		}
 		_, err = s.services.UpdateUser(database.User{
 			ID:      paramUUID,
-			IsAdmin: true,
+			IsAdmin: give,
 		})
 		if err != nil {
 			s.respondWithError(w, 400, "could not make user admin", err)
