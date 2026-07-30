@@ -40,19 +40,17 @@ type userCreateResponse struct {
 const jwtLifetime = time.Minute * 5              // 5 minutes
 const refreshTokenLifetime = time.Hour * 24 * 60 // 60 days
 
-//TODO: Handlers need proper errors for logging when there's an error
-
 func (s *Server) handleUserCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		user := userCreateRequest{}
 		err := decoder.Decode(&user)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 400, "error parsing json", err)
 			return
 		}
 		if user.Username == "" || user.Password == "" || user.Email == "" {
-			s.respondWithError(w, 401, "invalid payload", nil)
+			s.respondWithError(w, 400, "invalid payload", nil)
 			return
 		}
 		dbUser, err := s.services.CreateUser(database.User{
@@ -87,14 +85,14 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		clientType, ok := clientTypeFromContext(r.Context())
 		if !ok {
-			s.respondWithError(w, 500, "internal server error", nil)
+			s.respondWithError(w, 400, "missing client header", nil)
 			return
 		}
 		decoder := json.NewDecoder(r.Body)
 		user := userLoginRequest{}
 		err := decoder.Decode(&user)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 400, "error parsing json", err)
 			return
 		}
 		dbUser, err := s.services.GetUserByEmail(user.Email)
@@ -104,7 +102,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 		}
 		success, err := auth.CheckPasswordHash(user.Password, dbUser.Password)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "email or password are incorrect", err)
 			return
 		}
 		if !success {
@@ -114,13 +112,13 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 
 		token, err := auth.MakeJWT(dbUser.ID, *s.cfg.SecretJWT, jwtLifetime)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "email or password are incorrect", err)
 			return
 		}
 
 		refreshToken, err := s.services.CreateRefreshToken(dbUser.ID, refreshTokenLifetime)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "email or password are incorrect", err)
 			return
 		}
 
@@ -173,41 +171,35 @@ func (s *Server) handleUserTokenRefresh() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		clientType, ok := clientTypeFromContext(r.Context())
 		if !ok {
-			s.logger.Println("1")
-			s.respondWithError(w, 500, "internal server error", nil)
+			s.respondWithError(w, 401, "no valid token found", nil)
 			return
 		}
 		refreshToken, ok := refreshTokenFromContext(r.Context())
 		if !ok {
-			s.logger.Println("2", refreshToken)
-			s.respondWithError(w, 500, "internal server error", nil)
+			s.respondWithError(w, 401, "no valid token found", nil)
 			return
 		}
 		refreshRecord, err := s.services.GetValidRefreshToken(refreshToken)
 		if err != nil {
-			s.logger.Println("3")
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "no valid token found", err)
 			return
 		}
 		if time.Now().After(refreshRecord.ExpiresAt) {
 			err := s.services.RevokeRefreshToken(refreshToken)
 			if err != nil {
-				s.logger.Println("4")
-				s.respondWithError(w, 500, "internal server error", err)
+				s.respondWithError(w, 401, "no valid token found", err)
 				return
 			}
 			s.respondWithError(w, 401, "refresh token is expired", nil)
 		}
 		err = s.services.UpdateRefreshToken(refreshRecord.Token, time.Now())
 		if err != nil {
-			s.logger.Println("5")
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "no valid token found", err)
 			return
 		}
 		newToken, err := auth.MakeJWT(refreshRecord.UserID, *s.cfg.SecretJWT, jwtLifetime)
 		if err != nil {
-			s.logger.Println("6")
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "no valid token found", err)
 			return
 
 		}
@@ -247,7 +239,7 @@ func (s *Server) handleGetAllUsers() http.HandlerFunc {
 		}
 		users, err := s.services.GetAllUsers()
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 400, "could not fetch users", err)
 			return
 		}
 		for i := range users {
@@ -269,17 +261,17 @@ func (s *Server) handleUserLogout() http.HandlerFunc {
 		}
 		refreshToken, ok := refreshTokenFromContext(r.Context())
 		if !ok {
-			s.respondWithError(w, 500, "internal server error", nil)
+			s.respondWithError(w, 401, "invalid refresh token found", nil)
 			return
 		}
 		_, err := s.services.GetValidRefreshToken(refreshToken)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "invalid refresh token found", err)
 			return
 		}
 		err = s.services.RevokeRefreshToken(refreshToken)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "invalid refresh token found", err)
 			return
 		}
 
@@ -313,12 +305,12 @@ func (s *Server) handleUserRevokeToken() http.HandlerFunc {
 		}
 		refreshRecord, err := s.services.GetValidRefreshToken(refreshToken)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "no token found", err)
 			return
 		}
 		err = s.services.RevokeRefreshToken(refreshRecord.Token)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 401, "no token found", err)
 			return
 		}
 		if clientType == webClient {
@@ -346,7 +338,7 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 		param := r.PathValue("userID")
 		paramUUID, err := uuid.Parse(param)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", nil)
+			s.respondWithError(w, 404, "user not found", nil)
 			return
 		}
 		if paramUUID != userID {
@@ -354,7 +346,7 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 		}
 		user, err := s.services.GetUserByID(paramUUID)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 404, "user not found", err)
 		}
 		response := apiResponse{
 			Ok:      true,
@@ -378,7 +370,7 @@ func (s *Server) handleUserUpdate() http.HandlerFunc {
 		user := userCreateRequest{}
 		err := decoder.Decode(&user)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 400, "invalid body", err)
 			return
 		}
 		userID, ok := userIDFromContext(r.Context())
@@ -394,7 +386,7 @@ func (s *Server) handleUserUpdate() http.HandlerFunc {
 			Password: user.Password,
 		})
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 400, "could not update user", err)
 		}
 		response := apiResponse{
 			Ok:      true,
@@ -414,7 +406,7 @@ func (s *Server) handleMakeUserAdmin() http.HandlerFunc {
 		param := r.PathValue("userID")
 		paramUUID, err := uuid.Parse(param)
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", nil)
+			s.respondWithError(w, 404, "user not found", nil)
 			return
 		}
 		_, err = s.services.UpdateUser(database.User{
@@ -422,7 +414,7 @@ func (s *Server) handleMakeUserAdmin() http.HandlerFunc {
 			IsAdmin: true,
 		})
 		if err != nil {
-			s.respondWithError(w, 500, "internal server error", err)
+			s.respondWithError(w, 400, "could not make user admin", err)
 			return
 		}
 		s.respondWithJSON(w, 200, apiResponse{Ok: true, Message: "user with id: '" + param + "' created"})
