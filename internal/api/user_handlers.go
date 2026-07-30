@@ -64,6 +64,10 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 			s.respondWithError(w, 400, "error creating user", err)
 			return
 		}
+		err = s.services.CreateInitialApplicationStatus(dbUser.ID)
+		if err != nil {
+			s.respondWithError(w, 400, "error creating initial application status", err)
+		}
 		response := userCreateResponse{
 			UserID:    dbUser.ID,
 			Email:     dbUser.Email,
