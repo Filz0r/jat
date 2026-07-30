@@ -45,7 +45,6 @@ func (s *Server) loadRoutes() {
 	s.mux.Handle("POST /api/users", s.handleUserCreate())
 	s.mux.Handle("GET /api/users/{userID}",
 		s.middlewareAuth(s.handleGetSingleUser()))
-
 	s.mux.Handle("PUT /api/users", s.middlewareAuth(s.handleUserUpdate()))
 
 	// Company handlers
@@ -56,12 +55,18 @@ func (s *Server) loadRoutes() {
 	s.mux.Handle("DELETE /api/company/{companyID}", s.middlewareAdminUser(s.handleDeleteACompany()))
 
 	// Application Statuses
+	s.mux.Handle("GET /api/application_statuses", s.middlewareAuth(s.handleGetUserApplicationStatus()))
+	s.mux.Handle("GET /api/application_statuses/{statusID}", s.middlewareAuth(s.handleGetAnApplicationStatus()))
+	s.mux.Handle("PUT /api/application_statuses/{statusID}", s.middlewareAuth(s.handleUpdateApplicationStatus()))
+	s.mux.Handle("DELETE /api/application_statuses", s.middlewareAuth(s.handleDeleteApplicationStatus()))
+	s.mux.Handle("POST /api/application_statuses", s.middlewareAuth(s.handleCreateApplicationStatus()))
 
 	// admin handlers
 	s.mux.Handle("GET /api/admin/users", s.middlewareAdminUser(s.handleGetAllUsers()))
 	s.mux.Handle("GET /api/admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(true)))
 	s.mux.Handle("DELETE /api/admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(false)))
 	// TODO: add a restore company change endpoint for admins
+	// TODO: add admin endpoints to get soft deleted application status and a way to restore them
 }
 
 func New(cfg *config.ConfigFile) (*Server, error) {
