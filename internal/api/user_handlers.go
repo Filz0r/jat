@@ -341,7 +341,9 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 			s.respondWithError(w, 404, "user not found", nil)
 			return
 		}
-		if paramUUID != userID {
+		// only admins can check other users
+		isAdmin := s.services.IsUserAdmin(userID)
+		if paramUUID != userID && !isAdmin {
 			s.respondWithError(w, 403, "forbidden", nil)
 		}
 		user, err := s.services.GetUserByID(paramUUID)
