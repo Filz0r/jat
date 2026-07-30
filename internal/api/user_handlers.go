@@ -134,7 +134,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			http.SetCookie(w, &http.Cookie{
 				Name:     "refresh_token",
 				Value:    refreshToken.Token,
-				Path:     "/api/users/auth",
+				Path:     "/api/auth",
 				HttpOnly: true,
 				Secure:   true,
 				SameSite: http.SameSiteStrictMode,
@@ -283,7 +283,7 @@ func (s *Server) handleUserLogout() http.HandlerFunc {
 			http.SetCookie(w, &http.Cookie{
 				Name:     "refresh_token",
 				Value:    "",
-				Path:     "/api/users/auth",
+				Path:     "/api/auth",
 				MaxAge:   -1,
 				HttpOnly: true,
 				Secure:   true,
@@ -321,7 +321,7 @@ func (s *Server) handleUserRevokeToken() http.HandlerFunc {
 			http.SetCookie(w, &http.Cookie{
 				Name:     "refresh_token",
 				Value:    "",
-				Path:     "/api/users/auth",
+				Path:     "/api/auth",
 				MaxAge:   -1,
 				HttpOnly: true,
 				Secure:   true,

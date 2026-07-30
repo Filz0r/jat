@@ -32,17 +32,20 @@ func (s *Server) loadRoutes() {
 	s.mux.Handle("GET /api/health", s.healthHandler())
 	s.mux.Handle("GET /api/initialized", s.InitializedHandler())
 
+	//auth handlers
+	s.mux.Handle("POST /api/auth/login", s.handleUserLogin())
+	s.mux.Handle("POST /api/auth/logout",
+		s.middlewareAuth(s.middlewareRefreshToken(s.handleUserLogout())))
+	s.mux.Handle("GET /api/auth/refresh_token",
+		s.middlewareRefreshToken(s.handleUserTokenRefresh()))
+	s.mux.Handle("GET /api/auth/revoke_token",
+		s.middlewareRefreshToken(s.handleUserRevokeToken()))
+
 	// user handlers
 	s.mux.Handle("POST /api/users", s.handleUserCreate())
 	s.mux.Handle("GET /api/users/{userID}",
 		s.middlewareAuth(s.handleGetSingleUser()))
-	s.mux.Handle("POST /api/users/auth/login", s.handleUserLogin())
-	s.mux.Handle("POST /api/users/auth/logout",
-		s.middlewareAuth(s.middlewareRefreshToken(s.handleUserLogout())))
-	s.mux.Handle("GET /api/users/auth/refresh_token",
-		s.middlewareRefreshToken(s.handleUserTokenRefresh()))
-	s.mux.Handle("GET /api/users/auth/revoke_token",
-		s.middlewareRefreshToken(s.handleUserRevokeToken()))
+
 	s.mux.Handle("PUT /api/users", s.middlewareAuth(s.handleUserUpdate()))
 
 	// Company handlers
