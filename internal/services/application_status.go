@@ -3,23 +3,51 @@ package services
 import (
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/filz0r/jat/internal/database"
 	"github.com/filz0r/jat/internal/utils"
 	"github.com/google/uuid"
 )
 
+type applicationKindMapping struct {
+	kind database.ApplicationStatusKind
+	name string
+}
+
 func (sm *ServiceManager) CreateInitialApplicationStatus(userID uuid.UUID) error {
-	initialStatuses := []string{
-		"Didn't Apply",
-		"Applied",
-		"Ghosted",
-		"Contacted",
-		"1st Interview",
-		"2nd Interview",
-		"3rd Interview",
-		"Rejected",
-		"Accepted",
+	initialStatuses := []applicationKindMapping{
+		{
+			kind: database.Irrelevant,
+			name: "Didn't Apply",
+		},
+		{
+			kind: database.Applied,
+			name: "Applied",
+		},
+		{
+			kind: database.Ghosted,
+			name: "Ghosted",
+		},
+		{
+			kind: database.Interviewed,
+			name: "Contacted",
+		},
+		{
+			kind: database.Interviewed,
+			name: "1st Interview",
+		},
+		{
+			kind: database.Interviewed,
+			name: "2nd Interview",
+		},
+		{
+			kind: database.Interviewed,
+			name: "3rd Interview",
+		},
+		{
+			kind: database.Accepted,
+		},
 	}
 	if sm.db == nil {
 		return errors.New("database not initialized")
@@ -27,8 +55,9 @@ func (sm *ServiceManager) CreateInitialApplicationStatus(userID uuid.UUID) error
 	data := make([]database.ApplicationStatus, 0, len(initialStatuses))
 	for _, initialStatus := range initialStatuses {
 		temp := database.ApplicationStatus{
-			Status: initialStatus,
+			Status: initialStatus.name,
 			UserID: userID,
+			Kind:   initialStatus.kind,
 		}
 		data = append(data, temp)
 	}
@@ -36,44 +65,30 @@ func (sm *ServiceManager) CreateInitialApplicationStatus(userID uuid.UUID) error
 	return result.Error
 }
 
-func (sm *ServiceManager) CreateApplicationStatus(
-	userID uuid.UUID,
-	applicationStatus database.ApplicationStatus,
-) (database.ApplicationStatus, error) {
+func (sm *ServiceManager) CreateApplicationStatus(applicationStatus database.ApplicationStatus) (database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return database.ApplicationStatus{}, errors.New("database not initialized")
 	}
-	applicationStatus.UserID = userID
 	result := sm.db.Create(&applicationStatus)
 	return applicationStatus, result.Error
 }
 
-func (sm *ServiceManager) UpdateApplicationStatus(
-	userID uuid.UUID,
-	applicationStatus database.ApplicationStatus,
-) (database.ApplicationStatus, error) {
+func (sm *ServiceManager) UpdateApplicationStatus(applicationStatus database.ApplicationStatus) (database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return database.ApplicationStatus{}, errors.New("database not initialized")
 	}
-
-	if applicationStatus.UserID != userID {
-		return database.ApplicationStatus{}, errors.New("your user doesn't own this data")
-	}
-	applicationStatus.UserID = userID
+	applicationStatus.UpdatedAt = time.Now()
 	result := sm.db.Save(&applicationStatus)
 	return applicationStatus, result.Error
 }
 
-func (sm *ServiceManager) GetApplicationStatus(
-	userID uuid.UUID,
-	name string,
-) (database.ApplicationStatus, error) {
+func (sm *ServiceManager) GetApplicationStatus(id uint) (database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return database.ApplicationStatus{}, errors.New("database not initialized")
 	}
 	var applicationStatus database.ApplicationStatus
 	result := sm.db.
-		Where("status = ? and user_id = ?", name, userID).
+		Where("id = ?", id).
 		First(&applicationStatus)
 	return applicationStatus, result.Error
 }
@@ -142,4 +157,16 @@ func (sm *ServiceManager) GetSuggestionForApplicationStatus(
 		suggestionRecord = append(suggestionRecord, temp)
 	}
 	return suggestionRecord, result.Error
+}
+
+func (sm *ServiceManager) GetAllApplicationStatusAdmin() ([]database.ApplicationStatus, error) {
+	if sm.db == nil {
+		return []database.ApplicationStatus{}, errors.New("database not initialized")
+	}
+	var applicationStatus []database.ApplicationStatus
+	data := sm.db.Find(&applicationStatus)
+	if data.Error != nil {
+		return []database.ApplicationStatus{}, data.Error
+	}
+	return applicationStatus, nil
 }
