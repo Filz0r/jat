@@ -77,3 +77,19 @@ func (sm *ServiceManager) GetAllUsers() ([]database.User, error) {
 	result := sm.db.Find(&users)
 	return users, result.Error
 }
+
+func (sm *ServiceManager) SetUserDefaultApplicationStatus(id uuid.UUID, statusID uint) error {
+	if sm.db == nil {
+		return errors.New("database not initialized")
+	}
+	user := database.User{}
+	result := sm.db.Where("id = ?", id).First(&user)
+	if result.Error != nil {
+		return result.Error
+	}
+	result = sm.db.Model(&user).Update("default_application_status_id", statusID)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}

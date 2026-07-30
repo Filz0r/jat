@@ -62,7 +62,12 @@ func (sm *ServiceManager) CreateInitialApplicationStatus(userID uuid.UUID) error
 		data = append(data, temp)
 	}
 	result := sm.db.Create(&data)
-	return result.Error
+	if result.Error != nil {
+		return result.Error
+	}
+	// this is kinda garbage but it should work
+	err := sm.SetUserDefaultApplicationStatus(userID, data[1].ID)
+	return err
 }
 
 func (sm *ServiceManager) CreateApplicationStatus(applicationStatus database.ApplicationStatus) (database.ApplicationStatus, error) {
