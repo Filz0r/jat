@@ -30,15 +30,11 @@ const contextKeyRefreshToken contextKey = "refreshToken"
 const contextUserAdmin contextKey = "userAdmin"
 const contextGetClientType contextKey = "clientType"
 
-type errorResponse struct {
-	Error string `json:"error,omitempty"`
-	Ok    bool   `json:"ok,omitempty"`
-}
-
-type successResponse struct {
+type apiResponse struct {
 	Data    any    `json:"data,omitempty"`
 	Ok      bool   `json:"ok,omitempty"`
-	Message string `json:"message"`
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
 
 func userIDFromContext(ctx context.Context) (uuid.UUID, bool) {
@@ -69,13 +65,13 @@ func (s *Server) respondWithError(w http.ResponseWriter, code int, msg string, e
 		s.logger.Printf("Responding with 5XX error: %s", msg)
 	}
 
-	s.respondWithJSON(w, code, errorResponse{
+	s.respondWithJSON(w, code, apiResponse{
 		Error: msg,
 		Ok:    false,
 	})
 }
 
-func (s *Server) respondWithJSON(w http.ResponseWriter, code int, payload any) {
+func (s *Server) respondWithJSON(w http.ResponseWriter, code int, payload apiResponse) {
 	w.Header().Set("Content-Type", "application/json")
 	dat, err := json.Marshal(payload)
 	if err != nil {

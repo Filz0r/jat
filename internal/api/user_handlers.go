@@ -71,7 +71,11 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 			UpdatedAt: dbUser.UpdatedAt,
 			Username:  dbUser.Username,
 		}
-		s.respondWithJSON(w, 201, response)
+		s.respondWithJSON(w, 201, apiResponse{
+			Ok:      true,
+			Data:    response,
+			Message: "user created",
+		})
 	}
 }
 
@@ -136,7 +140,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 				SameSite: http.SameSiteStrictMode,
 				MaxAge:   int(refreshTokenLifetime / time.Second),
 			})
-			response := successResponse{
+			response := apiResponse{
 				Data: loginResponse{
 					UserID: dbUser.ID.String(),
 					Email:  dbUser.Email,
@@ -148,7 +152,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			return
 		}
 
-		response := successResponse{
+		response := apiResponse{
 			Data: loginResponse{
 				Token:        token,
 				RefreshToken: refreshToken.Token,
@@ -203,7 +207,7 @@ func (s *Server) handleUserTokenRefresh() http.HandlerFunc {
 			return
 
 		}
-		res := successResponse{
+		res := apiResponse{
 			Ok:      true,
 			Message: "access token updated",
 		}
@@ -245,7 +249,10 @@ func (s *Server) handleGetAllUsers() http.HandlerFunc {
 		for i := range users {
 			users[i].Password = ""
 		}
-		s.respondWithJSON(w, 200, users)
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:   true,
+			Data: users,
+		})
 
 	}
 }
@@ -284,7 +291,7 @@ func (s *Server) handleUserLogout() http.HandlerFunc {
 			})
 		}
 
-		s.respondWithJSON(w, 200, successResponse{Ok: true, Message: "refresh token revoked"})
+		s.respondWithJSON(w, 200, apiResponse{Ok: true, Message: "refresh token revoked"})
 	}
 }
 
@@ -321,7 +328,7 @@ func (s *Server) handleUserRevokeToken() http.HandlerFunc {
 				SameSite: http.SameSiteStrictMode,
 			})
 		}
-		s.respondWithJSON(w, 200, successResponse{Ok: true, Message: "refresh token revoked"})
+		s.respondWithJSON(w, 200, apiResponse{Ok: true, Message: "refresh token revoked"})
 	}
 }
 
@@ -345,7 +352,7 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 		if err != nil {
 			s.respondWithError(w, 500, "internal server error", err)
 		}
-		response := successResponse{
+		response := apiResponse{
 			Ok:      true,
 			Message: "user found",
 			Data: userCreateResponse{
@@ -385,7 +392,7 @@ func (s *Server) handleUserUpdate() http.HandlerFunc {
 		if err != nil {
 			s.respondWithError(w, 500, "internal server error", err)
 		}
-		response := successResponse{
+		response := apiResponse{
 			Ok:      true,
 			Message: "user updated",
 			Data: userCreateResponse{
@@ -414,6 +421,6 @@ func (s *Server) handleMakeUserAdmin() http.HandlerFunc {
 			s.respondWithError(w, 500, "internal server error", err)
 			return
 		}
-		s.respondWithJSON(w, 200, successResponse{Ok: true, Message: "user with id: '" + param + "' created"})
+		s.respondWithJSON(w, 200, apiResponse{Ok: true, Message: "user with id: '" + param + "' created"})
 	}
 }

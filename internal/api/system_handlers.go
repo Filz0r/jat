@@ -2,9 +2,6 @@ package api
 
 import "net/http"
 
-type healthResponse struct {
-}
-
 type systemResponse struct {
 	Status      string `json:"status,omitempty"`
 	Initialized bool   `json:"initialized,omitempty"`
@@ -16,8 +13,9 @@ func (s *Server) healthHandler() http.Handler {
 			s.respondWithError(w, 500, "db not initialized", nil)
 			return
 		}
-		s.respondWithJSON(w, 200, systemResponse{
-			Status: "server is up and running",
+		s.respondWithJSON(w, 200, apiResponse{
+			Message: "server is up and running",
+			Ok:      true,
 		})
 	})
 }
@@ -25,8 +23,9 @@ func (s *Server) healthHandler() http.Handler {
 func (s *Server) InitializedHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		initialized := s.cfg.IsInitialized()
-		s.respondWithJSON(w, 200, systemResponse{
-			Initialized: initialized,
+		s.respondWithJSON(w, 200, apiResponse{
+			Data: systemResponse{Initialized: initialized},
+			Ok:   true,
 		})
 	})
 }

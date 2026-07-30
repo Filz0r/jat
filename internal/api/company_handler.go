@@ -61,7 +61,7 @@ func (s *Server) handleCreateCompany() http.HandlerFunc {
 		if company.Website != nil {
 			response.Website = *company.Website
 		}
-		s.respondWithJSON(w, 201, successResponse{
+		s.respondWithJSON(w, 201, apiResponse{
 			Ok:      true,
 			Data:    response,
 			Message: "company created",
@@ -91,7 +91,7 @@ func (s *Server) handleGetAllCompanies() http.HandlerFunc {
 			response = append(response, temp)
 		}
 
-		s.respondWithJSON(w, 200, successResponse{
+		s.respondWithJSON(w, 200, apiResponse{
 			Ok:   true,
 			Data: response,
 		})
@@ -141,7 +141,7 @@ func (s *Server) handleUpdateACompany() http.HandlerFunc {
 		if company.Website != nil {
 			response.Website = *company.Website
 		}
-		s.respondWithJSON(w, 200, successResponse{
+		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Data:    response,
 			Message: "company updated",
@@ -171,7 +171,7 @@ func (s *Server) handleGetACompany() http.HandlerFunc {
 		if data.Website != nil {
 			response.Website = *data.Website
 		}
-		s.respondWithJSON(w, 200, successResponse{
+		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Data:    response,
 			Message: "company found",
@@ -196,7 +196,7 @@ func (s *Server) handleDeleteACompany() http.HandlerFunc {
 			s.respondWithError(w, 404, "company not found", err)
 		}
 
-		s.respondWithJSON(w, 200, successResponse{
+		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Message: "company deleted",
 		})
