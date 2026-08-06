@@ -14,10 +14,16 @@ func (s *Server) Start() error {
 		Handler: s.middlewareLogRequest(s.middlewareClientType(s.mux)),
 	}
 	s.loadRoutes()
-	s.cfg = config.New()
-	err := s.cfg.LoadFromEnv()
+	initialConfigsExist, err := s.services.InitialConfigsExist()
 	if err != nil {
-		return err
+		s.logger.Fatal(err)
+	}
+	if !initialConfigsExist {
+		s.logger.Println("initial configs not exist, creating them...")
+		err := s.services.CreateInitialConfigs()
+		if err != nil {
+			s.logger.Fatal(err)
+		}
 	}
 	s.logger.Printf("API server started on port %s", s.port)
 	err = s.server.ListenAndServe()
@@ -28,6 +34,12 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) loadRoutes() {
+	if !s.services.IsInitialized() {
+		err := s.services.CreateInitialConfigs()
+		if err != nil {
+			s.logger.Fatal(err)
+		}
+	}
 	// system handlers
 	s.mux.Handle("GET /api/health", s.healthHandler())
 	s.mux.Handle("GET /api/initialized", s.InitializedHandler())
@@ -40,6 +52,7 @@ func (s *Server) loadRoutes() {
 		s.middlewareRefreshToken(s.handleUserTokenRefresh()))
 	s.mux.Handle("GET /api/auth/revoke_token",
 		s.middlewareRefreshToken(s.handleUserRevokeToken()))
+	// TODO: add a method to fetch the current sessions
 
 	// user handlers
 	s.mux.Handle("POST /api/users", s.handleUserCreate())
@@ -54,12 +67,32 @@ func (s *Server) loadRoutes() {
 	s.mux.Handle("PUT /api/company/{companyID}", s.middlewareAuth(s.handleUpdateACompany()))
 	s.mux.Handle("DELETE /api/company/{companyID}", s.middlewareAdminUser(s.handleDeleteACompany()))
 
-	// Application Statuses
+	// Application Statuses Handlers
 	s.mux.Handle("GET /api/application_statuses", s.middlewareAuth(s.handleGetUserApplicationStatus()))
 	s.mux.Handle("GET /api/application_statuses/{statusID}", s.middlewareAuth(s.handleGetAnApplicationStatus()))
 	s.mux.Handle("PUT /api/application_statuses/{statusID}", s.middlewareAuth(s.handleUpdateApplicationStatus()))
-	s.mux.Handle("DELETE /api/application_statuses", s.middlewareAuth(s.handleDeleteApplicationStatus()))
+	s.mux.Handle("DELETE /api/application_statuses/{statusID}", s.middlewareAuth(s.handleDeleteApplicationStatus()))
 	s.mux.Handle("POST /api/application_statuses", s.middlewareAuth(s.handleCreateApplicationStatus()))
+
+	// Job applications Handlers
+	s.mux.Handle("GET /api/jobs",
+		s.middlewareAuth(s.handleGetUserJobApplications()))
+	s.mux.Handle("POST /api/jobs",
+		s.middlewareAuth(s.handleCreateJobApplication()))
+	s.mux.Handle("GET /api/jobs/{jobID}",
+		s.middlewareAuth(s.handleGetJobApplication()))
+	s.mux.Handle("PUT /api/jobs/{jobID}/status/{statusID}",
+		s.middlewareAuth(s.handleUpdateJobApplicationStatus()))
+	s.mux.Handle("DELETE /api/jobs/{jobID}",
+		s.middlewareAuth(s.handleDeleteJobApplication()))
+
+	// Job Application Notes Handlers
+	// Same base path as jobs because all notes belong to a single job
+	s.mux.Handle("GET /api/jobs/{jobID}/notes", s.middlewareAuth(s.handleGetJobNotes()))
+	s.mux.Handle("POST /api/jobs/{jobID}/notes", s.middlewareAuth(s.handleCreateJobNote()))
+	s.mux.Handle("GET /api/jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleGetJobNote()))
+	s.mux.Handle("PUT /api/jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleUpdateJobNote()))
+	s.mux.Handle("DELETE /api/jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleDeleteJobNote()))
 
 	// admin handlers
 	s.mux.Handle("GET /api/admin/users", s.middlewareAdminUser(s.handleGetAllUsers()))
@@ -67,6 +100,9 @@ func (s *Server) loadRoutes() {
 	s.mux.Handle("DELETE /api/admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(false)))
 	// TODO: add a restore company change endpoint for admins
 	// TODO: add admin endpoints to get soft deleted application status and a way to restore them
+	// TODO: add admin endpoints to get soft deleted Job application and a way to restore them
+	// TODO: add admin endpoints to get soft deleted Job application Notes and a way to restore them
+	// TODO: add admin endpoint to get server configs (VIEW ONLY)
 }
 
 func New(cfg *config.ConfigFile) (*Server, error) {
