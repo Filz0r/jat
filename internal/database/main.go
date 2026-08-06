@@ -39,6 +39,7 @@ func ConnectDb(uri string, server bool) (*gorm.DB, error) {
 		&RefreshToken{},
 		&ApplicationNote{},
 		&StatusHistory{},
+		&Config{},
 	)
 	if err != nil {
 		return nil, err
