@@ -2,38 +2,80 @@ package services
 
 import (
 	"errors"
+	"time"
 
 	"github.com/filz0r/jat/internal/auth"
 	"github.com/filz0r/jat/internal/database"
 	"github.com/google/uuid"
 )
 
-func (sm *ServiceManager) CreateUser(user database.User) (database.User, error) {
+func (sm *ServiceManager) CreateUser(
+	username,
+	email,
+	password string,
+) (database.User, error) {
 	if sm.db == nil {
 		return database.User{}, errors.New("database not initialized")
 	}
-	password, err := auth.HashPassword(user.Password)
+
+	user := database.User{
+		Username:  username,
+		Email:     email,
+		Password:  password,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	hashedPW, err := auth.HashPassword(user.Password)
 
 	if err != nil {
 		return database.User{}, err
 	}
 
-	user.Password = password
+	user.Password = hashedPW
 
 	result := sm.db.Create(&user)
-	return user, result.Error
+	if result.Error != nil {
+		return database.User{}, result.Error
+	}
+	return user, nil
 }
 
-func (sm *ServiceManager) UpdateUser(user database.User) (database.User, error) {
+func (sm *ServiceManager) UpdateUser(
+	userID uuid.UUID,
+	username,
+	password,
+	email string,
+) (database.User, error) {
 	if sm.db == nil {
 		return database.User{}, errors.New("database not initialized")
 	}
-	if user.Password != "" {
-		password, err := auth.HashPassword(user.Password)
+
+	user, err := sm.GetUserByID(userID)
+	if err != nil {
+		return database.User{}, err
+	}
+
+	if username != "" {
+		user.Username = username
+	}
+
+	if password != "" {
+		same, err := auth.CheckPasswordHash(password, user.Password)
 		if err != nil {
 			return database.User{}, err
 		}
-		user.Password = password
+		if same {
+			return database.User{}, errors.New("passwords are the same")
+		}
+		hashedPW, err := auth.HashPassword(password)
+		if err != nil {
+			return database.User{}, err
+		}
+		user.Password = hashedPW
+	}
+	if email != "" {
+		user.Email = email
 	}
 	result := sm.db.Save(&user)
 	return user, result.Error
@@ -88,6 +130,31 @@ func (sm *ServiceManager) SetUserDefaultApplicationStatus(id uuid.UUID, statusID
 		return result.Error
 	}
 	result = sm.db.Model(&user).Update("default_application_status_id", statusID)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (sm *ServiceManager) ChangeUserAdminStatus(userID uuid.UUID, give bool) error {
+	if sm.db == nil {
+		return errors.New("database not initialized")
+	}
+	user, err := sm.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+	if user.IsAdmin == give {
+		msg := "this user already "
+		if !give {
+			msg += "isn't an admin"
+		} else {
+			msg += "is an admin"
+		}
+		return errors.New(msg)
+	}
+	user.IsAdmin = give
+	result := sm.db.Save(&user)
 	if result.Error != nil {
 		return result.Error
 	}

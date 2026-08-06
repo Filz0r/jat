@@ -2,42 +2,59 @@ package services
 
 import (
 	"errors"
+	"time"
 
 	"github.com/filz0r/jat/internal/database"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-// TODO: needs cleanup from AI SLOP
-
-// recordStatusChange appends one entry to an application's history. It is
-// always called inside the transaction of the operation that changed the
-// status, so a failed history write rolls the change back too.
-func recordStatusChange(tx *gorm.DB, applicationID, statusID uint) error {
+func (sm *ServiceManager) CreateApplicationStatusChange(
+	tx *gorm.DB,
+	applicationID, newStatusID uint,
+	oldStatusID *uint,
+) error {
+	if tx == nil {
+		return errors.New("tx is nil")
+	}
 	entry := database.StatusHistory{
 		ApplicationID: applicationID,
-		StatusID:      statusID,
+		NewStatusID:   newStatusID,
+		OldStatusID:   oldStatusID,
+		CreatedAt:     time.Now(),
 	}
-	return tx.Create(&entry).Error
+	result := tx.Create(&entry)
+	if result.Error != nil {
+		return result.Error
+	} else if result.RowsAffected == 0 {
+		return errors.New("status not found")
+	}
+	return nil
 }
 
-// GetStatusHistory returns an application's status changes, oldest first,
-// scoped to the owning user.
-func (sm *ServiceManager) GetStatusHistory(
+func (sm *ServiceManager) GetJobApplicationStatusChanges(
 	userID uuid.UUID,
-	applicationID uint,
+	jobID uint,
 ) ([]database.StatusHistory, error) {
 	if sm.db == nil {
-		return []database.StatusHistory{}, errors.New("database not initialized")
+		return nil, errors.New("database is not initialized")
 	}
-	if err := sm.ownsApplication(userID, applicationID); err != nil {
-		return []database.StatusHistory{}, err
-	}
-	var history []database.StatusHistory
+
+	var data []database.StatusHistory
 	result := sm.db.
-		Where("application_id = ?", applicationID).
-		Preload("Status").
-		Order("created_at ASC").
-		Find(&history)
-	return history, result.Error
+		Preload("OldStatus").
+		Preload("NewStatus").
+		Find(&data, "application_id = ?", jobID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	for _, entry := range data {
+		if !sm.DoesUserOwnJobApplication(entry.ApplicationID, userID) && !sm.IsUserAdmin(userID) {
+			return nil, errors.New("user is not own job application")
+		}
+	}
+
+	return data, nil
+
 }

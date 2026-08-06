@@ -3,7 +3,6 @@ package services
 import (
 	"errors"
 	"strconv"
-	"time"
 
 	"github.com/filz0r/jat/internal/database"
 	"github.com/filz0r/jat/internal/utils"
@@ -46,6 +45,7 @@ func (sm *ServiceManager) CreateInitialApplicationStatus(userID uuid.UUID) error
 			name: "3rd Interview",
 		},
 		{
+			name: "Accepted",
 			kind: database.Accepted,
 		},
 	}
@@ -70,32 +70,90 @@ func (sm *ServiceManager) CreateInitialApplicationStatus(userID uuid.UUID) error
 	return err
 }
 
-func (sm *ServiceManager) CreateApplicationStatus(applicationStatus database.ApplicationStatus) (database.ApplicationStatus, error) {
+func (sm *ServiceManager) CreateApplicationStatus(
+	userID uuid.UUID,
+	status string,
+	kind database.ApplicationStatusKind,
+) (database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return database.ApplicationStatus{}, errors.New("database not initialized")
+	}
+	applicationStatus := database.ApplicationStatus{
+		Status: status,
+		UserID: userID,
+		Kind:   kind,
 	}
 	result := sm.db.Create(&applicationStatus)
-	return applicationStatus, result.Error
+
+	if result.Error != nil {
+		return database.ApplicationStatus{}, result.Error
+	}
+
+	return applicationStatus, nil
 }
 
-func (sm *ServiceManager) UpdateApplicationStatus(applicationStatus database.ApplicationStatus) (database.ApplicationStatus, error) {
+func (sm *ServiceManager) UpdateApplicationStatus(
+	userID uuid.UUID,
+	statusID uint,
+	status,
+	kind string,
+) (database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return database.ApplicationStatus{}, errors.New("database not initialized")
 	}
-	applicationStatus.UpdatedAt = time.Now()
+
+	applicationStatus, err := sm.GetApplicationStatus(statusID)
+	if err != nil {
+		return database.ApplicationStatus{}, err
+	}
+
+	if !sm.IsUserAdmin(userID) && applicationStatus.UserID != userID {
+		return database.ApplicationStatus{}, errors.New("you are not allowed to make changes to this application status")
+	}
+
+	convKind := database.ApplicationStatusKind(kind)
+	if !convKind.Valid() {
+		return database.ApplicationStatus{}, errors.New("invalid application kind")
+	}
+
+	if status == "" {
+		return database.ApplicationStatus{}, errors.New("application status is empty")
+	}
+
+	if applicationStatus.Status != status {
+		applicationStatus.Status = status
+	}
+
+	if applicationStatus.Kind != convKind {
+		applicationStatus.Kind = convKind
+	}
+
 	result := sm.db.Save(&applicationStatus)
-	return applicationStatus, result.Error
+
+	if result.Error != nil {
+		return database.ApplicationStatus{}, result.Error
+	} else if result.RowsAffected == 0 {
+		return database.ApplicationStatus{}, errors.New("no rows were affected")
+	}
+
+	return applicationStatus, nil
 }
 
 func (sm *ServiceManager) GetApplicationStatus(id uint) (database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return database.ApplicationStatus{}, errors.New("database not initialized")
 	}
+
 	var applicationStatus database.ApplicationStatus
 	result := sm.db.
 		Where("id = ?", id).
 		First(&applicationStatus)
-	return applicationStatus, result.Error
+
+	if result.Error != nil {
+		return database.ApplicationStatus{}, result.Error
+	}
+
+	return applicationStatus, nil
 }
 
 func (sm *ServiceManager) FindApplicationStatusByName(
@@ -106,10 +164,15 @@ func (sm *ServiceManager) FindApplicationStatusByName(
 		return database.ApplicationStatus{}, errors.New("database not initialized")
 	}
 	var applicationStatus database.ApplicationStatus
+
 	result := sm.db.
 		Where("lower(status) = lower(?) and user_id = ?", name, userID).
 		First(&applicationStatus)
-	return applicationStatus, result.Error
+	if result.Error != nil {
+		return database.ApplicationStatus{}, result.Error
+	}
+
+	return applicationStatus, nil
 }
 
 func (sm *ServiceManager) GetAllApplicationStatus(
@@ -122,19 +185,24 @@ func (sm *ServiceManager) GetAllApplicationStatus(
 	result := sm.db.
 		Where("user_id = ?", userID).
 		Find(&applicationStatus)
-	return applicationStatus, result.Error
+
+	if result.Error != nil {
+		return []database.ApplicationStatus{}, result.Error
+	}
+
+	return applicationStatus, nil
 }
 
 func (sm *ServiceManager) DeleteApplicationStatus(
 	userID uuid.UUID,
-	name string,
+	statusID uint,
 ) error {
 	if sm.db == nil {
 		return errors.New("database not initialized")
 	}
 	var applicationStatus database.ApplicationStatus
 	result := sm.db.
-		Delete(&applicationStatus, "status = ? and user_id = ?", name, userID)
+		Delete(&applicationStatus, "id = ? and user_id = ?", statusID, userID)
 	return result.Error
 }
 
@@ -174,4 +242,23 @@ func (sm *ServiceManager) GetAllApplicationStatusAdmin() ([]database.Application
 		return []database.ApplicationStatus{}, data.Error
 	}
 	return applicationStatus, nil
+}
+
+func (sm *ServiceManager) DoesUserOwnApplicationStatus(
+	userID uuid.UUID,
+	statusID uint,
+) bool {
+	if sm.db == nil {
+		return false
+	}
+	status := database.ApplicationStatus{}
+	if sm.IsUserAdmin(userID) {
+		return true
+	}
+	result := sm.db.First(&status, "id = ? and user_id = ?", statusID, userID)
+	if result.Error != nil {
+		return false
+	}
+	return true
+
 }

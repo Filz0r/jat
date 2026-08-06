@@ -6,36 +6,39 @@ import (
 	"gorm.io/gorm"
 )
 
-func companyChanged(current, updated database.Company) bool {
-	if current.Name != updated.Name {
-		return true
-	}
+func websiteEqual(a, b *string) bool {
 	switch {
-	case current.Website == nil && updated.Website == nil:
-		return false
-	case current.Website == nil || updated.Website == nil:
+	case a == nil && b == nil:
 		return true
+	case a == nil || b == nil:
+		return false
 	default:
-		return *current.Website != *updated.Website
+		return *a == *b
 	}
 }
 
 func recordCompanyChange(
 	tx *gorm.DB,
-	current, updated database.Company,
+	companyID uint,
+	oldName, newName string,
+	oldURL, newURL *string,
 	changedBy uuid.UUID,
 ) error {
-	if !companyChanged(current, updated) {
+	if oldName == newName && websiteEqual(oldURL, newURL) {
 		return nil
 	}
 
 	entry := database.CompanyChangeHistory{
-		CompanyID:       current.ID,
+		CompanyID:       companyID,
 		ChangedBy:       changedBy,
-		OldNameValue:    &current.Name,
-		NewNameValue:    &updated.Name,
-		OldWebsiteValue: current.Website,
-		NewWebsiteValue: updated.Website,
+		OldNameValue:    &oldName,
+		NewNameValue:    &newName,
+		OldWebsiteValue: oldURL,
+		NewWebsiteValue: newURL,
 	}
-	return tx.Create(&entry).Error
+	res := tx.Create(&entry)
+	if res.Error != nil {
+		return res.Error
+	}
+	return nil
 }

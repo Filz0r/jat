@@ -8,197 +8,157 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO: needs cleanup from AI SLOP
-
-// DefaultApplicationStatus is the status every new job application starts
-// with. It is part of the seeded set created per user, so the lookup is
-// scoped to the owner. The UI uses it to pre-select the status picker too.
-const DefaultApplicationStatus = "Applied"
-
-// resolveCompany returns the company matching name (case-insensitive),
-// creating it when none exists. Companies are global records shared by every
-// user, so a mismatch in casing must never produce a duplicate row.
-func (sm *ServiceManager) resolveCompany(name string) (database.Company, error) {
-	company, err := sm.FindCompanyByName(name)
-	if err == nil {
-		return company, nil
-	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return database.Company{}, err
-	}
-	company = database.Company{Name: name}
-	if err := sm.db.Create(&company).Error; err != nil {
-		return database.Company{}, err
-	}
-	return company, nil
-}
-
-// ownsApplication guards every per-user operation on a job application: the
-// record must exist and belong to the caller.
-func (sm *ServiceManager) ownsApplication(userID uuid.UUID, applicationID uint) error {
-	var count int64
-	result := sm.db.Model(&database.JobApplication{}).
-		Where("id = ? AND user_id = ?", applicationID, userID).
-		Count(&count)
-	if result.Error != nil {
-		return result.Error
-	}
-	if count == 0 {
-		return errors.New("job application not found")
-	}
-	return nil
-}
-
-// CreateJobApplication creates the application, links its company (resolving
-// or creating it) and writes the initial status-history entry, all in one
-// transaction. When statusID is nil the user's default status applies.
-func (sm *ServiceManager) CreateJobApplication(
-	userID uuid.UUID,
-	title, url, companyName string,
-	statusID *uint,
-) (database.JobApplication, error) {
+func (sm *ServiceManager) GetUserJobApplications(userID uuid.UUID) ([]database.JobApplication, error) {
 	if sm.db == nil {
-		return database.JobApplication{}, errors.New("database not initialized")
+		return nil, errors.New("database not initialized")
 	}
 
-	resolvedStatusID := statusID
-	if resolvedStatusID == nil {
-		status, err := sm.FindApplicationStatusByName(userID, DefaultApplicationStatus)
-		if err != nil {
-			return database.JobApplication{}, err
-		}
-		resolvedStatusID = &status.ID
-	}
-
-	var app database.JobApplication
-	err := sm.db.Transaction(func(tx *gorm.DB) error {
-		company, err := sm.resolveCompany(companyName)
-		if err != nil {
-			return err
-		}
-		app = database.JobApplication{
-			Title:    title,
-			Url:      url,
-			UserID:   userID,
-			StatusID: *resolvedStatusID,
-		}
-		if err := tx.Create(&app).Error; err != nil {
-			return err
-		}
-		if err := tx.Model(&app).Association("Companies").Append(&company); err != nil {
-			return err
-		}
-		return recordStatusChange(tx, app.ID, *resolvedStatusID)
-	})
-	if err != nil {
-		return database.JobApplication{}, err
-	}
-	return sm.GetJobApplication(userID, app.ID)
-}
-
-// GetJobApplication loads one application with its status and companies,
-// scoped to the owner.
-func (sm *ServiceManager) GetJobApplication(
-	userID uuid.UUID,
-	applicationID uint,
-) (database.JobApplication, error) {
-	if sm.db == nil {
-		return database.JobApplication{}, errors.New("database not initialized")
-	}
-	if err := sm.ownsApplication(userID, applicationID); err != nil {
-		return database.JobApplication{}, err
-	}
-	var app database.JobApplication
-	result := sm.db.
-		Preload("Status").
-		Preload("Companies").
-		First(&app, applicationID)
-	return app, result.Error
-}
-
-// GetJobApplications lists every application owned by userID, newest first.
-func (sm *ServiceManager) GetJobApplications(
-	userID uuid.UUID,
-) ([]database.JobApplication, error) {
-	if sm.db == nil {
-		return []database.JobApplication{}, errors.New("database not initialized")
-	}
 	var applications []database.JobApplication
+
 	result := sm.db.
 		Where("user_id = ?", userID).
 		Preload("Status").
-		Preload("Companies").
-		Order("created_at DESC").
+		Preload("Company").
+		Order("created_at desc").
 		Find(&applications)
-	return applications, result.Error
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return applications, nil
 }
 
-// UpdateJobApplication saves the editable fields, re-links the company and,
-// when the status changed, appends a status-history entry — all atomically.
-func (sm *ServiceManager) UpdateJobApplication(
+func (sm *ServiceManager) CreateUserJobApplication(
 	userID uuid.UUID,
-	applicationID uint,
-	title, url, companyName string,
-	statusID uint,
+	statusID, companyID uint,
+	title, url string,
 ) (database.JobApplication, error) {
 	if sm.db == nil {
 		return database.JobApplication{}, errors.New("database not initialized")
 	}
 
-	var app database.JobApplication
+	if !sm.DoesUserOwnApplicationStatus(userID, statusID) {
+		return database.JobApplication{}, errors.New("user does not own job application status")
+	}
+
+	if !sm.DoesCompanyExist(companyID) {
+		return database.JobApplication{}, errors.New("company does not exist")
+	}
+	var application database.JobApplication
 	err := sm.db.Transaction(func(tx *gorm.DB) error {
-		result := tx.Where("id = ? AND user_id = ?", applicationID, userID).First(&app)
-		if result.Error != nil {
-			return result.Error
+		application = database.JobApplication{
+			CompanyID: companyID,
+			StatusID:  statusID,
+			Title:     title,
+			Url:       url,
+			UserID:    userID,
 		}
-
-		app.Title = title
-		app.Url = url
-		statusChanged := app.StatusID != statusID
-		app.StatusID = statusID
-		// Save a copy with the associations stripped so GORM does not upsert
-		// them; the company link is changed explicitly further down.
-		record := app
-		record.Status = database.ApplicationStatus{}
-		record.Companies = nil
-		if err := tx.Save(&record).Error; err != nil {
+		if err := tx.Create(&application).Error; err != nil {
 			return err
 		}
 
-		company, err := sm.resolveCompany(companyName)
-		if err != nil {
+		if err := sm.CreateApplicationStatusChange(
+			tx,
+			application.ID,
+			statusID,
+			nil,
+		); err != nil {
 			return err
-		}
-		// An application carries exactly one company in this UI; Clear +
-		// Append is deterministic (unlike Replace, which diffs against the
-		// in-memory association field that was never preloaded here).
-		if err := tx.Model(&app).Association("Companies").Clear(); err != nil {
-			return err
-		}
-		if err := tx.Model(&app).Association("Companies").Append(&company); err != nil {
-			return err
-		}
-		if statusChanged {
-			if err := recordStatusChange(tx, app.ID, statusID); err != nil {
-				return err
-			}
 		}
 		return nil
 	})
 	if err != nil {
 		return database.JobApplication{}, err
 	}
-	return sm.GetJobApplication(userID, app.ID)
+
+	res := sm.db.
+		Where("id = ? and user_id = ?", application.ID, application.UserID).
+		Preload("Status").
+		Preload("Company").
+		First(&application)
+	if res.Error != nil {
+		return database.JobApplication{}, res.Error
+	}
+	return application, nil
 }
 
-// DeleteJobApplication removes an application owned by userID.
-func (sm *ServiceManager) DeleteJobApplication(userID uuid.UUID, applicationID uint) error {
+func (sm *ServiceManager) GetJobApplicationById(id uint) (database.JobApplication, error) {
+	if sm.db == nil {
+		return database.JobApplication{}, errors.New("database not initialized")
+	}
+	application := database.JobApplication{}
+	result := sm.db.Where("id = ?", id).
+		Preload("Status").
+		Preload("Company").
+		First(&application)
+	if result.Error != nil {
+		return database.JobApplication{}, result.Error
+	}
+	return application, nil
+}
+
+func (sm *ServiceManager) UpdateJobApplicationStatus(
+	userID uuid.UUID,
+	applicationID,
+	newStatusID uint,
+) (database.JobApplication, error) {
+	if sm.db == nil {
+		return database.JobApplication{}, errors.New("database not initialized")
+	}
+	application, err := sm.GetJobApplicationById(applicationID)
+	if err != nil {
+		return database.JobApplication{}, err
+	}
+	// Admins can't change statuses lol
+	if !sm.DoesUserOwnJobApplication(applicationID, userID) {
+		return database.JobApplication{}, errors.New("user does not own job application")
+	}
+	err = sm.db.Transaction(func(tx *gorm.DB) error {
+		oldStatus := application.StatusID
+		application.StatusID = newStatusID
+		if err := tx.Save(&application).Error; err != nil {
+			return err
+		}
+		err := sm.CreateApplicationStatusChange(tx, application.ID, newStatusID, &oldStatus)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return database.JobApplication{}, err
+	}
+	return application, nil
+}
+
+func (sm *ServiceManager) DeleteJobApplication(applicationID uint, userID uuid.UUID) error {
 	if sm.db == nil {
 		return errors.New("database not initialized")
 	}
-	if err := sm.ownsApplication(userID, applicationID); err != nil {
-		return err
+	if !sm.DoesUserOwnJobApplication(applicationID, userID) && !sm.IsUserAdmin(userID) {
+		return errors.New("user does not own job application")
 	}
-	result := sm.db.Delete(&database.JobApplication{}, applicationID)
-	return result.Error
+	res := sm.db.
+		Delete(&database.JobApplication{},
+			"id = ?",
+			applicationID,
+		)
+	if res.Error != nil {
+		return res.Error
+	} else if res.RowsAffected == 0 {
+		return errors.New("job application does not exist")
+	}
+	return nil
+}
+
+func (sm *ServiceManager) DoesUserOwnJobApplication(jobID uint, userID uuid.UUID) bool {
+	if sm.db == nil {
+		return false
+	}
+	jobApplication, err := sm.GetJobApplicationById(jobID)
+	if err != nil {
+		return false
+	}
+	return jobApplication.UserID == userID
 }
