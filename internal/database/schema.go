@@ -18,10 +18,11 @@ type User struct {
 	Password                   string
 	IsAdmin                    bool               `gorm:"default:false"`
 	DefaultApplicationStatusID *uint              `gorm:"index"`
-	DefaultApplicationStatus   *ApplicationStatus `gorm:"foreignKey:DefaultApplicationStatusID;references:ID"`
+	DefaultApplicationStatus   *ApplicationStatus `gorm:"-:migrate"`
 
-	StatusList      []ApplicationStatus `gorm:"foreignKey:UserID"`
-	JobApplications []JobApplication    `gorm:"foreignKey:UserID"`
+	StatusList          []ApplicationStatus `gorm:"foreignKey:UserID"`
+	JobApplications     []JobApplication    `gorm:"foreignKey:UserID"`
+	JobApplicationNotes []ApplicationNote   `gorm:"foreignKey:UserID"`
 }
 
 type ApplicationStatus struct {
@@ -43,7 +44,7 @@ type Company struct {
 	EditedBy     uuid.UUID `gorm:"type:uuid;not null;index"`
 	EditedByUser User      `gorm:"foreignKey:EditedBy"`
 
-	JobApplications []JobApplication `gorm:"constraints:OnDelete:CASCADE;many2many:company_application;joinForeignKey:company_id;joinReferences:application_id"`
+	JobApplications []JobApplication `gorm:"constraints:OnDelete:CASCADE;foreignKey:CompanyID"`
 }
 
 type JobApplication struct {
@@ -56,7 +57,8 @@ type JobApplication struct {
 	StatusID uint
 	Status   ApplicationStatus `gorm:"foreignKey:StatusID"`
 
-	Companies []Company `gorm:"constraints:OnDelete:CASCADE;many2many:company_application;joinForeignKey:application_id;joinReferences:company_id"`
+	CompanyID uint    `gorm:"not null,index"`
+	Company   Company `gorm:"foreignKey:CompanyID;references:ID"`
 }
 
 type RefreshToken struct {
@@ -76,19 +78,22 @@ type ApplicationNote struct {
 	ApplicationID uint
 	Application   JobApplication `gorm:"constraints:OnDelete:CASCADE;foreignKey:ApplicationID"`
 
-	StatusID *uint
-	Status   *ApplicationStatus `gorm:"foreignKey:StatusID"`
+	StatusID uint
+	Status   ApplicationStatus `gorm:"foreignKey:StatusID"`
+
+	UserID uuid.UUID
+	User   User `gorm:"foreignKey:UserID"`
 }
 
 type StatusHistory struct {
 	ID            uint `gorm:"primaryKey"`
 	ApplicationID uint
 	Application   JobApplication `gorm:"constraints:OnDelete:CASCADE;foreignKey:ApplicationID"`
-
-	StatusID uint
-	Status   ApplicationStatus `gorm:"foreignKey:StatusID"`
-
-	CreatedAt time.Time
+	NewStatusID   uint
+	NewStatus     ApplicationStatus `gorm:"foreignKey:NewStatusID"`
+	OldStatusID   *uint
+	OldStatus     *ApplicationStatus `gorm:"foreignKey:OldStatusID"`
+	CreatedAt     time.Time
 }
 
 type CompanyChangeHistory struct {
@@ -106,4 +111,13 @@ type CompanyChangeHistory struct {
 
 	CreatedAt time.Time
 	Reverted  bool `gorm:"default:false"`
+}
+
+type Config struct {
+	Key       string     `gorm:"primaryKey;not null"`
+	Value     string     `gorm:"not null"`
+	Type      ConfigType `gorm:"type:string;not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
