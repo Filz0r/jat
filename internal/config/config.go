@@ -14,29 +14,9 @@ import (
 	"gorm.io/gorm"
 )
 
-type JatMode string
-
-const (
-	StandaloneMode JatMode = "standalone"
-	ServerMode     JatMode = "server"
-	ClientMode     JatMode = "client"
-)
-
-func (m JatMode) Valid() bool {
-	switch m {
-	case StandaloneMode, ServerMode, ClientMode:
-		return true
-	}
-	return false
-}
-
-func (m JatMode) String() string {
-	return string(m)
-}
-
 type ConfigFile struct {
 	initialized  bool
-	mode         JatMode
+	mode         database.JatMode
 	serverURL    *string
 	serverPort   *string
 	dbUri        *string
@@ -49,15 +29,15 @@ type ConfigFile struct {
 }
 
 type rawFile struct {
-	Initialized  bool    `json:"initialized"`
-	Mode         JatMode `json:"mode"`
-	ServerURL    *string `json:"server_url,omitempty"`
-	DbUri        *string `json:"db_uri,omitempty"`
-	UserToken    *string `json:"user_token,omitempty"`
-	RefreshToken *string `json:"refresh_token,omitempty"`
-	UserID       *string `json:"user_id,omitempty"`
-	ServerPort   *string `json:"server_port,omitempty"`
-	SecretJWT    *string `json:"secret_jwt,omitempty"`
+	Initialized  bool             `json:"initialized"`
+	Mode         database.JatMode `json:"mode"`
+	ServerURL    *string          `json:"server_url,omitempty"`
+	DbUri        *string          `json:"db_uri,omitempty"`
+	UserToken    *string          `json:"user_token,omitempty"`
+	RefreshToken *string          `json:"refresh_token,omitempty"`
+	UserID       *string          `json:"user_id,omitempty"`
+	ServerPort   *string          `json:"server_port,omitempty"`
+	SecretJWT    *string          `json:"secret_jwt,omitempty"`
 }
 
 func (c *ConfigFile) getConfigFilePath() (string, error) {
@@ -93,7 +73,7 @@ func (c *ConfigFile) create(path string) error {
 	raw := rawFile{
 		Initialized: false,
 		// this will become selectable in the future
-		Mode:         StandaloneMode,
+		Mode:         database.StandaloneMode,
 		ServerURL:    nil,
 		DbUri:        c.dbUri,
 		UserToken:    nil,
@@ -181,15 +161,15 @@ func (c *ConfigFile) IsInitialized() bool {
 }
 
 func (c *ConfigFile) IsServer() bool {
-	return c.mode == ServerMode
+	return c.mode == database.ServerMode
 }
 
 func (c *ConfigFile) IsClient() bool {
-	return c.mode == ClientMode
+	return c.mode == database.ClientMode
 }
 
 func (c *ConfigFile) IsStandalone() bool {
-	return c.mode == StandaloneMode
+	return c.mode == database.StandaloneMode
 }
 
 func (c *ConfigFile) Update() error {
@@ -272,7 +252,7 @@ func (c *ConfigFile) writeToDisk() error {
 	return nil
 }
 
-func (c *ConfigFile) Mode() JatMode {
+func (c *ConfigFile) Mode() database.JatMode {
 	return c.mode
 }
 
@@ -294,7 +274,7 @@ func (c *ConfigFile) SetServerURL(serverURL string) {
 	c.serverURL = &serverURL
 }
 
-func (c *ConfigFile) SetMode(mode JatMode) error {
+func (c *ConfigFile) SetMode(mode database.JatMode) error {
 	if !mode.Valid() {
 		return fmt.Errorf("invalid mode: %s", mode)
 	}
@@ -303,9 +283,9 @@ func (c *ConfigFile) SetMode(mode JatMode) error {
 	}
 	c.mode = mode
 	switch c.mode {
-	case ClientMode:
+	case database.ClientMode:
 		c.dbUri = nil
-	case StandaloneMode:
+	case database.StandaloneMode:
 		c.serverURL = nil
 	}
 	return nil
