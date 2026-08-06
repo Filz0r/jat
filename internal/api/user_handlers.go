@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/filz0r/jat/internal/auth"
-	"github.com/filz0r/jat/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -53,11 +52,11 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 			s.respondWithError(w, 400, "invalid payload", nil)
 			return
 		}
-		dbUser, err := s.services.CreateUser(database.User{
-			Email:    user.Email,
-			Username: user.Username,
-			Password: user.Password,
-		})
+		dbUser, err := s.services.CreateUser(
+			user.Username,
+			user.Email,
+			user.Password,
+		)
 		if err != nil {
 			s.respondWithError(w, 400, "error creating user", err)
 			return
@@ -65,6 +64,7 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 		err = s.services.CreateInitialApplicationStatus(dbUser.ID)
 		if err != nil {
 			s.respondWithError(w, 400, "error creating initial application status", err)
+			return
 		}
 		response := userCreateResponse{
 			UserID:    dbUser.ID,
@@ -191,6 +191,7 @@ func (s *Server) handleUserTokenRefresh() http.HandlerFunc {
 				return
 			}
 			s.respondWithError(w, 401, "refresh token is expired", nil)
+			return
 		}
 		err = s.services.UpdateRefreshToken(refreshRecord.Token, time.Now())
 		if err != nil {
@@ -226,7 +227,6 @@ func (s *Server) handleUserTokenRefresh() http.HandlerFunc {
 			201,
 			res,
 		)
-		return
 	}
 }
 
@@ -242,12 +242,21 @@ func (s *Server) handleGetAllUsers() http.HandlerFunc {
 			s.respondWithError(w, 400, "could not fetch users", err)
 			return
 		}
-		for i := range users {
-			users[i].Password = ""
+		response := make([]userCreateResponse, 0, len(users))
+		for _, user := range users {
+			temp := userCreateResponse{
+				UserID:    user.ID,
+				Email:     user.Email,
+				CreatedAt: user.CreatedAt,
+				UpdatedAt: user.UpdatedAt,
+				Username:  user.Username,
+				IsAdmin:   user.IsAdmin,
+			}
+			response = append(response, temp)
 		}
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:   true,
-			Data: users,
+			Data: response,
 		})
 
 	}
@@ -258,6 +267,7 @@ func (s *Server) handleUserLogout() http.HandlerFunc {
 		clientType, ok := clientTypeFromContext(r.Context())
 		if !ok {
 			s.respondWithError(w, 401, "no client type found", nil)
+			return
 		}
 		refreshToken, ok := refreshTokenFromContext(r.Context())
 		if !ok {
@@ -345,10 +355,12 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 		isAdmin := s.services.IsUserAdmin(userID)
 		if paramUUID != userID && !isAdmin {
 			s.respondWithError(w, 403, "forbidden", nil)
+			return
 		}
 		user, err := s.services.GetUserByID(paramUUID)
 		if err != nil {
 			s.respondWithError(w, 404, "user not found", err)
+			return
 		}
 		response := apiResponse{
 			Ok:      true,
@@ -381,14 +393,15 @@ func (s *Server) handleUserUpdate() http.HandlerFunc {
 			return
 		}
 
-		dbUser, err := s.services.UpdateUser(database.User{
-			ID:       userID,
-			Username: user.Username,
-			Email:    user.Email,
-			Password: user.Password,
-		})
+		dbUser, err := s.services.UpdateUser(
+			userID,
+			user.Username,
+			user.Password,
+			user.Email,
+		)
 		if err != nil {
 			s.respondWithError(w, 400, "could not update user", err)
+			return
 		}
 		response := apiResponse{
 			Ok:      true,
@@ -411,14 +424,15 @@ func (s *Server) handleMakeUserAdmin(give bool) http.HandlerFunc {
 			s.respondWithError(w, 404, "user not found", nil)
 			return
 		}
-		_, err = s.services.UpdateUser(database.User{
-			ID:      paramUUID,
-			IsAdmin: give,
-		})
+		err = s.services.ChangeUserAdminStatus(paramUUID, give)
 		if err != nil {
-			s.respondWithError(w, 400, "could not make user admin", err)
+			s.respondWithError(w, 400, "could not change admin status for this user", err)
 			return
 		}
-		s.respondWithJSON(w, 200, apiResponse{Ok: true, Message: "user with id: '" + param + "' created"})
+		message := "User with Id: " + param + " is now admin"
+		if !give {
+			message = "User with Id: " + param + " is no longer admin"
+		}
+		s.respondWithJSON(w, 200, apiResponse{Ok: true, Message: message})
 	}
 }

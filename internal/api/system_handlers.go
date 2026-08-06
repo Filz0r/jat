@@ -22,7 +22,7 @@ func (s *Server) healthHandler() http.Handler {
 
 func (s *Server) InitializedHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		initialized := s.cfg.IsInitialized()
+		initialized := s.services.IsInitialized()
 		s.respondWithJSON(w, 200, apiResponse{
 			Data: systemResponse{Initialized: initialized},
 			Ok:   true,

@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/filz0r/jat/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -32,6 +31,7 @@ func (s *Server) handleCreateCompany() http.HandlerFunc {
 		userID, ok := userIDFromContext(r.Context())
 		if !ok {
 			s.respondWithError(w, 403, "forbidden", nil)
+			return
 		}
 		decoder := json.NewDecoder(r.Body)
 		body := &companyBodyRequest{}
@@ -39,17 +39,19 @@ func (s *Server) handleCreateCompany() http.HandlerFunc {
 			s.respondWithError(w, 400, "error parsing body", err)
 			return
 		}
-		companyRow := database.Company{
-			Name: body.Name,
+
+		_, err := s.services.FindCompanyByName(body.Name)
+		if err == nil {
+			s.respondWithError(w, 409, "this company already exists (capitalization issue)", err)
+			return
 		}
-		if body.Website != "" {
-			companyRow.Website = &body.Website
-		}
-		company, err := s.services.CreateCompany(userID, companyRow)
+
+		company, err := s.services.CreateCompany(userID, body.Name, body.Website)
 		if err != nil {
 			s.respondWithError(w, 400, "error creating company", err)
 			return
 		}
+
 		response := companyResponse{
 			ID:        company.ID,
 			Name:      company.Name,
@@ -109,6 +111,7 @@ func (s *Server) handleUpdateACompany() http.HandlerFunc {
 		convertedID, err := strconv.Atoi(id)
 		if err != nil {
 			s.respondWithError(w, 400, "impossible to convert param", err)
+			return
 		}
 		companyID := uint(convertedID)
 		decoder := json.NewDecoder(r.Body)
@@ -117,15 +120,7 @@ func (s *Server) handleUpdateACompany() http.HandlerFunc {
 			s.respondWithError(w, 400, "error parsing body", err)
 			return
 		}
-		companyToUpdate := database.Company{
-			Name: body.Name,
-		}
-		companyToUpdate.ID = companyID
-		companyToUpdate.UpdatedAt = time.Now()
-		if body.Website != "" {
-			companyToUpdate.Website = &body.Website
-		}
-		company, err := s.services.UpdateCompany(userID, companyToUpdate)
+		company, err := s.services.UpdateCompany(companyID, userID, body.Name, body.Website)
 		if err != nil {
 			s.respondWithError(w, 400, "error updating company", err)
 			return
@@ -152,13 +147,16 @@ func (s *Server) handleUpdateACompany() http.HandlerFunc {
 func (s *Server) handleGetACompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("companyID")
-		companyID, err := strconv.Atoi(id)
+		companyParsed, err := strconv.ParseUint(id, 10, 32)
+		companyID := uint(companyParsed)
 		if err != nil {
 			s.respondWithError(w, 400, "impossible to convert param", err)
+			return
 		}
 		data, err := s.services.GetCompanyByID(companyID)
 		if err != nil {
 			s.respondWithError(w, 404, "company not found", err)
+			return
 		}
 		response := companyResponse{
 			ID:        data.ID,
@@ -190,10 +188,12 @@ func (s *Server) handleDeleteACompany() http.HandlerFunc {
 		companyID, err := strconv.Atoi(id)
 		if err != nil {
 			s.respondWithError(w, 400, "impossible to convert param", err)
+			return
 		}
 		err = s.services.DeleteCompanyByID(uint(companyID), userID)
 		if err != nil {
 			s.respondWithError(w, 404, "company not found", err)
+			return
 		}
 
 		s.respondWithJSON(w, 200, apiResponse{

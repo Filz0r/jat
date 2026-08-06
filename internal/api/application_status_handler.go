@@ -12,7 +12,7 @@ import (
 )
 
 type applicationStatusRequest struct {
-	ID        string    `json:"id"`
+	ID        uint      `json:"id"`
 	Status    string    `json:"status"`
 	Kind      string    `json:"kind"`
 	UserID    uuid.UUID `json:"user_id,omitempty"`
@@ -34,9 +34,8 @@ func (s *Server) handleGetUserApplicationStatus() http.HandlerFunc {
 		}
 		converted := make([]applicationStatusRequest, 0, len(data))
 		for _, d := range data {
-			conv := strconv.Itoa(int(d.ID))
 			temp := applicationStatusRequest{
-				ID:        conv,
+				ID:        d.ID,
 				Status:    d.Status,
 				Kind:      d.Kind.String(),
 				UpdatedAt: d.UpdatedAt,
@@ -64,65 +63,35 @@ func (s *Server) handleGetAllApplicationStatus() http.HandlerFunc {
 
 func (s *Server) handleUpdateApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		param := r.PathValue("ID")
-		conv, err := strconv.Atoi(param)
+		param := r.PathValue("statusID")
+		conv, err := strconv.ParseUint(param, 10, 32)
 		if err != nil {
 			s.respondWithError(w, 400, "invalid id format", err)
 			return
 		}
+		statusID := uint(conv)
 		userID, _ := userIDFromContext(r.Context())
-		decoder := json.NewDecoder(r.Body)
 
+		decoder := json.NewDecoder(r.Body)
 		body := applicationStatusRequest{}
 		err = decoder.Decode(&body)
 		if err != nil {
 			s.respondWithError(w, 400, "error decoding body", err)
 			return
 		}
-		record, err := s.services.GetApplicationStatus(uint(conv))
-		if err != nil {
-			s.respondWithError(w, 400, "error getting application status", err)
-			return
-		}
-		isAdmin := s.services.IsUserAdmin(userID)
-		if !isAdmin && userID != record.UserID {
-			s.respondWithError(
-				w,
-				403,
-				"permission denied",
-				fmt.Errorf(
-					"%s tried to edit application status with id of %d from %s",
-					userID,
-					conv,
-					record.UserID.String(),
-				),
-			)
-			return
-		}
-		var convKind database.ApplicationStatusKind
-		if body.Kind != "" {
-			convKind = database.ApplicationStatusKind(body.Kind)
-			if !convKind.Valid() {
-				s.respondWithError(w, 400, "invalid kind format", nil)
-				return
-			}
-			record.Status = body.Status
-		}
-		if body.ID != "" {
-			s.respondWithError(w, 400, "invalid request body", nil)
-			return
-		}
-		record.Kind = convKind
-		if body.Status != "" {
-			record.Status = body.Status
-		}
-		saved, err := s.services.UpdateApplicationStatus(record)
+
+		saved, err := s.services.UpdateApplicationStatus(
+			userID,
+			statusID,
+			body.Status,
+			body.Kind,
+		)
 		if err != nil {
 			s.respondWithError(w, 400, "error updating application status", err)
 			return
 		}
 		response := apiResponse{Ok: true, Data: applicationStatusRequest{
-			ID:        saved.Status,
+			ID:        saved.ID,
 			Kind:      saved.Kind.String(),
 			Status:    saved.Status,
 			UpdatedAt: saved.UpdatedAt,
@@ -135,7 +104,7 @@ func (s *Server) handleUpdateApplicationStatus() http.HandlerFunc {
 
 func (s *Server) handleGetAnApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		param := r.PathValue("ID")
+		param := r.PathValue("statusID")
 		conv, err := strconv.Atoi(param)
 		if err != nil {
 			s.respondWithError(w, 400, "invalid id format", err)
@@ -164,7 +133,7 @@ func (s *Server) handleGetAnApplicationStatus() http.HandlerFunc {
 			return
 		}
 		response := apiResponse{Ok: true, Data: applicationStatusRequest{
-			ID:        record.Status,
+			ID:        record.ID,
 			Kind:      record.Kind.String(),
 			Status:    record.Status,
 			UpdatedAt: record.UpdatedAt,
@@ -192,34 +161,42 @@ func (s *Server) handleCreateApplicationStatus() http.HandlerFunc {
 			s.respondWithError(w, 400, "invalid kind format", nil)
 			return
 		}
-		record := database.ApplicationStatus{
-			UserID: userID,
-			Status: body.Status,
-			Kind:   convKind,
-		}
-		saved, err := s.services.CreateApplicationStatus(record)
 
-		response := apiResponse{Ok: true, Data: applicationStatusRequest{
-			ID:        saved.Status,
-			Kind:      saved.Kind.String(),
-			Status:    saved.Status,
-			UpdatedAt: saved.UpdatedAt,
-			CreatedAt: saved.CreatedAt,
-			UserID:    saved.UserID,
-		}}
+		saved, err := s.services.CreateApplicationStatus(
+			userID,
+			body.Status,
+			convKind,
+		)
+		if err != nil {
+			s.respondWithError(w, 400, "error creating application status", err)
+			return
+		}
+
+		response := apiResponse{
+			Ok: true,
+			Data: applicationStatusRequest{
+				ID:        saved.ID,
+				Kind:      saved.Kind.String(),
+				Status:    saved.Status,
+				UpdatedAt: saved.UpdatedAt,
+				CreatedAt: saved.CreatedAt,
+				UserID:    saved.UserID,
+			},
+			Message: "Created new application status",
+		}
 		s.respondWithJSON(w, 201, response)
 	}
 }
 
 func (s *Server) handleDeleteApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		param := r.PathValue("ID")
+		param := r.PathValue("statusID")
+		userID, _ := userIDFromContext(r.Context())
 		conv, err := strconv.Atoi(param)
 		if err != nil {
 			s.respondWithError(w, 400, "invalid id format", err)
 			return
 		}
-		userID, _ := userIDFromContext(r.Context())
 		record, err := s.services.GetApplicationStatus(uint(conv))
 		if err != nil {
 			s.respondWithError(w, 400, "error getting application status", err)
@@ -230,7 +207,7 @@ func (s *Server) handleDeleteApplicationStatus() http.HandlerFunc {
 			s.respondWithError(w, 403, "permission denied", nil)
 			return
 		}
-		err = s.services.DeleteApplicationStatus(userID, record.Status)
+		err = s.services.DeleteApplicationStatus(userID, record.ID)
 		if err != nil {
 			s.respondWithError(w, 400, "error deleting application status", err)
 			return

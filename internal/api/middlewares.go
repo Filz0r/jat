@@ -72,6 +72,11 @@ func (s *Server) middlewareAdminUser(next http.Handler) http.Handler {
 				return
 			}
 			isAdmin := s.services.IsUserAdmin(userID)
+			if !isAdmin {
+				s.logger.Printf("User %s is not an admin", userID)
+				s.respondWithError(w, 403, "Forbidden", nil)
+				return
+			}
 			ctx := context.WithValue(r.Context(), contextUserAdmin, isAdmin)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}),
