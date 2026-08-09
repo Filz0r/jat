@@ -127,7 +127,7 @@ func (sm *ServiceManager) SetFirstAdmin(userID uuid.UUID) bool {
 	if sm.IsInitialized() {
 		return false
 	}
-	_, err := sm.getConfig("firstAdmin")
+	data, err := sm.getConfig("firstAdmin")
 	if err != nil {
 		return false
 	}
@@ -135,14 +135,14 @@ func (sm *ServiceManager) SetFirstAdmin(userID uuid.UUID) bool {
 	if err != nil {
 		return false
 	}
-	data := database.Config{
-		Key:       "firstAdmin",
+	data = database.Config{
+		Key:       data.Key,
 		Value:     userID.String(),
-		Type:      database.IDConfig,
-		CreatedAt: time.Now(),
+		Type:      data.Type,
+		CreatedAt: data.CreatedAt,
 		UpdatedAt: time.Now(),
 	}
-	res := sm.db.Create(&data)
+	res := sm.db.Save(&data)
 	if res.Error != nil {
 		return false
 	}
