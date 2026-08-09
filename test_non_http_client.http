@@ -3,19 +3,19 @@
 
 ### health
 GET http://localhost:4200/api/health
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
 
 ### initialized
 GET http://localhost:4200/api/initialized
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
 
 ### Doesn't exist
 GET http://localhost:4200/api/doesnt_exist
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
 
 ### Register user1
 POST http://localhost:4200/api/users
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
 Content-Type: application/json
 
 {
@@ -30,7 +30,7 @@ Content-Type: application/json
 
 ### Register user2
 POST http://localhost:4200/api/users
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
 Content-Type: application/json
 
 {
@@ -43,9 +43,9 @@ Content-Type: application/json
     client.global.set("user2Id", response.body.data.user_id);
 %}
 
-### Login user1 (web-client sets cookies automatically)
+### Login user1 (TUI client returns tokens in body)
 POST http://localhost:4200/api/auth/login
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
 Content-Type: application/json
 
 {
@@ -53,13 +53,20 @@ Content-Type: application/json
     "password": "password123"
 }
 
+> {%
+    client.global.set("user1Token", response.body.data.token);
+    client.global.set("user1Refresh", response.body.data.refresh_token);
+%}
+
 ### Get user1 data
 GET http://localhost:4200/api/users/{{user1Id}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Update user1
 PUT http://localhost:4200/api/users
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 {
@@ -69,7 +76,8 @@ Content-Type: application/json
 
 ### List application statuses (seeded defaults)
 GET http://localhost:4200/api/application_statuses
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 > {%
     const statuses = response.body.data;
@@ -79,7 +87,8 @@ X-Jat-Client-Type: web-client
 
 ### Create custom application status
 POST http://localhost:4200/api/application_statuses
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 {
@@ -93,11 +102,13 @@ Content-Type: application/json
 
 ### Get custom status
 GET http://localhost:4200/api/application_statuses/{{customStatusId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Update custom status
 PUT http://localhost:4200/api/application_statuses/{{customStatusId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 {
@@ -107,11 +118,13 @@ Content-Type: application/json
 
 ### Delete custom status
 DELETE http://localhost:4200/api/application_statuses/{{customStatusId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Create company
 POST http://localhost:4200/api/company
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 {
@@ -125,15 +138,18 @@ Content-Type: application/json
 
 ### List companies
 GET http://localhost:4200/api/company
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Get company
 GET http://localhost:4200/api/company/{{companyId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Update company
 PUT http://localhost:4200/api/company/{{companyId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 {
@@ -143,7 +159,8 @@ Content-Type: application/json
 
 ### Create job application
 POST http://localhost:4200/api/jobs
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 {
@@ -159,19 +176,23 @@ Content-Type: application/json
 
 ### List job applications
 GET http://localhost:4200/api/jobs
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Get job application
 GET http://localhost:4200/api/jobs/{{jobId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Update job application status
 PUT http://localhost:4200/api/jobs/{{jobId}}/status/{{appliedStatusId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Create job note
 POST http://localhost:4200/api/jobs/{{jobId}}/notes
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 {
@@ -184,15 +205,18 @@ Content-Type: application/json
 
 ### List job notes
 GET http://localhost:4200/api/jobs/{{jobId}}/notes
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Get job note
 GET http://localhost:4200/api/jobs/{{jobId}}/notes/{{noteId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Update job note
 PUT http://localhost:4200/api/jobs/{{jobId}}/notes/{{noteId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 {
@@ -201,15 +225,18 @@ Content-Type: application/json
 
 ### Delete job note
 DELETE http://localhost:4200/api/jobs/{{jobId}}/notes/{{noteId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Delete job application
 DELETE http://localhost:4200/api/jobs/{{jobId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 
 ### Create second job for authorization cross-check
 POST http://localhost:4200/api/jobs
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 {
@@ -225,7 +252,7 @@ Content-Type: application/json
 
 ### Login user2
 POST http://localhost:4200/api/auth/login
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
 Content-Type: application/json
 
 {
@@ -233,29 +260,40 @@ Content-Type: application/json
     "password": "password123"
 }
 
+> {%
+    client.global.set("user2Token", response.body.data.token);
+    client.global.set("user2Refresh", response.body.data.refresh_token);
+%}
+
 ### Cross-user: user2 tries to read user1's job (expect 403)
 GET http://localhost:4200/api/jobs/{{user1PrivateJobId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Token}}
 
 ### Cross-user: user2 reads global company (expect 200)
 GET http://localhost:4200/api/company/{{companyId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Token}}
 
-### Refresh token (uses refresh_token cookie)
+### Refresh token
 GET http://localhost:4200/api/auth/refresh_token
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Refresh}}
 
-### Revoke token (uses refresh_token cookie)
+### Revoke token
 GET http://localhost:4200/api/auth/revoke_token
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Refresh}}
 
-### Logout (uses refresh_token cookie)
+### Logout
 POST http://localhost:4200/api/auth/logout
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Refresh}}
 
 ### Attempt protected request after logout (expect 401)
 GET http://localhost:4200/api/jobs
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Token}}
 
 ###
 ### ADMIN SECTION
@@ -265,7 +303,7 @@ X-Jat-Client-Type: web-client
 
 ### Login user2 after promoting to admin
 POST http://localhost:4200/api/auth/login
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
 Content-Type: application/json
 
 {
@@ -273,18 +311,27 @@ Content-Type: application/json
     "password": "password123"
 }
 
+> {%
+    client.global.set("user2Token", response.body.data.token);
+    client.global.set("user2Refresh", response.body.data.refresh_token);
+%}
+
 ### Admin: list all users
 GET http://localhost:4200/api/admin/users
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Token}}
 
 ### Admin: promote user1 to admin
 GET http://localhost:4200/api/admin/users/{{user1Id}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Token}}
 
 ### Admin: demote user1
 DELETE http://localhost:4200/api/admin/users/{{user1Id}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Token}}
 
 ### Admin: delete company
 DELETE http://localhost:4200/api/company/{{companyId}}
-X-Jat-Client-Type: web-client
+X-Jat-Client-Type: tui-client
+Authorization: Bearer {{user2Token}}
