@@ -110,11 +110,12 @@ func New(cfg *config.ConfigFile) (*Server, error) {
 	}
 
 	server := &Server{
-		db:       cfg.GetDB(),
-		mux:      http.NewServeMux(),
-		port:     servePort,
-		services: services.NewServiceManager(cfg.GetDB()),
-		logger:   newServerLogger(),
+		db:        cfg.GetDB(),
+		mux:       http.NewServeMux(),
+		port:      servePort,
+		services:  services.NewServiceManager(cfg.GetDB()),
+		logger:    newServerLogger(),
+		jwtSecret: *cfg.SecretJWT,
 	}
 	return server, nil
 }

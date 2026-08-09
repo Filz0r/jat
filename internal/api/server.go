@@ -10,11 +10,12 @@ import (
 )
 
 type Server struct {
-	mux      *http.ServeMux
-	db       *gorm.DB
-	services *services.ServiceManager
-	port     string
-	logger   *log.Logger
-	server   *http.Server
-	cfg      *config.ConfigFile
+	mux       *http.ServeMux
+	db        *gorm.DB
+	services  *services.ServiceManager
+	port      string
+	logger    *log.Logger
+	server    *http.Server
+	cfg       *config.ConfigFile
+	jwtSecret string
 }

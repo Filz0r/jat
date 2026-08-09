@@ -35,7 +35,7 @@ func (s *Server) middlewareAuth(next http.Handler) http.Handler {
 			s.respondWithError(w, 401, "invalid jwt token", err)
 			return
 		}
-		userID, err := auth.ValidateJWT(token, *s.cfg.SecretJWT)
+		userID, err := auth.ValidateJWT(token, s.jwtSecret)
 		if err != nil {
 			s.respondWithError(w, 401, "invalid jwt token", err)
 			return

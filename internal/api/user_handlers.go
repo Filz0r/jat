@@ -110,7 +110,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			return
 		}
 
-		token, err := auth.MakeJWT(dbUser.ID, *s.cfg.SecretJWT, jwtLifetime)
+		token, err := auth.MakeJWT(dbUser.ID, s.jwtSecret, jwtLifetime)
 		if err != nil {
 			s.respondWithError(w, 401, "email or password are incorrect", err)
 			return
@@ -198,7 +198,7 @@ func (s *Server) handleUserTokenRefresh() http.HandlerFunc {
 			s.respondWithError(w, 401, "no valid token found", err)
 			return
 		}
-		newToken, err := auth.MakeJWT(refreshRecord.UserID, *s.cfg.SecretJWT, jwtLifetime)
+		newToken, err := auth.MakeJWT(refreshRecord.UserID, s.jwtSecret, jwtLifetime)
 		if err != nil {
 			s.respondWithError(w, 401, "no valid token found", err)
 			return
