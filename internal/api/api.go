@@ -37,6 +37,7 @@ func (s *Server) loadRoutes() {
 	// system handlers
 	s.mux.Handle("GET /api/health", s.healthHandler())
 	s.mux.Handle("GET /api/initialized", s.InitializedHandler())
+	s.mux.Handle("GET /api/initialized/set", s.middlewareAdminUser(s.handleSetInitialized()))
 
 	//auth handlers
 	s.mux.Handle("POST /api/auth/login", s.handleUserLogin())

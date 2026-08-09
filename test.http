@@ -288,3 +288,7 @@ X-Jat-Client-Type: web-client
 ### Admin: delete company
 DELETE http://localhost:4200/api/company/{{companyId}}
 X-Jat-Client-Type: web-client
+
+### Set server initialized
+GET http://localhost:4200/api/initialized/set
+X-Jat-Client-Type: web-client
