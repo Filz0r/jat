@@ -34,12 +34,6 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) loadRoutes() {
-	if !s.services.IsInitialized() {
-		err := s.services.CreateInitialConfigs()
-		if err != nil {
-			s.logger.Fatal(err)
-		}
-	}
 	// system handlers
 	s.mux.Handle("GET /api/health", s.healthHandler())
 	s.mux.Handle("GET /api/initialized", s.InitializedHandler())
