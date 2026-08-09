@@ -49,6 +49,7 @@ func convertNoteData(data database.ApplicationNote) noteData {
 		UserID:    data.UserID,
 		CreatedAt: data.CreatedAt,
 		UpdatedAt: data.UpdatedAt,
+		JobID:     data.ApplicationID,
 	}
 }
 

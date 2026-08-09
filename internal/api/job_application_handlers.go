@@ -50,6 +50,7 @@ func generateApplicationResponseFromRow(row database.JobApplication) application
 			UpdatedAt: row.Status.UpdatedAt,
 			Status:    row.Status.Status,
 			Kind:      row.Status.Kind.String(),
+			UserID:    row.Status.UserID,
 		},
 	}
 	if row.Company.Website != nil {
