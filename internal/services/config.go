@@ -106,12 +106,18 @@ func (sm *ServiceManager) SetInitialized() bool {
 	return true
 }
 
-func (sm *ServiceManager) GetFirstAdmin() (database.Config, error) {
+func (sm *ServiceManager) GetFirstAdmin() uuid.UUID {
 	data, err := sm.getConfig("firstAdmin")
 	if err != nil {
-		return database.Config{}, err
+		return uuid.Nil
 	}
-	return data, nil
+
+	id, err := data.Type.ToType(data.Value)
+	if err != nil {
+		return uuid.Nil
+	}
+	res := id.(uuid.UUID)
+	return res
 }
 
 func (sm *ServiceManager) SetFirstAdmin(userID uuid.UUID) bool {
@@ -147,11 +153,11 @@ func (sm *ServiceManager) IsFirstAdmin(userID uuid.UUID) bool {
 	if sm.db == nil {
 		return false
 	}
-	data, err := sm.GetFirstAdmin()
-	if err != nil {
+	data := sm.GetFirstAdmin()
+	if data != uuid.Nil {
 		return false
 	}
-	return data.Value == userID.String()
+	return data == userID
 }
 
 func (sm *ServiceManager) SetServerMode() (bool, error) {
