@@ -1,10 +1,11 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type systemResponse struct {
-	Status      string `json:"status,omitempty"`
-	Initialized bool   `json:"initialized,omitempty"`
+	Initialized bool `json:"initialized"`
 }
 
 func (s *Server) healthHandler() http.Handler {
@@ -23,9 +24,12 @@ func (s *Server) healthHandler() http.Handler {
 func (s *Server) InitializedHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		initialized := s.services.IsInitialized()
-		s.respondWithJSON(w, 200, apiResponse{
-			Data: systemResponse{Initialized: initialized},
-			Ok:   true,
-		})
+		response := apiResponse{
+			Data: systemResponse{
+				Initialized: initialized,
+			},
+			Ok: true,
+		}
+		s.respondWithJSON(w, 200, response)
 	})
 }
