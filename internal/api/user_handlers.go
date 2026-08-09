@@ -66,6 +66,19 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 			s.respondWithError(w, 400, "error creating initial application status", err)
 			return
 		}
+		// Create first admin if it doesn't exist AND the server isn't at a initialized state
+		if s.services.GetFirstAdmin() == uuid.Nil && !s.services.IsInitialized() {
+			set := s.services.SetFirstAdmin(dbUser.ID)
+			if !set {
+				s.respondWithError(w, 400, "error setting first admin", nil)
+				return
+			}
+			err := s.services.ChangeUserAdminStatus(dbUser.ID, true)
+			if err != nil {
+				s.respondWithError(w, 400, "error changing user admin status", err)
+				return
+			}
+		}
 		response := userCreateResponse{
 			UserID:    dbUser.ID,
 			Email:     dbUser.Email,
