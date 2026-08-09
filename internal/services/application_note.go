@@ -59,7 +59,10 @@ func (sm *ServiceManager) GetJobApplicationNoteByID(
 		return database.ApplicationNote{}, errors.New("database not initialized")
 	}
 	var dbNote database.ApplicationNote
-	query := sm.db.Where("id = ? AND application_id = ?", noteID, jobID)
+	query := sm.db.
+		Preload("Application").
+		Preload("Status").
+		Where("id = ? AND application_id = ?", noteID, jobID)
 
 	if !sm.IsUserAdmin(userID) {
 		query = query.Where("user_id = ?", userID)
@@ -87,6 +90,8 @@ func (sm *ServiceManager) GetJobApplicationNotesByID(
 	}
 
 	result := sm.db.
+		Preload("Application").
+		Preload("Status").
 		Where("user_id = ? and application_id = ?", userID, jobID).
 		Find(&dbNotes)
 
