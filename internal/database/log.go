@@ -19,9 +19,9 @@ func dbLogPath() (string, error) {
 }
 
 // In TUI mode we default to Warn (migrations/queries don't spam the file).
-// Set JAT_DEV=1 to bump it to Info so you can see them while developing.
+// Set DEBUG_DB=1 to bump it to Info so you can see them while developing.
 func fileLogLevel() logger.LogLevel {
-	if os.Getenv("JAT_DEV") != "" {
+	if os.Getenv("DEBUG_DB") != "" {
 		return logger.Info
 	}
 	return logger.Warn

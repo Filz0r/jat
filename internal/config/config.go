@@ -14,6 +14,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO: this needs to be refactored due to the fact that the API server runs differently from the original config file logic
+
 type ConfigFile struct {
 	initialized  bool
 	mode         database.JatMode
@@ -321,8 +323,8 @@ func (c *ConfigFile) LoadFromEnv() error {
 	c.dbUri = &dbUri
 	c.serverPort = &port
 	c.SecretJWT = &secretJWT
-	devMode := os.Getenv("JAT_DEV") != ""
-	db, err := database.ConnectDb(*c.dbUri, devMode)
+	debugDB := os.Getenv("DEBUG_DB") != ""
+	db, err := database.ConnectDb(*c.dbUri, debugDB)
 	if err != nil {
 		return err
 	}
