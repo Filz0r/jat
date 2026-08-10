@@ -2,3 +2,8 @@
 
 .claude
 .idea
+
+jat
+
+frontend/dist
+frontend/node_modules
