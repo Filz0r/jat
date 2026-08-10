@@ -110,6 +110,13 @@ func New(cfg *config.ConfigFile) (*Server, error) {
 		return nil, err
 	}
 
+	debugEnvVar := os.Getenv("JAT_DEV")
+	var isDebug bool
+	if debugEnvVar != "" {
+		isDebug = true
+	} else {
+		isDebug = false
+	}
 	server := &Server{
 		db:        cfg.GetDB(),
 		mux:       http.NewServeMux(),
@@ -117,6 +124,7 @@ func New(cfg *config.ConfigFile) (*Server, error) {
 		services:  services.NewServiceManager(cfg.GetDB()),
 		logger:    newServerLogger(),
 		jwtSecret: *cfg.SecretJWT,
+		isDebug:   isDebug,
 	}
 	return server, nil
 }

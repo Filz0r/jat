@@ -18,4 +18,5 @@ type Server struct {
 	server    *http.Server
 	cfg       *config.ConfigFile
 	jwtSecret string
+	isDebug   bool
 }
