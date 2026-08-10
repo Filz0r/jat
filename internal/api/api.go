@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"runtime"
 
 	"github.com/filz0r/jat/internal/config"
 	"github.com/filz0r/jat/internal/services"
@@ -28,20 +27,9 @@ func (s *Server) Start() error {
 			s.logger.Fatal(err)
 		}
 	}
+	s.services.UpdateCurrentVersion()
 	if s.isDebug {
-		s.logger.Printf(
-			"Version: %s Commit: %s Build Date: %s",
-			version.Version,
-			version.Commit,
-			version.BuildDate,
-		)
-
-		s.logger.Printf(
-			"Go Version: %s OS: %s Arch: %s",
-			runtime.Version(),
-			runtime.GOOS,
-			runtime.GOARCH,
-		)
+		s.logger.Println(version.Info())
 	}
 
 	s.logger.Printf("API server started on port %s", s.port)

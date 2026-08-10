@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/filz0r/jat/internal/database"
+	"github.com/filz0r/jat/internal/version"
 	"github.com/google/uuid"
 )
 
@@ -28,12 +29,18 @@ func (sm *ServiceManager) InitialConfigsExist() (bool, error) {
 	}
 	var count int64
 	res := sm.db.Model(&database.Config{}).
-		Where("key IN ?", []string{"isInitialized", "applicationMode", "firstAdmin"}).
+		Where("key IN ?", []string{
+			"isInitialized",
+			"applicationMode",
+			"firstAdmin",
+			"initialVersion",
+			"currentVersion",
+		}).
 		Count(&count)
 	if res.Error != nil {
 		return false, res.Error
 	}
-	return count == 3, nil
+	return count == 5, nil
 }
 
 func (sm *ServiceManager) CreateInitialConfigs() error {
@@ -56,6 +63,16 @@ func (sm *ServiceManager) CreateInitialConfigs() error {
 			Value: uuid.Nil.String(),
 			Type:  database.IDConfig,
 		},
+		{
+			Key:   "initialVersion",
+			Value: version.Version,
+			Type:  database.StringConfig,
+		},
+		{
+			Key:   "currentVersion",
+			Value: version.Version,
+			Type:  database.StringConfig,
+		},
 	}
 
 	for _, config := range configs {
@@ -67,6 +84,25 @@ func (sm *ServiceManager) CreateInitialConfigs() error {
 		}
 	}
 	return nil
+}
+
+func (sm *ServiceManager) UpdateCurrentVersion() {
+	if sm.db == nil {
+		return
+	}
+	config, err := sm.getConfig("currentVersion")
+	if err != nil {
+		return
+	}
+	if config.Value == version.Version {
+		return
+	}
+	config.Value = version.Version
+	config.UpdatedAt = time.Now()
+	res := sm.db.Updates(&config)
+	if res.Error != nil {
+		return
+	}
 }
 
 func (sm *ServiceManager) IsInitialized() bool {
