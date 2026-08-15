@@ -11,17 +11,17 @@ import (
 )
 
 type noteData struct {
-	ID        uint      `json:"id"`
-	Body      string    `json:"body"`
-	Status    string    `json:"status"`
-	UserID    uuid.UUID `json:"user_id"`
-	JobID     uint      `json:"job_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uint      `json:"id" validate:"required"`
+	Body      string    `json:"body" validate:"required"`
+	Status    string    `json:"status" validate:"required"`
+	UserID    uuid.UUID `json:"user_id" validate:"required"`
+	JobID     uint      `json:"job_id" validate:"required"`
+	CreatedAt time.Time `json:"created_at" validate:"required"`
+	UpdatedAt time.Time `json:"updated_at" validate:"required"`
 }
 
 type noteCreateRequest struct {
-	Body string `json:"body"`
+	Body string `json:"body" validate:"required"`
 }
 
 func extractRequiredNoteData(r *http.Request, extractNote bool) (uint, uint, uuid.UUID, error) {
@@ -53,6 +53,17 @@ func convertNoteData(data database.ApplicationNote) noteData {
 	}
 }
 
+// @Summary List notes for a job application
+// @Description Returns all notes belonging to a specific job application.
+// @Tags job_application_notes
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param jobID path int true "Job application ID"
+// @Success 200 {object} apiResponse{data=[]noteData}
+// @Failure 400 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /jobs/{jobID}/notes [get]
 func (s *Server) handleGetJobNotes() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jobID, _, userID, err := extractRequiredNoteData(r, false)
@@ -78,6 +89,17 @@ func (s *Server) handleGetJobNotes() http.HandlerFunc {
 	}
 }
 
+// @Summary Create job application note
+// @Description Adds a note to a job application.
+// @Tags job_application_notes
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param jobID path int true "Job application ID"
+// @Param request body noteCreateRequest true "Note body"
+// @Success 201 {object} apiResponse{data=noteData}
+// @Failure 400 {object} apiResponse
+// @Router /jobs/{jobID}/notes [post]
 func (s *Server) handleCreateJobNote() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jobIDParam := r.PathValue("jobID")
@@ -112,6 +134,18 @@ func (s *Server) handleCreateJobNote() http.HandlerFunc {
 	}
 }
 
+// @Summary Update job application note
+// @Description Updates an existing note on a job application.
+// @Tags job_application_notes
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param jobID path int true "Job application ID"
+// @Param noteID path int true "Note ID"
+// @Param request body noteCreateRequest true "Note body"
+// @Success 200 {object} apiResponse{data=noteData}
+// @Failure 400 {object} apiResponse
+// @Router /jobs/{jobID}/notes/{noteID} [put]
 func (s *Server) handleUpdateJobNote() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jobID, noteID, userID, err := extractRequiredNoteData(r, true)
@@ -147,6 +181,17 @@ func (s *Server) handleUpdateJobNote() http.HandlerFunc {
 	}
 }
 
+// @Summary Delete job application note
+// @Description Deletes a note from a job application.
+// @Tags job_application_notes
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param jobID path int true "Job application ID"
+// @Param noteID path int true "Note ID"
+// @Success 200 {object} apiResponse
+// @Failure 400 {object} apiResponse
+// @Router /jobs/{jobID}/notes/{noteID} [delete]
 func (s *Server) handleDeleteJobNote() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jobID, noteID, userID, err := extractRequiredNoteData(r, true)
@@ -166,6 +211,18 @@ func (s *Server) handleDeleteJobNote() http.HandlerFunc {
 	}
 }
 
+// @Summary Get job application note
+// @Description Returns a single note from a job application.
+// @Tags job_application_notes
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param jobID path int true "Job application ID"
+// @Param noteID path int true "Note ID"
+// @Success 200 {object} apiResponse{data=noteData}
+// @Failure 400 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /jobs/{jobID}/notes/{noteID} [get]
 func (s *Server) handleGetJobNote() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jobID, noteID, userID, err := extractRequiredNoteData(r, true)

@@ -10,22 +10,34 @@ import (
 )
 
 type companyBodyRequest struct {
-	Name    string `json:"name"`
+	Name    string `json:"name" validate:"required"`
 	Website string `json:"website,omitempty"`
 }
 
 type companyResponse struct {
 	ID        uint      `json:"id,omitempty"`
-	Name      string    `json:"name"`
+	Name      string    `json:"name" validate:"required"`
 	Website   string    `json:"website,omitempty"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	CreatedBy uuid.UUID `json:"createdBy"`
-	UpdatedBy uuid.UUID `json:"updatedBy"`
+	CreatedAt time.Time `json:"createdAt" validate:"required"`
+	UpdatedAt time.Time `json:"updatedAt" validate:"required"`
+	CreatedBy uuid.UUID `json:"createdBy" validate:"required"`
+	UpdatedBy uuid.UUID `json:"updatedBy" validate:"required"`
 }
 
 //TODO: Fix 500 response codes when possible
 
+// @Summary Create company
+// @Description Creates a new company.
+// @Tags companies
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body companyBodyRequest true "Company payload"
+// @Success 201 {object} apiResponse{data=companyResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Failure 409 {object} apiResponse
+// @Router /company [post]
 func (s *Server) handleCreateCompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := userIDFromContext(r.Context())
@@ -71,6 +83,15 @@ func (s *Server) handleCreateCompany() http.HandlerFunc {
 	}
 }
 
+// @Summary List all companies
+// @Description Returns every company in the system.
+// @Tags companies
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} apiResponse{data=[]companyResponse}
+// @Failure 400 {object} apiResponse
+// @Router /company [get]
 func (s *Server) handleGetAllCompanies() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		companies, err := s.services.GetAllCompanies()
@@ -100,6 +121,18 @@ func (s *Server) handleGetAllCompanies() http.HandlerFunc {
 	}
 }
 
+// @Summary Update company
+// @Description Updates an existing company.
+// @Tags companies
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param companyID path int true "Company ID"
+// @Param request body companyBodyRequest true "Company payload"
+// @Success 200 {object} apiResponse{data=companyResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Router /company/{companyID} [put]
 func (s *Server) handleUpdateACompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := userIDFromContext(r.Context())
@@ -144,6 +177,17 @@ func (s *Server) handleUpdateACompany() http.HandlerFunc {
 	}
 }
 
+// @Summary Get company
+// @Description Returns a single company by ID.
+// @Tags companies
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param companyID path int true "Company ID"
+// @Success 200 {object} apiResponse{data=companyResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /company/{companyID} [get]
 func (s *Server) handleGetACompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("companyID")
@@ -177,6 +221,18 @@ func (s *Server) handleGetACompany() http.HandlerFunc {
 	}
 }
 
+// @Summary Delete company
+// @Description Admin-only. Soft-deletes a company by ID.
+// @Tags companies
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param companyID path int true "Company ID"
+// @Success 200 {object} apiResponse
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /company/{companyID} [delete]
 func (s *Server) handleDeleteACompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := userIDFromContext(r.Context())

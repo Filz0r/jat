@@ -11,10 +11,10 @@ import (
 )
 
 type applicationResponse struct {
-	ID        uint                     `json:"id"`
-	Title     string                   `json:"title"`
-	URL       string                   `json:"url"`
-	UserID    uuid.UUID                `json:"user_id"`
+	ID        uint                     `json:"id" validate:"required"`
+	Title     string                   `json:"title" validate:"required"`
+	URL       string                   `json:"url" validate:"required"`
+	UserID    uuid.UUID                `json:"user_id" validate:"required"`
 	CreatedAt time.Time                `json:"created_at,omitempty"`
 	UpdatedAt time.Time                `json:"updated_at,omitempty"`
 	Status    applicationStatusRequest `json:"status,omitempty"`
@@ -22,10 +22,10 @@ type applicationResponse struct {
 }
 
 type applicationRequest struct {
-	Title     string `json:"title"`
-	URL       string `json:"url"`
-	StatusID  int    `json:"status_id"`
-	CompanyID int    `json:"company_id"`
+	Title     string `json:"title" validate:"required"`
+	URL       string `json:"url" validate:"required"`
+	StatusID  int    `json:"status_id" validate:"required"`
+	CompanyID int    `json:"company_id" validate:"required"`
 }
 
 func generateApplicationResponseFromRow(row database.JobApplication) applicationResponse {
@@ -59,6 +59,16 @@ func generateApplicationResponseFromRow(row database.JobApplication) application
 	return res
 }
 
+// @Summary List current user's job applications
+// @Description Returns all job applications belonging to the authenticated user.
+// @Tags job_applications
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} apiResponse{data=[]applicationResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 401 {object} apiResponse
+// @Router /jobs [get]
 func (s *Server) handleGetUserJobApplications() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, _ := userIDFromContext(r.Context())
@@ -80,6 +90,17 @@ func (s *Server) handleGetUserJobApplications() http.HandlerFunc {
 	}
 }
 
+// @Summary Create job application
+// @Description Creates a new job application for the authenticated user.
+// @Tags job_applications
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body applicationRequest true "Job application payload"
+// @Success 201 {object} apiResponse{data=applicationResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 401 {object} apiResponse
+// @Router /jobs [post]
 func (s *Server) handleCreateJobApplication() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, _ := userIDFromContext(r.Context())
@@ -115,6 +136,18 @@ func (s *Server) handleCreateJobApplication() http.HandlerFunc {
 	}
 }
 
+// @Summary Get job application
+// @Description Returns a single job application. Users can read their own; admins can read any.
+// @Tags job_applications
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param jobID path int true "Job application ID"
+// @Success 200 {object} apiResponse{data=applicationResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /jobs/{jobID} [get]
 func (s *Server) handleGetJobApplication() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, _ := userIDFromContext(r.Context())
@@ -143,6 +176,19 @@ func (s *Server) handleGetJobApplication() http.HandlerFunc {
 	}
 }
 
+// @Summary Update job application status
+// @Description Changes the status of a job application.
+// @Tags job_applications
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param jobID path int true "Job application ID"
+// @Param statusID path int true "Application status ID"
+// @Success 200 {object} apiResponse{data=applicationResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /jobs/{jobID}/status/{statusID} [put]
 func (s *Server) handleUpdateJobApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, _ := userIDFromContext(r.Context())
@@ -181,6 +227,17 @@ func (s *Server) handleUpdateJobApplicationStatus() http.HandlerFunc {
 	}
 }
 
+// @Summary Delete job application
+// @Description Soft-deletes a job application. Only the owner or an admin can delete it.
+// @Tags job_applications
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param jobID path int true "Job application ID"
+// @Success 200 {object} apiResponse
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Router /jobs/{jobID} [delete]
 func (s *Server) handleDeleteJobApplication() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, _ := userIDFromContext(r.Context())

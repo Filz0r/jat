@@ -12,14 +12,24 @@ import (
 )
 
 type applicationStatusRequest struct {
-	ID        uint      `json:"id"`
-	Status    string    `json:"status"`
-	Kind      string    `json:"kind"`
+	ID        uint      `json:"id" validate:"required"`
+	Status    string    `json:"status" validate:"required"`
+	Kind      string    `json:"kind" validate:"required"`
 	UserID    uuid.UUID `json:"user_id,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
+// @Summary List current user's application statuses
+// @Description Returns all application statuses belonging to the authenticated user.
+// @Tags application_statuses
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} apiResponse{data=[]applicationStatusRequest}
+// @Failure 400 {object} apiResponse
+// @Failure 401 {object} apiResponse
+// @Router /application_statuses [get]
 func (s *Server) handleGetUserApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := userIDFromContext(r.Context())
@@ -61,6 +71,18 @@ func (s *Server) handleGetAllApplicationStatus() http.HandlerFunc {
 	}
 }
 
+// @Summary Update application status
+// @Description Updates an existing application status. Only the owner or an admin can update it.
+// @Tags application_statuses
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param statusID path int true "Application status ID"
+// @Param request body applicationStatusRequest true "Updated application status"
+// @Success 200 {object} apiResponse{data=applicationStatusRequest}
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Router /application_statuses/{statusID} [put]
 func (s *Server) handleUpdateApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		param := r.PathValue("statusID")
@@ -102,6 +124,17 @@ func (s *Server) handleUpdateApplicationStatus() http.HandlerFunc {
 	}
 }
 
+// @Summary Get application status
+// @Description Returns a single application status. Users can read their own; admins can read any.
+// @Tags application_statuses
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param statusID path int true "Application status ID"
+// @Success 200 {object} apiResponse{data=applicationStatusRequest}
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Router /application_statuses/{statusID} [get]
 func (s *Server) handleGetAnApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		param := r.PathValue("statusID")
@@ -144,6 +177,16 @@ func (s *Server) handleGetAnApplicationStatus() http.HandlerFunc {
 	}
 }
 
+// @Summary Create application status
+// @Description Creates a new application status for the authenticated user.
+// @Tags application_statuses
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body applicationStatusRequest true "Application status payload"
+// @Success 201 {object} apiResponse{data=applicationStatusRequest}
+// @Failure 400 {object} apiResponse
+// @Router /application_statuses [post]
 func (s *Server) handleCreateApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, _ := userIDFromContext(r.Context())
@@ -188,6 +231,17 @@ func (s *Server) handleCreateApplicationStatus() http.HandlerFunc {
 	}
 }
 
+// @Summary Delete application status
+// @Description Soft-deletes an application status. Only the owner or an admin can delete it.
+// @Tags application_statuses
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param statusID path int true "Application status ID"
+// @Success 200 {object} apiResponse
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Router /application_statuses/{statusID} [delete]
 func (s *Server) handleDeleteApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		param := r.PathValue("statusID")

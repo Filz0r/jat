@@ -9,6 +9,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// @title Job Application Tracker (JAT) API
+// @version 0.2.0
+// @description REST API for the JAT job application tracker. The API requires the X-Jat-Client-Type header on all routes (values: web-client, tui-client). Web clients use HttpOnly Secure SameSite=Strict cookies; TUI clients receive tokens in the JSON response.
+// @BasePath /api
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	err := godotenv.Load()
 	if err != nil {

@@ -10,35 +10,44 @@ import (
 )
 
 type userCreateRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Username string `json:"username"`
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
+	Username string `json:"username" validate:"required"`
 }
 
 type userLoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type loginResponse struct {
 	Token        string `json:"token,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
-	UserID       string `json:"user_id"`
-	Email        string `json:"email"`
+	UserID       string `json:"user_id" validate:"required"`
+	Email        string `json:"email" validate:"required"`
 }
 
 type userCreateResponse struct {
-	UserID    uuid.UUID `json:"user_id"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Username  string    `json:"username"`
+	UserID    uuid.UUID `json:"user_id" validate:"required"`
+	Email     string    `json:"email" validate:"required"`
+	CreatedAt time.Time `json:"created_at" validate:"required"`
+	UpdatedAt time.Time `json:"updated_at" validate:"required"`
+	Username  string    `json:"username" validate:"required"`
 	IsAdmin   bool      `json:"is_admin,omitempty"`
 }
 
 const jwtLifetime = time.Minute * 5              // 5 minutes
 const refreshTokenLifetime = time.Hour * 24 * 60 // 60 days
 
+// @Summary Create user
+// @Description Creates the first user. If no admin exists and the service is not initialized, the new user becomes the first admin.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body userCreateRequest true "User creation payload"
+// @Success 201 {object} apiResponse{data=userCreateResponse}
+// @Failure 400 {object} apiResponse
+// @Router /users [post]
 func (s *Server) handleUserCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
@@ -94,6 +103,17 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 	}
 }
 
+// @Summary Login
+// @Description Authenticates a user. For web clients the response includes two Set-Cookie headers: access_token (HttpOnly; Secure; SameSite=Strict; Path=/api; Max-Age=300) and refresh_token (HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=5184000). TUI clients receive the tokens in the response body. The X-Jat-Client-Type header is required by the server middleware but is set automatically by the generated web client.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body userLoginRequest true "Login credentials"
+// @Success 200 {object} apiResponse{data=loginResponse}
+// @Header 200 {string} Set-Cookie "access_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/api; Max-Age=300 AND refresh_token=<token>; HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=5184000"
+// @Failure 400 {object} apiResponse
+// @Failure 401 {object} apiResponse
+// @Router /auth/login [post]
 func (s *Server) handleUserLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		clientType, ok := clientTypeFromContext(r.Context())
@@ -180,6 +200,16 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 	}
 }
 
+// @Summary Refresh access token
+// @Description Issues a new access token from a valid refresh token. Web clients get a new access_token cookie (path /api, MaxAge=300); TUI clients get the token in the response body. The X-Jat-Client-Type header is required by the server middleware but is set automatically by the generated web client.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param Authorization header string false "Bearer refresh token (TUI clients)"
+// @Success 201 {object} apiResponse{data=string}
+// @Header 201 {string} Set-Cookie "access_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/api; Max-Age=300"
+// @Failure 401 {object} apiResponse
+// @Router /auth/refresh_token [get]
 func (s *Server) handleUserTokenRefresh() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		clientType, ok := clientTypeFromContext(r.Context())
@@ -243,6 +273,16 @@ func (s *Server) handleUserTokenRefresh() http.HandlerFunc {
 	}
 }
 
+// @Summary List all users
+// @Description Admin-only endpoint that returns every user.
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} apiResponse{data=[]userCreateResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Router /admin/users [get]
 func (s *Server) handleGetAllUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		isAdmin, ok := userAdminFromContext(r.Context())
@@ -275,6 +315,16 @@ func (s *Server) handleGetAllUsers() http.HandlerFunc {
 	}
 }
 
+// @Summary Logout
+// @Description Revokes the current refresh token. For web clients the refresh_token cookie is cleared by setting Max-Age=-1 on the response. The X-Jat-Client-Type header is required by the server middleware but is set automatically by the generated web client.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param Authorization header string false "Bearer refresh token (TUI clients)"
+// @Success 200 {object} apiResponse
+// @Header 200 {string} Set-Cookie "refresh_token=; HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=-1"
+// @Failure 401 {object} apiResponse
+// @Router /auth/logout [post]
 func (s *Server) handleUserLogout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		clientType, ok := clientTypeFromContext(r.Context())
@@ -314,6 +364,16 @@ func (s *Server) handleUserLogout() http.HandlerFunc {
 	}
 }
 
+// @Summary Revoke refresh token
+// @Description Revokes the refresh token passed in the request. For web clients the refresh_token cookie is cleared by setting Max-Age=-1 on the response. The X-Jat-Client-Type header is required by the server middleware but is set automatically by the generated web client.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param Authorization header string false "Bearer refresh token (TUI clients)"
+// @Success 200 {object} apiResponse
+// @Header 200 {string} Set-Cookie "refresh_token=; HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=-1"
+// @Failure 401 {object} apiResponse
+// @Router /auth/revoke_token [get]
 func (s *Server) handleUserRevokeToken() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		clientType, ok := clientTypeFromContext(r.Context())
@@ -351,6 +411,18 @@ func (s *Server) handleUserRevokeToken() http.HandlerFunc {
 	}
 }
 
+// @Summary Get a user
+// @Description Returns a single user. Users can read their own record; admins can read any record.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param userID path string true "User UUID"
+// @Success 200 {object} apiResponse{data=userCreateResponse}
+// @Failure 401 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /users/{userID} [get]
 func (s *Server) handleGetSingleUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := userIDFromContext(r.Context())
@@ -391,6 +463,17 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 	}
 }
 
+// @Summary Update current user
+// @Description Updates the authenticated user's profile.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body userCreateRequest true "Updated user fields"
+// @Success 200 {object} apiResponse{data=userCreateResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 401 {object} apiResponse
+// @Router /users [put]
 func (s *Server) handleUserUpdate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
@@ -429,6 +512,18 @@ func (s *Server) handleUserUpdate() http.HandlerFunc {
 	}
 }
 
+// @Summary Toggle admin status
+// @Description Admin-only endpoint to grant (GET) or revoke (DELETE) admin privileges for a user.
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param userID path string true "User UUID"
+// @Success 200 {object} apiResponse
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /admin/users/{userID} [get]
 func (s *Server) handleMakeUserAdmin(give bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		param := r.PathValue("userID")

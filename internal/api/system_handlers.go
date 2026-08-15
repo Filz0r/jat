@@ -8,6 +8,14 @@ type systemResponse struct {
 	Initialized bool `json:"initialized"`
 }
 
+// @Summary Health check
+// @Description Returns a success message if the database is reachable.
+// @Tags system
+// @Accept json
+// @Produce json
+// @Success 200 {object} apiResponse{data=string}
+// @Failure 500 {object} apiResponse
+// @Router /health [get]
 func (s *Server) healthHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if s.db == nil {
@@ -21,6 +29,13 @@ func (s *Server) healthHandler() http.Handler {
 	})
 }
 
+// @Summary Check initialization state
+// @Description Returns whether the server has been initialized (first admin created). This is used by the web UI to decide between the create-account and login flows.
+// @Tags system
+// @Accept json
+// @Produce json
+// @Success 200 {object} apiResponse{data=systemResponse}
+// @Router /initialized [get]
 func (s *Server) InitializedHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		initialized := s.services.IsInitialized()
@@ -34,6 +49,16 @@ func (s *Server) InitializedHandler() http.Handler {
 	})
 }
 
+// @Summary Mark service as initialized
+// @Description Sets the server initialized flag. Only the first admin can call this.
+// @Tags system
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 201 {object} apiResponse
+// @Failure 400 {object} apiResponse
+// @Failure 401 {object} apiResponse
+// @Router /initialized/set [get]
 func (s *Server) handleSetInitialized() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if s.services.IsInitialized() {
