@@ -1,7 +1,5 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { AppShell } from '#/components/app-shell.tsx';
-import { useUser } from '#/contexts/user-context.tsx';
-import { useEffect } from 'react';
 import { apiClient } from '#/api/client.ts';
 import { DataTable } from '#/components/data-table';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -9,15 +7,14 @@ import type { DataTableFeatures } from '#/components/data-table/table-features.t
 import type { JobApplication } from '#/api/types.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Plus } from 'lucide-react';
+import { requireAuth } from '#/lib/route-guards.ts';
 
 export const Route = createFileRoute('/jobs/')({
+	beforeLoad: requireAuth,
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { user, initialized, isLoading } = useUser();
-	const navigate = useNavigate();
-
 	const { data, isLoading: isDataLoading, isError } = apiClient.useQuery('get', '/jobs');
 
 	const columnHelper = createColumnHelper<DataTableFeatures, JobApplication>();
@@ -39,24 +36,6 @@ function RouteComponent() {
 			header: 'Created At',
 		}),
 	]);
-
-	useEffect(() => {
-		if (isLoading) return;
-
-		if (!initialized) {
-			navigate({ to: '/setup', replace: true });
-			return;
-		}
-
-		if (!user) {
-			navigate({ to: '/login', replace: true });
-			return;
-		}
-	}, [isLoading, initialized, user, navigate]);
-
-	if (isLoading || !initialized || !user) {
-		return null;
-	}
 
 	return (
 		<AppShell>
