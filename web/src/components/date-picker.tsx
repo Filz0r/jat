@@ -5,11 +5,7 @@ import * as React from 'react';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Calendar } from '#/components/ui/calendar.tsx';
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '#/components/ui/popover.tsx';
+import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
 import { cn } from '#lib/utils';
 
 interface DatePickerProps {
