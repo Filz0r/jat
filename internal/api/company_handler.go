@@ -40,11 +40,7 @@ type companyResponse struct {
 // @Router /company [post]
 func (s *Server) handleCreateCompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, ok := userIDFromContext(r.Context())
-		if !ok {
-			s.respondWithError(w, 403, "forbidden", nil)
-			return
-		}
+		userID, _ := userIDFromContext(r.Context())
 		decoder := json.NewDecoder(r.Body)
 		body := &companyBodyRequest{}
 		if err := decoder.Decode(body); err != nil {
@@ -135,11 +131,7 @@ func (s *Server) handleGetAllCompanies() http.HandlerFunc {
 // @Router /company/{companyID} [put]
 func (s *Server) handleUpdateACompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, ok := userIDFromContext(r.Context())
-		if !ok {
-			s.respondWithError(w, 403, "forbidden", nil)
-			return
-		}
+		userID, _ := userIDFromContext(r.Context())
 		id := r.PathValue("companyID")
 		convertedID, err := strconv.Atoi(id)
 		if err != nil {
@@ -235,11 +227,7 @@ func (s *Server) handleGetACompany() http.HandlerFunc {
 // @Router /company/{companyID} [delete]
 func (s *Server) handleDeleteACompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, ok := userIDFromContext(r.Context())
-		if !ok {
-			s.respondWithError(w, 403, "forbidden", nil)
-			return
-		}
+		userID, _ := userIDFromContext(r.Context())
 		id := r.PathValue("companyID")
 		companyID, err := strconv.Atoi(id)
 		if err != nil {

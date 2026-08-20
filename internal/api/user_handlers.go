@@ -436,11 +436,7 @@ func (s *Server) handleUserRevokeToken() http.HandlerFunc {
 // @Router /users/me [get]
 func (s *Server) handleGetCurrentUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, ok := userIDFromContext(r.Context())
-		if !ok {
-			s.respondWithError(w, 401, "no user id found", nil)
-			return
-		}
+		userID, _ := userIDFromContext(r.Context())
 		user, err := s.services.GetUserByID(userID)
 		if err != nil {
 			s.respondWithError(w, 404, "user not found", err)
@@ -479,11 +475,7 @@ func (s *Server) handleGetCurrentUser() http.HandlerFunc {
 // @Router /users/{userID} [get]
 func (s *Server) handleGetSingleUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, ok := userIDFromContext(r.Context())
-		if !ok {
-			s.respondWithError(w, 401, "no user id found", nil)
-			return
-		}
+		userID, _ := userIDFromContext(r.Context())
 		param := r.PathValue("userID")
 		paramUUID, err := uuid.Parse(param)
 		if err != nil {
@@ -537,12 +529,7 @@ func (s *Server) handleUserUpdate() http.HandlerFunc {
 			s.respondWithError(w, 400, "invalid body", err)
 			return
 		}
-		userID, ok := userIDFromContext(r.Context())
-		if !ok {
-			s.respondWithError(w, 401, "no user id found", nil)
-			return
-		}
-
+		userID, _ := userIDFromContext(r.Context())
 		dbUser, err := s.services.UpdateUser(
 			userID,
 			user.Username,

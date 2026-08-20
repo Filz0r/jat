@@ -32,11 +32,7 @@ type applicationStatusRequest struct {
 // @Router /application_statuses [get]
 func (s *Server) handleGetUserApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, ok := userIDFromContext(r.Context())
-		if !ok {
-			s.respondWithError(w, 401, "no user id found", nil)
-			return
-		}
+		userID, _ := userIDFromContext(r.Context())
 		data, err := s.services.GetAllApplicationStatus(userID)
 		if err != nil {
 			s.respondWithError(w, 400, "error getting application status", err)
