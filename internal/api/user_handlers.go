@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/filz0r/jat/internal/auth"
 	"github.com/google/uuid"
 )
 
@@ -99,7 +99,7 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 		s.respondWithJSON(w, 201, apiResponse{
 			Ok:      true,
 			Data:    response,
-			Message: "user created",
+			Message: "User created",
 		})
 	}
 }
@@ -139,8 +139,9 @@ func (s *Server) handleGetAllUsers() http.HandlerFunc {
 			response = append(response, temp)
 		}
 		s.respondWithJSON(w, 200, apiResponse{
-			Ok:   true,
-			Data: response,
+			Ok:      true,
+			Data:    response,
+			Message: fmt.Sprintf("Found %d users", len(response)),
 		})
 
 	}
@@ -176,7 +177,7 @@ func (s *Server) handleGetCurrentUser() http.HandlerFunc {
 		}
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
-			Message: "user found",
+			Message: "User found",
 			Data:    response,
 		})
 	}
@@ -216,7 +217,7 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 		}
 		response := apiResponse{
 			Ok:      true,
-			Message: "user found",
+			Message: "User found",
 			Data: userCreateResponse{
 				UserID:    user.ID,
 				IsAdmin:   user.IsAdmin,
@@ -303,6 +304,9 @@ func (s *Server) handleMakeUserAdmin(give bool) http.HandlerFunc {
 		if !give {
 			message = "User with Id: " + param + " is no longer admin"
 		}
-		s.respondWithJSON(w, 200, apiResponse{Ok: true, Message: message})
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:      true,
+			Message: message,
+		})
 	}
 }

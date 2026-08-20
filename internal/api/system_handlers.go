@@ -23,7 +23,7 @@ func (s *Server) healthHandler() http.Handler {
 			return
 		}
 		s.respondWithJSON(w, 200, apiResponse{
-			Message: "server is up and running",
+			Message: "Server is up and running",
 			Ok:      true,
 		})
 	})
@@ -43,7 +43,8 @@ func (s *Server) InitializedHandler() http.Handler {
 			Data: systemResponse{
 				Initialized: initialized,
 			},
-			Ok: true,
+			Message: "System is initialized",
+			Ok:      true,
 		}
 		s.respondWithJSON(w, 200, response)
 	})
@@ -62,24 +63,24 @@ func (s *Server) InitializedHandler() http.Handler {
 func (s *Server) handleSetInitialized() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if s.services.IsInitialized() {
-			s.respondWithError(w, 400, "service is already initialized", nil)
+			s.respondWithError(w, 400, "Service is already initialized", nil)
 			return
 		}
 
 		isAdmin, _ := userAdminFromContext(r.Context())
 		if !isAdmin {
-			s.respondWithError(w, 403, "forbidden", nil)
+			s.respondWithError(w, 403, "Forbidden Action", nil)
 			return
 		}
 		userID, _ := userIDFromContext(r.Context())
 		firstAdmin := s.services.GetFirstAdmin()
 		if userID != firstAdmin {
-			s.respondWithError(w, 403, "forbidden", nil)
+			s.respondWithError(w, 403, "Forbidden Action", nil)
 			return
 		}
 		res := s.services.SetInitialized()
 		if !res {
-			s.respondWithError(w, 400, "error setting service as initialized", nil)
+			s.respondWithError(w, 400, "Error setting service as initialized", nil)
 			return
 		}
 		response := apiResponse{

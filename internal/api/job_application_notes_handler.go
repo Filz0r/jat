@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -84,7 +85,7 @@ func (s *Server) handleGetJobNotes() http.HandlerFunc {
 		s.respondWithJSON(w, 200, apiResponse{
 			Data:    res,
 			Ok:      true,
-			Message: "Found job application notes",
+			Message: fmt.Sprintf("Found %d job application notes", len(dbNotes)),
 		})
 	}
 }

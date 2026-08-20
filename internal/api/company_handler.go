@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -74,7 +75,7 @@ func (s *Server) handleCreateCompany() http.HandlerFunc {
 		s.respondWithJSON(w, 201, apiResponse{
 			Ok:      true,
 			Data:    response,
-			Message: "company created",
+			Message: "Company created",
 		})
 	}
 }
@@ -112,8 +113,9 @@ func (s *Server) handleGetAllCompanies() http.HandlerFunc {
 		}
 
 		s.respondWithJSON(w, 200, apiResponse{
-			Ok:   true,
-			Data: response,
+			Ok:      true,
+			Data:    response,
+			Message: fmt.Sprintf("Found %d companies", len(response)),
 		})
 	}
 }
@@ -165,7 +167,7 @@ func (s *Server) handleUpdateACompany() http.HandlerFunc {
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Data:    response,
-			Message: "company updated",
+			Message: "Company updated",
 		})
 	}
 }
@@ -209,7 +211,7 @@ func (s *Server) handleGetACompany() http.HandlerFunc {
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Data:    response,
-			Message: "company found",
+			Message: "Company found",
 		})
 	}
 }
@@ -243,7 +245,7 @@ func (s *Server) handleDeleteACompany() http.HandlerFunc {
 
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
-			Message: "company deleted",
+			Message: "Company deleted",
 		})
 	}
 }

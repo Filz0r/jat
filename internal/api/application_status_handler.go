@@ -51,7 +51,11 @@ func (s *Server) handleGetUserApplicationStatus() http.HandlerFunc {
 			converted = append(converted, temp)
 		}
 
-		s.respondWithJSON(w, 200, apiResponse{Ok: true, Data: converted})
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:      true,
+			Data:    converted,
+			Message: "New Application Status created",
+		})
 	}
 }
 
@@ -63,7 +67,11 @@ func (s *Server) handleGetAllApplicationStatus() http.HandlerFunc {
 			return
 		}
 		// TODO: Might need to change this to user applicationStatusRequest instead of the db type
-		s.respondWithJSON(w, 200, apiResponse{Ok: true, Data: data})
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:      true,
+			Data:    data,
+			Message: fmt.Sprintf("Found %d Application Status", len(data)),
+		})
 	}
 }
 
@@ -108,14 +116,18 @@ func (s *Server) handleUpdateApplicationStatus() http.HandlerFunc {
 			s.respondWithError(w, 400, "error updating application status", err)
 			return
 		}
-		response := apiResponse{Ok: true, Data: applicationStatusRequest{
-			ID:        saved.ID,
-			Kind:      saved.Kind.String(),
-			Status:    saved.Status,
-			UpdatedAt: saved.UpdatedAt,
-			CreatedAt: saved.CreatedAt,
-			UserID:    saved.UserID,
-		}}
+		response := apiResponse{
+			Ok: true,
+			Data: applicationStatusRequest{
+				ID:        saved.ID,
+				Kind:      saved.Kind.String(),
+				Status:    saved.Status,
+				UpdatedAt: saved.UpdatedAt,
+				CreatedAt: saved.CreatedAt,
+				UserID:    saved.UserID,
+			},
+			Message: "Updated Application Status",
+		}
 		s.respondWithJSON(w, 200, response)
 	}
 }
@@ -161,14 +173,18 @@ func (s *Server) handleGetAnApplicationStatus() http.HandlerFunc {
 			)
 			return
 		}
-		response := apiResponse{Ok: true, Data: applicationStatusRequest{
-			ID:        record.ID,
-			Kind:      record.Kind.String(),
-			Status:    record.Status,
-			UpdatedAt: record.UpdatedAt,
-			CreatedAt: record.CreatedAt,
-			UserID:    record.UserID,
-		}}
+		response := apiResponse{
+			Ok: true,
+			Data: applicationStatusRequest{
+				ID:        record.ID,
+				Kind:      record.Kind.String(),
+				Status:    record.Status,
+				UpdatedAt: record.UpdatedAt,
+				CreatedAt: record.CreatedAt,
+				UserID:    record.UserID,
+			},
+			Message: fmt.Sprintf("Found Application Status with ID %d", record.ID),
+		}
 		s.respondWithJSON(w, 200, response)
 	}
 }
@@ -262,7 +278,10 @@ func (s *Server) handleDeleteApplicationStatus() http.HandlerFunc {
 			s.respondWithError(w, 400, "error deleting application status", err)
 			return
 		}
-		response := apiResponse{Ok: true, Message: "application status deleted"}
+		response := apiResponse{
+			Ok:      true,
+			Message: "application status deleted",
+		}
 		s.respondWithJSON(w, 200, response)
 	}
 }

@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -83,8 +84,9 @@ func (s *Server) handleGetUserJobApplications() http.HandlerFunc {
 			res = append(res, temp)
 		}
 		response := apiResponse{
-			Data: res,
-			Ok:   true,
+			Data:    res,
+			Ok:      true,
+			Message: fmt.Sprintf("Fetched %d job applications", len(res)),
 		}
 		s.respondWithJSON(w, 200, response)
 	}
