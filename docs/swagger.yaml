@@ -15,6 +15,8 @@ definitions:
     properties:
       company_id:
         type: integer
+      created_at:
+        type: string
       status_id:
         type: integer
       title:
@@ -23,6 +25,7 @@ definitions:
         type: string
     required:
     - company_id
+    - created_at
     - status_id
     - title
     - url

@@ -1794,6 +1794,7 @@ export interface components {
 		};
 		'api.applicationRequest': {
 			company_id: number;
+			created_at: string;
 			status_id: number;
 			title: string;
 			url: string;
