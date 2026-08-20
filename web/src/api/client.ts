@@ -3,16 +3,27 @@ import createQueryClient from 'openapi-react-query';
 import type { paths } from './gen-spec';
 
 const WEB_CLIENT_TYPE = 'web-client';
-const SESSION_EXPIRED_ERROR = 'session expired';
-const SESSION_EXPIRED_EVENT = 'jat:session-expired';
 
 let refreshPromise: Promise<boolean> | null = null;
 
 const bodyCache = new WeakMap<Request, string>();
 
-function dispatchSessionExpired() {
-	if (typeof window !== 'undefined') {
-		window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+let sessionExpiredHandler: ((redirectHref: string) => void) | null = null;
+
+export function registerSessionExpiredHandler(handler: (redirectHref: string) => void): () => void {
+	sessionExpiredHandler = handler;
+	return () => {
+		if (sessionExpiredHandler === handler) {
+			sessionExpiredHandler = null;
+		}
+	};
+}
+
+function notifySessionExpired(redirectHref: string) {
+	if (sessionExpiredHandler) {
+		sessionExpiredHandler(redirectHref);
+	} else if (typeof window !== 'undefined') {
+		window.location.replace(`/login?redirect=${encodeURIComponent(redirectHref)}`);
 	}
 }
 
@@ -45,6 +56,14 @@ function cloneRequestWithBody(request: Request, bodyText: string | undefined): R
 	});
 }
 
+function shouldSkipRefresh(pathname: string): boolean {
+	return (
+		pathname === '/api/auth/refresh_token' ||
+		pathname === '/api/auth/login' ||
+		pathname === '/api/initialized'
+	);
+}
+
 export const api = createClient<paths>({
 	baseUrl: '/api',
 	credentials: 'include',
@@ -66,21 +85,19 @@ api.use({
 			return response;
 		}
 
-		const cloned = response.clone();
-		const data = await cloned.json().catch(() => null);
-		if (typeof data !== 'object' || data === null || data.error !== SESSION_EXPIRED_ERROR) {
-			return response;
-		}
+		const pathname = new URL(request.url).pathname;
 
-		const isRefreshRequest = new URL(request.url).pathname === '/api/auth/refresh_token';
-		if (isRefreshRequest) {
-			dispatchSessionExpired();
+		if (shouldSkipRefresh(pathname)) {
 			return response;
 		}
 
 		const refreshed = await refreshAccessToken(api);
 		if (!refreshed) {
-			dispatchSessionExpired();
+			const redirectHref =
+				typeof window !== 'undefined'
+					? window.location.pathname + window.location.search + window.location.hash
+					: '/';
+			notifySessionExpired(redirectHref);
 			return response;
 		}
 

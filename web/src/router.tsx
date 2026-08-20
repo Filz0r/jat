@@ -1,6 +1,8 @@
 import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
+import { authStore } from '#/lib/auth-store';
+import type { AuthStore } from '#/lib/auth-store';
 
 const FIVE_MINUTES = 1000 * 60 * 5;
 
@@ -14,6 +16,7 @@ export const queryClient = new QueryClient({
 
 export interface RouterContext {
 	queryClient: QueryClient;
+	authStore: AuthStore;
 }
 
 export function getRouter(context?: Partial<RouterContext>) {
@@ -24,6 +27,7 @@ export function getRouter(context?: Partial<RouterContext>) {
 		defaultPreloadStaleTime: FIVE_MINUTES,
 		context: {
 			queryClient,
+			authStore,
 			...context,
 		},
 	});

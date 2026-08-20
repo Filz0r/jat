@@ -1,47 +1,51 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import * as React from 'react';
+import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { LoginForm } from '#/components/forms/login-form.tsx';
-import { useUser } from '#/contexts/user-context.tsx';
-import { api } from '#/api/client';
+import { useAuth } from '#/contexts/auth-context.tsx';
+import { redirectIfAuthenticated } from '#/lib/route-guards.ts';
+import { loginSearchSchema } from '#/schemas/login.ts';
 
 export const Route = createFileRoute('/login')({
+	validateSearch: loginSearchSchema,
+	beforeLoad: redirectIfAuthenticated,
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { initialized, user, setUser, isLoading } = useUser();
+	const { refreshUser } = useAuth();
 	const navigate = useNavigate();
-
-	React.useEffect(() => {
-		if (isLoading) return;
-
-		if (!initialized) {
-			navigate({ to: '/setup', replace: true });
-			return;
-		}
-
-		if (user) {
-			navigate({ to: '/', replace: true });
-		}
-	}, [isLoading, initialized, user, navigate]);
+	const { redirect } = useSearch({ from: '/login' });
 
 	const handleSuccess = async () => {
-		const { data: userData, response: userResponse } = await api.GET('/users/me');
+		await refreshUser();
 
-		if (userResponse.ok && userData.ok && userData.data) {
-			setUser(userData.data);
-		}
-
-		await navigate({ to: '/' });
+		const target = isValidRedirect(redirect) ? redirect : '/';
+		await navigate({ to: target, replace: true });
 	};
-
-	if (isLoading || !initialized || user) {
-		return null;
-	}
 
 	return (
 		<div className="flex min-h-screen items-center justify-center p-4">
 			<LoginForm onSuccess={handleSuccess} />
 		</div>
 	);
+}
+
+function isValidRedirect(value: string | undefined): value is string {
+	if (!value) {
+		return false;
+	}
+
+	if (!value.startsWith('/')) {
+		return false;
+	}
+
+	if (value.startsWith('//')) {
+		return false;
+	}
+
+	try {
+		const url = new URL(value, window.location.origin);
+		return url.origin === window.location.origin && url.pathname !== '/login';
+	} catch {
+		return false;
+	}
 }
