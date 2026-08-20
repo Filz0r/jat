@@ -70,7 +70,6 @@ export function AppSidebar() {
 			</SidebarContent>
 
 			<SidebarFooter>
-				<NavGroup items={footerNavItems} />
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<ThemeToggle />
