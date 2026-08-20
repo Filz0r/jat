@@ -437,6 +437,46 @@ func (s *Server) handleUserRevokeToken() http.HandlerFunc {
 // @Failure 403 {object} apiResponse
 // @Failure 404 {object} apiResponse
 // @Router /users/{userID} [get]
+// @Summary	Get current user
+// @Description	Returns the currently authenticated user. This is the only user endpoint that web clients can call on page load without knowing their own UUID.
+// @Tags users
+// @Accept json
+// @Produce	json
+// @Security BearerAuth
+// @Success	200	{object} apiResponse{data=userCreateResponse}
+// @Failure	401	{object} apiResponse
+// @Router /users/me [get]
+func (s *Server) handleGetCurrentUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, ok := userIDFromContext(r.Context())
+		if !ok {
+			s.respondWithError(w, 401, "no user id found", nil)
+			return
+		}
+		user, err := s.services.GetUserByID(userID)
+		if err != nil {
+			s.respondWithError(w, 404, "user not found", err)
+			return
+		}
+		response := userCreateResponse{
+			UserID:    user.ID,
+			IsAdmin:   user.IsAdmin,
+			Email:     user.Email,
+			Username:  user.Username,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		}
+		if user.DefaultApplicationStatusID != nil {
+			response.DefaultStatusID = *user.DefaultApplicationStatusID
+		}
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:      true,
+			Message: "user found",
+			Data:    response,
+		})
+	}
+}
+
 func (s *Server) handleGetSingleUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := userIDFromContext(r.Context())
