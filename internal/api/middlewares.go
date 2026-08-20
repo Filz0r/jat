@@ -37,7 +37,7 @@ func (s *Server) middlewareAuth(next http.Handler) http.Handler {
 		}
 		userID, err := auth.ValidateJWT(token, s.jwtSecret)
 		if err != nil {
-			s.respondWithError(w, 401, "invalid jwt token", err)
+			s.respondWithError(w, 401, "session expired", err)
 			return
 		}
 		ctx := context.WithValue(r.Context(), contextKeyUserID, userID)
