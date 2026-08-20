@@ -12,28 +12,22 @@ import {
 
 import { api } from '#/api/client';
 import { CreateAccount } from '#/components/forms/create-account-form.tsx';
-import { useUser } from '#/contexts/user-context.tsx';
-import { useCallback, useEffect } from 'react';
+import { useAuth } from '#/contexts/auth-context.tsx';
+import { requireSetup } from '#/lib/route-guards.ts';
+import { useCallback } from 'react';
 import { setupStepSchema } from '#/schemas/setup.ts';
 import type { SetupStep } from '#/schemas/setup.ts';
 
 export const Route = createFileRoute('/setup')({
 	validateSearch: setupStepSchema,
+	beforeLoad: requireSetup,
 	component: RouteComponent,
 });
 
 function RouteComponent() {
 	const { step } = useSearch({ from: '/setup' });
 	const navigate = useNavigate({ from: '/setup' });
-	const { initialized, setInitialized, setUser, isLoading } = useUser();
-
-	useEffect(() => {
-		if (isLoading) return;
-
-		if (initialized) {
-			navigate({ to: '/', replace: true });
-		}
-	}, [isLoading, initialized, navigate]);
+	const { refreshUser } = useAuth();
 
 	const goToStep = useCallback(
 		(next: SetupStep) => {
@@ -47,12 +41,7 @@ function RouteComponent() {
 	);
 
 	const handleAccountCreated = async () => {
-		const { data: userData, response: userResponse } = await api.GET('/users/me');
-
-		if (userResponse.ok && userData?.ok && userData.data) {
-			setUser(userData.data);
-		}
-
+		await refreshUser();
 		goToStep('finish');
 	};
 
@@ -64,13 +53,9 @@ function RouteComponent() {
 			return;
 		}
 
-		setInitialized(true);
+		await refreshUser();
 		await navigate({ to: '/' });
 	};
-
-	if (isLoading || initialized) {
-		return null;
-	}
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4">
