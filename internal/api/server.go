@@ -11,6 +11,7 @@ import (
 
 type Server struct {
 	mux       *http.ServeMux
+	apiMux    *http.ServeMux
 	db        *gorm.DB
 	services  *services.ServiceManager
 	port      string

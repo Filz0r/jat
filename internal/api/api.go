@@ -7,15 +7,28 @@ import (
 
 	"github.com/filz0r/jat/internal/config"
 	"github.com/filz0r/jat/internal/services"
+	"github.com/filz0r/jat/internal/utils"
 	"github.com/filz0r/jat/internal/version"
 )
 
 func (s *Server) Start() error {
+	s.loadRoutes()
+
+	// API routes live under /api and require the X-Jat-Client-Type header.
+	s.mux.Handle("/api/", http.StripPrefix("/api", s.middlewareClientType(s.apiMux)))
+
+	// Static files and SPA fallback are served at the root. In development the
+	// Vite dev server handles this, so skip registration to avoid requiring
+	// the client-type header on non-API requests.
+	if !utils.IsDevMode() {
+		s.mux.Handle("/{path...}", s.staticHandler())
+	}
+
 	s.server = &http.Server{
 		Addr:    ":" + s.port,
-		Handler: s.middlewareLogRequest(s.middlewareClientType(s.mux)),
+		Handler: s.middlewareLogRequest(s.mux),
 	}
-	s.loadRoutes()
+
 	initialConfigsExist, err := s.services.InitialConfigsExist()
 	if err != nil {
 		s.logger.Fatal(err)
@@ -42,64 +55,65 @@ func (s *Server) Start() error {
 
 func (s *Server) loadRoutes() {
 	// system handlers
-	s.mux.Handle("GET /api/health", s.healthHandler())
-	s.mux.Handle("GET /api/initialized", s.InitializedHandler())
-	s.mux.Handle("GET /api/initialized/set", s.middlewareAdminUser(s.handleSetInitialized()))
+	s.apiMux.Handle("GET /health", s.healthHandler())
+	s.apiMux.Handle("GET /initialized", s.InitializedHandler())
+	s.apiMux.Handle("GET /initialized/set", s.middlewareAdminUser(s.handleSetInitialized()))
 
 	//auth handlers
-	s.mux.Handle("POST /api/auth/login", s.handleUserLogin())
-	s.mux.Handle("POST /api/auth/logout",
+	s.apiMux.Handle("POST /auth/login", s.handleUserLogin())
+	s.apiMux.Handle("POST /auth/logout",
 		s.middlewareAuth(s.middlewareRefreshToken(s.handleUserLogout())))
-	s.mux.Handle("GET /api/auth/refresh_token",
+	s.apiMux.Handle("GET /auth/refresh_token",
 		s.middlewareRefreshToken(s.handleUserTokenRefresh()))
-	s.mux.Handle("GET /api/auth/revoke_token",
+	s.apiMux.Handle("GET /auth/revoke_token",
 		s.middlewareRefreshToken(s.handleUserRevokeToken()))
 	// TODO: add a method to fetch the current sessions
 
 	// user handlers
-	s.mux.Handle("POST /api/users", s.handleUserCreate())
-	s.mux.Handle("GET /api/users/{userID}",
+	s.apiMux.Handle("POST /users", s.handleUserCreate())
+	s.apiMux.Handle("GET /users/me", s.middlewareAuth(s.handleGetCurrentUser()))
+	s.apiMux.Handle("GET /users/{userID}",
 		s.middlewareAuth(s.handleGetSingleUser()))
-	s.mux.Handle("PUT /api/users", s.middlewareAuth(s.handleUserUpdate()))
+	s.apiMux.Handle("PUT /users", s.middlewareAuth(s.handleUserUpdate()))
 
 	// Company handlers
-	s.mux.Handle("POST /api/company", s.middlewareAuth(s.handleCreateCompany()))
-	s.mux.Handle("GET /api/company", s.middlewareAuth(s.handleGetAllCompanies()))
-	s.mux.Handle("GET /api/company/{companyID}", s.middlewareAuth(s.handleGetACompany()))
-	s.mux.Handle("PUT /api/company/{companyID}", s.middlewareAuth(s.handleUpdateACompany()))
-	s.mux.Handle("DELETE /api/company/{companyID}", s.middlewareAdminUser(s.handleDeleteACompany()))
+	s.apiMux.Handle("POST /company", s.middlewareAuth(s.handleCreateCompany()))
+	s.apiMux.Handle("GET /company", s.middlewareAuth(s.handleGetAllCompanies()))
+	s.apiMux.Handle("GET /company/{companyID}", s.middlewareAuth(s.handleGetACompany()))
+	s.apiMux.Handle("PUT /company/{companyID}", s.middlewareAuth(s.handleUpdateACompany()))
+	s.apiMux.Handle("DELETE /company/{companyID}", s.middlewareAdminUser(s.handleDeleteACompany()))
 
 	// Application Statuses Handlers
-	s.mux.Handle("GET /api/application_statuses", s.middlewareAuth(s.handleGetUserApplicationStatus()))
-	s.mux.Handle("GET /api/application_statuses/{statusID}", s.middlewareAuth(s.handleGetAnApplicationStatus()))
-	s.mux.Handle("PUT /api/application_statuses/{statusID}", s.middlewareAuth(s.handleUpdateApplicationStatus()))
-	s.mux.Handle("DELETE /api/application_statuses/{statusID}", s.middlewareAuth(s.handleDeleteApplicationStatus()))
-	s.mux.Handle("POST /api/application_statuses", s.middlewareAuth(s.handleCreateApplicationStatus()))
+	s.apiMux.Handle("GET /application_statuses", s.middlewareAuth(s.handleGetUserApplicationStatus()))
+	s.apiMux.Handle("GET /application_statuses/{statusID}", s.middlewareAuth(s.handleGetAnApplicationStatus()))
+	s.apiMux.Handle("PUT /application_statuses/{statusID}", s.middlewareAuth(s.handleUpdateApplicationStatus()))
+	s.apiMux.Handle("DELETE /application_statuses/{statusID}", s.middlewareAuth(s.handleDeleteApplicationStatus()))
+	s.apiMux.Handle("POST /application_statuses", s.middlewareAuth(s.handleCreateApplicationStatus()))
 
 	// Job applications Handlers
-	s.mux.Handle("GET /api/jobs",
+	s.apiMux.Handle("GET /jobs",
 		s.middlewareAuth(s.handleGetUserJobApplications()))
-	s.mux.Handle("POST /api/jobs",
+	s.apiMux.Handle("POST /jobs",
 		s.middlewareAuth(s.handleCreateJobApplication()))
-	s.mux.Handle("GET /api/jobs/{jobID}",
+	s.apiMux.Handle("GET /jobs/{jobID}",
 		s.middlewareAuth(s.handleGetJobApplication()))
-	s.mux.Handle("PUT /api/jobs/{jobID}/status/{statusID}",
+	s.apiMux.Handle("PUT /jobs/{jobID}/status/{statusID}",
 		s.middlewareAuth(s.handleUpdateJobApplicationStatus()))
-	s.mux.Handle("DELETE /api/jobs/{jobID}",
+	s.apiMux.Handle("DELETE /jobs/{jobID}",
 		s.middlewareAuth(s.handleDeleteJobApplication()))
 
 	// Job Application Notes Handlers
 	// Same base path as jobs because all notes belong to a single job
-	s.mux.Handle("GET /api/jobs/{jobID}/notes", s.middlewareAuth(s.handleGetJobNotes()))
-	s.mux.Handle("POST /api/jobs/{jobID}/notes", s.middlewareAuth(s.handleCreateJobNote()))
-	s.mux.Handle("GET /api/jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleGetJobNote()))
-	s.mux.Handle("PUT /api/jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleUpdateJobNote()))
-	s.mux.Handle("DELETE /api/jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleDeleteJobNote()))
+	s.apiMux.Handle("GET /jobs/{jobID}/notes", s.middlewareAuth(s.handleGetJobNotes()))
+	s.apiMux.Handle("POST /jobs/{jobID}/notes", s.middlewareAuth(s.handleCreateJobNote()))
+	s.apiMux.Handle("GET /jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleGetJobNote()))
+	s.apiMux.Handle("PUT /jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleUpdateJobNote()))
+	s.apiMux.Handle("DELETE /jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleDeleteJobNote()))
 
 	// admin handlers
-	s.mux.Handle("GET /api/admin/users", s.middlewareAdminUser(s.handleGetAllUsers()))
-	s.mux.Handle("GET /api/admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(true)))
-	s.mux.Handle("DELETE /api/admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(false)))
+	s.apiMux.Handle("GET /admin/users", s.middlewareAdminUser(s.handleGetAllUsers()))
+	s.apiMux.Handle("GET /admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(true)))
+	s.apiMux.Handle("DELETE /admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(false)))
 	// TODO: add a restore company change endpoint for admins
 	// TODO: add admin endpoints to get soft deleted application status and a way to restore them
 	// TODO: add admin endpoints to get soft deleted Job application and a way to restore them
@@ -127,6 +141,7 @@ func New(cfg *config.ConfigFile) (*Server, error) {
 	server := &Server{
 		db:        cfg.GetDB(),
 		mux:       http.NewServeMux(),
+		apiMux:    http.NewServeMux(),
 		port:      servePort,
 		services:  services.NewServiceManager(cfg.GetDB()),
 		logger:    newServerLogger(),
