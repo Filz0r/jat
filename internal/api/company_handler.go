@@ -15,7 +15,7 @@ type companyBodyRequest struct {
 }
 
 type companyResponse struct {
-	ID        uint      `json:"id,omitempty"`
+	ID        uint      `json:"id,omitempty" validate:"required"`
 	Name      string    `json:"name" validate:"required"`
 	Website   string    `json:"website,omitempty"`
 	CreatedAt time.Time `json:"createdAt" validate:"required"`
