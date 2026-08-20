@@ -425,18 +425,6 @@ func (s *Server) handleUserRevokeToken() http.HandlerFunc {
 	}
 }
 
-// @Summary Get a user
-// @Description Returns a single user. Users can read their own record; admins can read any record.
-// @Tags users
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param userID path string true "User UUID"
-// @Success 200 {object} apiResponse{data=userCreateResponse}
-// @Failure 401 {object} apiResponse
-// @Failure 403 {object} apiResponse
-// @Failure 404 {object} apiResponse
-// @Router /users/{userID} [get]
 // @Summary	Get current user
 // @Description	Returns the currently authenticated user. This is the only user endpoint that web clients can call on page load without knowing their own UUID.
 // @Tags users
@@ -477,6 +465,18 @@ func (s *Server) handleGetCurrentUser() http.HandlerFunc {
 	}
 }
 
+// @Summary	Get a user
+// @Description	Returns a single user. Users can read their own record; admins can read any record.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param userID path string true "User UUID"
+// @Success 200 {object} apiResponse{data=userCreateResponse}
+// @Failure 401 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /users/{userID} [get]
 func (s *Server) handleGetSingleUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := userIDFromContext(r.Context())
