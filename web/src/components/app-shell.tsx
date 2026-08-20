@@ -1,0 +1,36 @@
+import { SidebarInset, SidebarProvider, useSidebar } from '#components/ui/sidebar';
+import { AppSidebar } from '#/components/app-sidebar.tsx';
+import { Button } from '#components/ui/button';
+import { IconLayoutSidebar } from '@tabler/icons-react';
+import type { ReactNode } from 'react';
+
+interface AppShellProps {
+	children: ReactNode;
+}
+
+function MobileSidebarToggle() {
+	const { toggleSidebar, isMobile } = useSidebar();
+	if (!isMobile) return null;
+	return (
+		<Button
+			onClick={toggleSidebar}
+			size="icon-lg"
+			className="fixed bottom-4 left-4 z-50 rounded-full shadow-lg"
+		>
+			<IconLayoutSidebar />
+			<span className="sr-only">Toggle sidebar</span>
+		</Button>
+	);
+}
+
+export function AppShell({ children }: AppShellProps) {
+	return (
+		<SidebarProvider>
+			<AppSidebar />
+			<SidebarInset className="flex flex-col">
+				<main className="flex-1 overflow-auto">{children}</main>
+			</SidebarInset>
+			<MobileSidebarToggle />
+		</SidebarProvider>
+	);
+}
