@@ -842,8 +842,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/api.apiResponse'
-        "401":
-          description: Unauthorized
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/api.apiResponse'
       security:
