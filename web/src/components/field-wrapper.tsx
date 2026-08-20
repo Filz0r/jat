@@ -1,6 +1,7 @@
 import { Label } from '#/components/ui/label.tsx';
 import type { $ZodIssueBase } from 'zod/v4/core';
 import type { ReactNode } from 'react';
+import { cn } from '#/lib/utils.ts';
 
 interface FieldWrapperProps {
 	field: {
@@ -16,9 +17,10 @@ interface FieldWrapperProps {
 	};
 	label: string;
 	children: ReactNode;
+	className?: string;
 }
 
-export default function FieldWrapper({ field, label, children }: FieldWrapperProps) {
+export default function FieldWrapper({ field, label, children, className }: FieldWrapperProps) {
 	const showErrors = field.state.meta.isDirty || field.state.meta.isTouched;
 	const errors = field.state.meta.errors;
 
@@ -32,7 +34,7 @@ export default function FieldWrapper({ field, label, children }: FieldWrapperPro
 		});
 
 	return (
-		<div className="flex flex-col gap-1.5">
+		<div className={cn('flex flex-col gap-1.5', className)}>
 			<Label htmlFor={field.name}>{label}</Label>
 			{children}
 			{showErrors && messages.length > 0 && (
