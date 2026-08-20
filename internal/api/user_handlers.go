@@ -362,6 +362,16 @@ func (s *Server) handleUserLogout() http.HandlerFunc {
 				Secure:   true,
 				SameSite: http.SameSiteStrictMode,
 			})
+
+			http.SetCookie(w, &http.Cookie{
+				Name:     "access_token",
+				Value:    "",
+				Path:     "/api",
+				MaxAge:   -1,
+				HttpOnly: true,
+				Secure:   true,
+				SameSite: http.SameSiteStrictMode,
+			})
 		}
 
 		s.respondWithJSON(w, 200, apiResponse{Ok: true, Message: "refresh token revoked"})
