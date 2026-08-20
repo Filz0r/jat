@@ -57,7 +57,7 @@ func (s *Server) InitializedHandler() http.Handler {
 // @Security BearerAuth
 // @Success 201 {object} apiResponse
 // @Failure 400 {object} apiResponse
-// @Failure 401 {object} apiResponse
+// @Failure 403 {object} apiResponse
 // @Router /initialized/set [get]
 func (s *Server) handleSetInitialized() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -68,13 +68,13 @@ func (s *Server) handleSetInitialized() http.Handler {
 
 		isAdmin, _ := userAdminFromContext(r.Context())
 		if !isAdmin {
-			s.respondWithError(w, 401, "unauthorized", nil)
+			s.respondWithError(w, 403, "forbidden", nil)
 			return
 		}
 		userID, _ := userIDFromContext(r.Context())
 		firstAdmin := s.services.GetFirstAdmin()
 		if userID != firstAdmin {
-			s.respondWithError(w, 401, "unauthorized", nil)
+			s.respondWithError(w, 403, "forbidden", nil)
 			return
 		}
 		res := s.services.SetInitialized()
