@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { AppShell } from '#/components/app-shell.tsx';
+
 import { apiClient } from '#/api/client.ts';
 import { DataTable } from '#/components/data-table';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -7,10 +7,8 @@ import type { DataTableFeatures } from '#/components/data-table/table-features.t
 import type { JobApplication } from '#/api/types.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Plus } from 'lucide-react';
-import { requireAuth } from '#/lib/route-guards.ts';
 
-export const Route = createFileRoute('/jobs/')({
-	beforeLoad: requireAuth,
+export const Route = createFileRoute('/_app/jobs/')({
 	component: RouteComponent,
 });
 
@@ -45,25 +43,23 @@ function RouteComponent() {
 	);
 
 	return (
-		<AppShell>
-			<main className="mx-4">
-				<div className="py-4 text-center text-2xl">
-					<h1>Job Applications</h1>
-				</div>
-				<div className="flex justify-end py-2">{CreateButton}</div>
-				{isDataLoading ? (
-					<div>Loading...</div>
-				) : !isError && data && data.data ? (
-					<DataTable
-						data={data.data}
-						columns={columns}
-						noResultsMessage="No Jobs were found! You can create a new one using the button bellow!"
-						CreateButton={CreateButton}
-					/>
-				) : (
-					'fack'
-				)}
-			</main>
-		</AppShell>
+		<main className="mx-4">
+			<div className="py-4 text-center text-2xl">
+				<h1>Job Applications</h1>
+			</div>
+			<div className="flex justify-end py-2">{CreateButton}</div>
+			{isDataLoading ? (
+				<div>Loading...</div>
+			) : !isError && data && data.data ? (
+				<DataTable
+					data={data.data}
+					columns={columns}
+					noResultsMessage="No Jobs were found! You can create a new one using the button bellow!"
+					CreateButton={CreateButton}
+				/>
+			) : (
+				'fack'
+			)}
+		</main>
 	);
 }

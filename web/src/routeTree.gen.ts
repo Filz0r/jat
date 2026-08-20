@@ -9,23 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as CompaniesRouteImport } from './routes/companies'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SetupRouteImport } from './routes/setup'
-import { Route as JobsIndexRouteImport } from './routes/jobs.index'
-import { Route as JobsJobIDRouteImport } from './routes/jobs.$jobID'
-import { Route as JobsNewRouteImport } from './routes/jobs.new'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppCompaniesRouteImport } from './routes/_app.companies'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppJobsIndexRouteImport } from './routes/_app.jobs.index'
+import { Route as AppJobsJobIDRouteImport } from './routes/_app.jobs.$jobID'
+import { Route as AppJobsNewRouteImport } from './routes/_app.jobs.new'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompaniesRoute = CompaniesRouteImport.update({
-  id: '/companies',
-  path: '/companies',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -33,121 +28,121 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const JobsIndexRoute = JobsIndexRouteImport.update({
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCompaniesRoute = AppCompaniesRouteImport.update({
+  id: '/companies',
+  path: '/companies',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppJobsIndexRoute = AppJobsIndexRouteImport.update({
   id: '/jobs/',
   path: '/jobs/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
-const JobsJobIDRoute = JobsJobIDRouteImport.update({
+const AppJobsJobIDRoute = AppJobsJobIDRouteImport.update({
   id: '/jobs/$jobID',
   path: '/jobs/$jobID',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
-const JobsNewRoute = JobsNewRouteImport.update({
+const AppJobsNewRoute = AppJobsNewRouteImport.update({
   id: '/jobs/new',
   path: '/jobs/new',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/companies': typeof CompaniesRoute
+  '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
-  '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
-  '/jobs/$jobID': typeof JobsJobIDRoute
-  '/jobs/new': typeof JobsNewRoute
-  '/jobs/': typeof JobsIndexRoute
+  '/companies': typeof AppCompaniesRoute
+  '/settings': typeof AppSettingsRoute
+  '/jobs/$jobID': typeof AppJobsJobIDRoute
+  '/jobs/new': typeof AppJobsNewRoute
+  '/jobs/': typeof AppJobsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/companies': typeof CompaniesRoute
   '/login': typeof LoginRoute
-  '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
-  '/jobs/$jobID': typeof JobsJobIDRoute
-  '/jobs/new': typeof JobsNewRoute
-  '/jobs': typeof JobsIndexRoute
+  '/companies': typeof AppCompaniesRoute
+  '/settings': typeof AppSettingsRoute
+  '/': typeof AppIndexRoute
+  '/jobs/$jobID': typeof AppJobsJobIDRoute
+  '/jobs/new': typeof AppJobsNewRoute
+  '/jobs': typeof AppJobsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/companies': typeof CompaniesRoute
+  '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
-  '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
-  '/jobs/$jobID': typeof JobsJobIDRoute
-  '/jobs/new': typeof JobsNewRoute
-  '/jobs/': typeof JobsIndexRoute
+  '/_app/companies': typeof AppCompaniesRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/jobs/$jobID': typeof AppJobsJobIDRoute
+  '/_app/jobs/new': typeof AppJobsNewRoute
+  '/_app/jobs/': typeof AppJobsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/companies'
     | '/login'
-    | '/settings'
     | '/setup'
+    | '/companies'
+    | '/settings'
     | '/jobs/$jobID'
     | '/jobs/new'
     | '/jobs/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/companies'
     | '/login'
-    | '/settings'
     | '/setup'
+    | '/companies'
+    | '/settings'
+    | '/'
     | '/jobs/$jobID'
     | '/jobs/new'
     | '/jobs'
   id:
     | '__root__'
-    | '/'
-    | '/companies'
+    | '/_app'
     | '/login'
-    | '/settings'
     | '/setup'
-    | '/jobs/$jobID'
-    | '/jobs/new'
-    | '/jobs/'
+    | '/_app/companies'
+    | '/_app/settings'
+    | '/_app/'
+    | '/_app/jobs/$jobID'
+    | '/_app/jobs/new'
+    | '/_app/jobs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  CompaniesRoute: typeof CompaniesRoute
+  AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
-  SettingsRoute: typeof SettingsRoute
   SetupRoute: typeof SetupRoute
-  JobsJobIDRoute: typeof JobsJobIDRoute
-  JobsNewRoute: typeof JobsNewRoute
-  JobsIndexRoute: typeof JobsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/companies': {
-      id: '/companies'
-      path: '/companies'
-      fullPath: '/companies'
-      preLoaderRoute: typeof CompaniesRouteImport
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -157,13 +152,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/setup': {
       id: '/setup'
       path: '/setup'
@@ -171,39 +159,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/jobs/': {
-      id: '/jobs/'
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/companies': {
+      id: '/_app/companies'
+      path: '/companies'
+      fullPath: '/companies'
+      preLoaderRoute: typeof AppCompaniesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/jobs/': {
+      id: '/_app/jobs/'
       path: '/jobs'
       fullPath: '/jobs/'
-      preLoaderRoute: typeof JobsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppJobsIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/jobs/$jobID': {
-      id: '/jobs/$jobID'
+    '/_app/jobs/$jobID': {
+      id: '/_app/jobs/$jobID'
       path: '/jobs/$jobID'
       fullPath: '/jobs/$jobID'
-      preLoaderRoute: typeof JobsJobIDRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppJobsJobIDRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/jobs/new': {
-      id: '/jobs/new'
+    '/_app/jobs/new': {
+      id: '/_app/jobs/new'
       path: '/jobs/new'
       fullPath: '/jobs/new'
-      preLoaderRoute: typeof JobsNewRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppJobsNewRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
+interface AppRouteChildren {
+  AppCompaniesRoute: typeof AppCompaniesRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppJobsJobIDRoute: typeof AppJobsJobIDRoute
+  AppJobsNewRoute: typeof AppJobsNewRoute
+  AppJobsIndexRoute: typeof AppJobsIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppCompaniesRoute: AppCompaniesRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppJobsJobIDRoute: AppJobsJobIDRoute,
+  AppJobsNewRoute: AppJobsNewRoute,
+  AppJobsIndexRoute: AppJobsIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  CompaniesRoute: CompaniesRoute,
+  AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
-  SettingsRoute: SettingsRoute,
   SetupRoute: SetupRoute,
-  JobsJobIDRoute: JobsJobIDRoute,
-  JobsNewRoute: JobsNewRoute,
-  JobsIndexRoute: JobsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
