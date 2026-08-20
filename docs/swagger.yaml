@@ -3,13 +3,12 @@ definitions:
   api.apiResponse:
     properties:
       data: {}
-      error:
-        type: string
       message:
         type: string
       ok:
         type: boolean
     required:
+    - message
     - ok
     type: object
   api.applicationRequest:

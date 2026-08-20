@@ -1789,8 +1789,7 @@ export interface components {
 	schemas: {
 		'api.apiResponse': {
 			data?: unknown;
-			error?: string;
-			message?: string;
+			message: string;
 			ok: boolean;
 		};
 		'api.applicationRequest': {

@@ -1869,13 +1869,11 @@
         "api.apiResponse": {
             "type": "object",
             "required": [
+                "message",
                 "ok"
             ],
             "properties": {
                 "data": {},
-                "error": {
-                    "type": "string"
-                },
                 "message": {
                     "type": "string"
                 },
