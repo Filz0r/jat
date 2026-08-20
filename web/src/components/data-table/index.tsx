@@ -1,8 +1,10 @@
 'use client';
 
-import { useTable } from '@tanstack/react-table';
 import type { ColumnDef, RowData } from '@tanstack/react-table';
+import type { DataTableFeatures } from './table-features';
+import type { ReactNode } from 'react';
 
+import { useTable } from '@tanstack/react-table';
 import {
 	Table,
 	TableBody,
@@ -11,9 +13,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
-
 import { features } from './table-features';
-import type { DataTableFeatures } from './table-features';
 import { Button } from '#/components/ui/button.tsx';
 import {
 	Select,
@@ -23,7 +23,6 @@ import {
 	SelectValue,
 } from '#/components/ui/select.tsx';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { type ReactNode } from 'react';
 
 interface DataTableProps<TData extends RowData> {
 	columns: ColumnDef<DataTableFeatures, TData>[];
