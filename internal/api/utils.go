@@ -33,8 +33,7 @@ const contextGetClientType contextKey = "clientType"
 type apiResponse struct {
 	Data    any    `json:"data,omitempty"`
 	Ok      bool   `json:"ok" validate:"required"`
-	Message string `json:"message,omitempty"`
-	Error   string `json:"error,omitempty"`
+	Message string `json:"message" validate:"required"`
 }
 
 func userIDFromContext(ctx context.Context) (uuid.UUID, bool) {
@@ -62,8 +61,8 @@ func (s *Server) respondWithError(w http.ResponseWriter, code int, msg string, e
 		s.logger.Println(err)
 	}
 	s.respondWithJSON(w, code, apiResponse{
-		Error: msg,
-		Ok:    false,
+		Message: msg,
+		Ok:      false,
 	})
 }
 
