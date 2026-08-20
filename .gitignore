@@ -5,5 +5,9 @@
 
 jat
 
-frontend/dist
-frontend/node_modules
+web/node_modules
+web/dist
+
+internal/api/webdist
+
+docs/docs.go
