@@ -28,12 +28,13 @@ type loginResponse struct {
 }
 
 type userCreateResponse struct {
-	UserID    uuid.UUID `json:"user_id" validate:"required"`
-	Email     string    `json:"email" validate:"required"`
-	CreatedAt time.Time `json:"created_at" validate:"required"`
-	UpdatedAt time.Time `json:"updated_at" validate:"required"`
-	Username  string    `json:"username" validate:"required"`
-	IsAdmin   bool      `json:"is_admin,omitempty"`
+	UserID          uuid.UUID `json:"user_id" validate:"required"`
+	Email           string    `json:"email" validate:"required"`
+	CreatedAt       time.Time `json:"created_at" validate:"required"`
+	UpdatedAt       time.Time `json:"updated_at" validate:"required"`
+	Username        string    `json:"username" validate:"required"`
+	IsAdmin         bool      `json:"is_admin,omitempty"`
+	DefaultStatusID uint      `json:"default_status_id,omitempty"`
 }
 
 const jwtLifetime = time.Minute * 5              // 5 minutes
@@ -94,6 +95,9 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 			CreatedAt: dbUser.CreatedAt,
 			UpdatedAt: dbUser.UpdatedAt,
 			Username:  dbUser.Username,
+		}
+		if dbUser.DefaultApplicationStatusID != nil {
+			response.DefaultStatusID = *dbUser.DefaultApplicationStatusID
 		}
 		s.respondWithJSON(w, 201, apiResponse{
 			Ok:      true,
