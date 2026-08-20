@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"time"
 
 	"github.com/filz0r/jat/internal/database"
 	"github.com/google/uuid"
@@ -33,6 +34,7 @@ func (sm *ServiceManager) CreateUserJobApplication(
 	userID uuid.UUID,
 	statusID, companyID uint,
 	title, url string,
+	createdAt time.Time,
 ) (database.JobApplication, error) {
 	if sm.db == nil {
 		return database.JobApplication{}, errors.New("database not initialized")
@@ -54,6 +56,7 @@ func (sm *ServiceManager) CreateUserJobApplication(
 			Url:       url,
 			UserID:    userID,
 		}
+		application.CreatedAt = createdAt
 		if err := tx.Create(&application).Error; err != nil {
 			return err
 		}

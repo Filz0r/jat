@@ -23,10 +23,11 @@ type applicationResponse struct {
 }
 
 type applicationRequest struct {
-	Title     string `json:"title" validate:"required"`
-	URL       string `json:"url" validate:"required"`
-	StatusID  int    `json:"status_id" validate:"required"`
-	CompanyID int    `json:"company_id" validate:"required"`
+	Title     string    `json:"title" validate:"required"`
+	URL       string    `json:"url" validate:"required"`
+	StatusID  int       `json:"status_id" validate:"required"`
+	CompanyID int       `json:"company_id" validate:"required"`
+	CreatedAt time.Time `json:"created_at" validate:"required"`
 }
 
 func generateApplicationResponseFromRow(row database.JobApplication) applicationResponse {
@@ -113,7 +114,7 @@ func (s *Server) handleCreateJobApplication() http.HandlerFunc {
 			s.respondWithError(w, 400, "Malformed request body", err)
 			return
 		}
-		if body.StatusID < 1 || body.CompanyID < 1 || body.Title == "" {
+		if body.StatusID < 1 || body.CompanyID < 1 || body.Title == "" || body.CreatedAt.IsZero() {
 			s.respondWithError(w, 400, "Invalid request body", nil)
 			return
 		}
@@ -124,6 +125,7 @@ func (s *Server) handleCreateJobApplication() http.HandlerFunc {
 			uint(body.CompanyID),
 			body.Title,
 			body.URL,
+			body.CreatedAt,
 		)
 		if err != nil {
 			s.respondWithError(w, 400, "Could not create job application", err)
