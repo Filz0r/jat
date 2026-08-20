@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { LoginForm } from '#/components/forms/login-form.tsx';
-import { useAuth } from '#/contexts/auth-context.tsx';
+import { useAuth } from '#/hooks/use-auth.ts';
 import { redirectIfAuthenticated } from '#/lib/route-guards.ts';
 import { loginSearchSchema } from '#/schemas/login.ts';
 

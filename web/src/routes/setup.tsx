@@ -12,7 +12,7 @@ import {
 
 import { api } from '#/api/client';
 import { CreateAccount } from '#/components/forms/create-account-form.tsx';
-import { useAuth } from '#/contexts/auth-context.tsx';
+import { useAuth } from '#/hooks/use-auth.ts';
 import { requireSetup } from '#/lib/route-guards.ts';
 import { useCallback } from 'react';
 import { setupStepSchema } from '#/schemas/setup.ts';

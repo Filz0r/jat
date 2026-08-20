@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { IconLogout } from '@tabler/icons-react';
 import { SidebarMenuButton } from '#components/ui/sidebar';
 import { api } from '#/api/client';
-import { useAuth } from '#/contexts/auth-context.tsx';
+import { useAuth } from '#/hooks/use-auth.ts';
 import { useState } from 'react';
 
 export function LogoutButton() {

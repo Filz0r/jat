@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { AppShell } from '#/components/app-shell.tsx';
-import { useAuth } from '#/contexts/auth-context.tsx';
+import { useAuth } from '#/hooks/use-auth.ts';
 import { requireAuth } from '#/lib/route-guards.ts';
 import CreateJobApplicationForm from '#/components/forms/create-job-application-form.tsx';
 
