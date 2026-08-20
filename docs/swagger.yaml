@@ -1,0 +1,1370 @@
+basePath: /api
+definitions:
+  api.apiResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      ok:
+        type: boolean
+    required:
+    - ok
+    type: object
+  api.applicationRequest:
+    properties:
+      company_id:
+        type: integer
+      status_id:
+        type: integer
+      title:
+        type: string
+      url:
+        type: string
+    required:
+    - company_id
+    - status_id
+    - title
+    - url
+    type: object
+  api.applicationResponse:
+    properties:
+      company:
+        $ref: '#/definitions/api.companyResponse'
+      created_at:
+        type: string
+      id:
+        type: integer
+      status:
+        $ref: '#/definitions/api.applicationStatusRequest'
+      title:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+      user_id:
+        type: string
+    required:
+    - id
+    - title
+    - url
+    - user_id
+    type: object
+  api.applicationStatusRequest:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      kind:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    required:
+    - id
+    - kind
+    - status
+    type: object
+  api.companyBodyRequest:
+    properties:
+      name:
+        type: string
+      website:
+        type: string
+    required:
+    - name
+    type: object
+  api.companyResponse:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+      website:
+        type: string
+    required:
+    - createdAt
+    - createdBy
+    - id
+    - name
+    - updatedAt
+    - updatedBy
+    type: object
+  api.loginResponse:
+    properties:
+      email:
+        type: string
+      refresh_token:
+        type: string
+      token:
+        type: string
+      user_id:
+        type: string
+    required:
+    - email
+    - user_id
+    type: object
+  api.noteCreateRequest:
+    properties:
+      body:
+        type: string
+    required:
+    - body
+    type: object
+  api.noteData:
+    properties:
+      body:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      job_id:
+        type: integer
+      status:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    required:
+    - body
+    - created_at
+    - id
+    - job_id
+    - status
+    - updated_at
+    - user_id
+    type: object
+  api.systemResponse:
+    properties:
+      initialized:
+        type: boolean
+    type: object
+  api.userCreateRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  api.userCreateResponse:
+    properties:
+      created_at:
+        type: string
+      default_status_id:
+        type: integer
+      email:
+        type: string
+      is_admin:
+        type: boolean
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    required:
+    - created_at
+    - email
+    - updated_at
+    - user_id
+    - username
+    type: object
+  api.userLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+info:
+  contact: {}
+  description: 'REST API for the JAT job application tracker. The API requires the
+    X-Jat-Client-Type header on all routes (values: web-client, tui-client). Web clients
+    use HttpOnly Secure SameSite=Strict cookies; TUI clients receive tokens in the
+    JSON response.'
+  title: Job Application Tracker (JAT) API
+  version: 0.2.0
+paths:
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Admin-only endpoint that returns every user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.userCreateResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: List all users
+      tags:
+      - admin
+  /admin/users/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: Admin-only endpoint to grant (GET) or revoke (DELETE) admin privileges
+        for a user.
+      parameters:
+      - description: User UUID
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Toggle admin status
+      tags:
+      - admin
+  /application_statuses:
+    get:
+      consumes:
+      - application/json
+      description: Returns all application statuses belonging to the authenticated
+        user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.applicationStatusRequest'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: List current user's application statuses
+      tags:
+      - application_statuses
+    post:
+      consumes:
+      - application/json
+      description: Creates a new application status for the authenticated user.
+      parameters:
+      - description: Application status payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.applicationStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.applicationStatusRequest'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Create application status
+      tags:
+      - application_statuses
+  /application_statuses/{statusID}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes an application status. Only the owner or an admin
+        can delete it.
+      parameters:
+      - description: Application status ID
+        in: path
+        name: statusID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete application status
+      tags:
+      - application_statuses
+    get:
+      consumes:
+      - application/json
+      description: Returns a single application status. Users can read their own;
+        admins can read any.
+      parameters:
+      - description: Application status ID
+        in: path
+        name: statusID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.applicationStatusRequest'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Get application status
+      tags:
+      - application_statuses
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing application status. Only the owner or an admin
+        can update it.
+      parameters:
+      - description: Application status ID
+        in: path
+        name: statusID
+        required: true
+        type: integer
+      - description: Updated application status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.applicationStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.applicationStatusRequest'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Update application status
+      tags:
+      - application_statuses
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 'Authenticates a user. For web clients the response includes two
+        Set-Cookie headers: access_token (HttpOnly; Secure; SameSite=Strict; Path=/api;
+        Max-Age=300) and refresh_token (HttpOnly; Secure; SameSite=Strict; Path=/api/auth;
+        Max-Age=5184000). TUI clients receive the tokens in the response body. The
+        X-Jat-Client-Type header is required by the server middleware but is set automatically
+        by the generated web client.'
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.userLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Set-Cookie:
+              description: access_token=<jwt>; HttpOnly; Secure; SameSite=Strict;
+                Path=/api; Max-Age=300 AND refresh_token=<token>; HttpOnly; Secure;
+                SameSite=Strict; Path=/api/auth; Max-Age=5184000
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.loginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      summary: Login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Revokes the current refresh token. For web clients the refresh_token
+        cookie is cleared by setting Max-Age=-1 on the response. The X-Jat-Client-Type
+        header is required by the server middleware but is set automatically by the
+        generated web client.
+      parameters:
+      - description: Bearer refresh token (TUI clients)
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Set-Cookie:
+              description: refresh_token=; HttpOnly; Secure; SameSite=Strict; Path=/api/auth;
+                Max-Age=-1
+              type: string
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      summary: Logout
+      tags:
+      - auth
+  /auth/refresh_token:
+    get:
+      consumes:
+      - application/json
+      description: Issues a new access token from a valid refresh token. Web clients
+        get a new access_token cookie (path /api, MaxAge=300); TUI clients get the
+        token in the response body. The X-Jat-Client-Type header is required by the
+        server middleware but is set automatically by the generated web client.
+      parameters:
+      - description: Bearer refresh token (TUI clients)
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          headers:
+            Set-Cookie:
+              description: access_token=<jwt>; HttpOnly; Secure; SameSite=Strict;
+                Path=/api; Max-Age=300
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/revoke_token:
+    get:
+      consumes:
+      - application/json
+      description: Revokes the refresh token passed in the request. For web clients
+        the refresh_token cookie is cleared by setting Max-Age=-1 on the response.
+        The X-Jat-Client-Type header is required by the server middleware but is set
+        automatically by the generated web client.
+      parameters:
+      - description: Bearer refresh token (TUI clients)
+        in: header
+        name: Authorization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Set-Cookie:
+              description: refresh_token=; HttpOnly; Secure; SameSite=Strict; Path=/api/auth;
+                Max-Age=-1
+              type: string
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      summary: Revoke refresh token
+      tags:
+      - auth
+  /company:
+    get:
+      consumes:
+      - application/json
+      description: Returns every company in the system.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.companyResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: List all companies
+      tags:
+      - companies
+    post:
+      consumes:
+      - application/json
+      description: Creates a new company.
+      parameters:
+      - description: Company payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.companyBodyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.companyResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Create company
+      tags:
+      - companies
+  /company/{companyID}:
+    delete:
+      consumes:
+      - application/json
+      description: Admin-only. Soft-deletes a company by ID.
+      parameters:
+      - description: Company ID
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete company
+      tags:
+      - companies
+    get:
+      consumes:
+      - application/json
+      description: Returns a single company by ID.
+      parameters:
+      - description: Company ID
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.companyResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Get company
+      tags:
+      - companies
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing company.
+      parameters:
+      - description: Company ID
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: Company payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.companyBodyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.companyResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Update company
+      tags:
+      - companies
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Returns a success message if the database is reachable.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      summary: Health check
+      tags:
+      - system
+  /initialized:
+    get:
+      consumes:
+      - application/json
+      description: Returns whether the server has been initialized (first admin created).
+        This is used by the web UI to decide between the create-account and login
+        flows.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.systemResponse'
+              type: object
+      summary: Check initialization state
+      tags:
+      - system
+  /initialized/set:
+    get:
+      consumes:
+      - application/json
+      description: Sets the server initialized flag. Only the first admin can call
+        this.
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Mark service as initialized
+      tags:
+      - system
+  /jobs:
+    get:
+      consumes:
+      - application/json
+      description: Returns all job applications belonging to the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.applicationResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: List current user's job applications
+      tags:
+      - job_applications
+    post:
+      consumes:
+      - application/json
+      description: Creates a new job application for the authenticated user.
+      parameters:
+      - description: Job application payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.applicationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.applicationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Create job application
+      tags:
+      - job_applications
+  /jobs/{jobID}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes a job application. Only the owner or an admin can
+        delete it.
+      parameters:
+      - description: Job application ID
+        in: path
+        name: jobID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete job application
+      tags:
+      - job_applications
+    get:
+      consumes:
+      - application/json
+      description: Returns a single job application. Users can read their own; admins
+        can read any.
+      parameters:
+      - description: Job application ID
+        in: path
+        name: jobID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.applicationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Get job application
+      tags:
+      - job_applications
+  /jobs/{jobID}/notes:
+    get:
+      consumes:
+      - application/json
+      description: Returns all notes belonging to a specific job application.
+      parameters:
+      - description: Job application ID
+        in: path
+        name: jobID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.noteData'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: List notes for a job application
+      tags:
+      - job_application_notes
+    post:
+      consumes:
+      - application/json
+      description: Adds a note to a job application.
+      parameters:
+      - description: Job application ID
+        in: path
+        name: jobID
+        required: true
+        type: integer
+      - description: Note body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.noteCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.noteData'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Create job application note
+      tags:
+      - job_application_notes
+  /jobs/{jobID}/notes/{noteID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a note from a job application.
+      parameters:
+      - description: Job application ID
+        in: path
+        name: jobID
+        required: true
+        type: integer
+      - description: Note ID
+        in: path
+        name: noteID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete job application note
+      tags:
+      - job_application_notes
+    get:
+      consumes:
+      - application/json
+      description: Returns a single note from a job application.
+      parameters:
+      - description: Job application ID
+        in: path
+        name: jobID
+        required: true
+        type: integer
+      - description: Note ID
+        in: path
+        name: noteID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.noteData'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Get job application note
+      tags:
+      - job_application_notes
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing note on a job application.
+      parameters:
+      - description: Job application ID
+        in: path
+        name: jobID
+        required: true
+        type: integer
+      - description: Note ID
+        in: path
+        name: noteID
+        required: true
+        type: integer
+      - description: Note body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.noteCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.noteData'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Update job application note
+      tags:
+      - job_application_notes
+  /jobs/{jobID}/status/{statusID}:
+    put:
+      consumes:
+      - application/json
+      description: Changes the status of a job application.
+      parameters:
+      - description: Job application ID
+        in: path
+        name: jobID
+        required: true
+        type: integer
+      - description: Application status ID
+        in: path
+        name: statusID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.applicationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Update job application status
+      tags:
+      - job_applications
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Creates the first user. If no admin exists and the service is not
+        initialized, the new user becomes the first admin.
+      parameters:
+      - description: User creation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.userCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.userCreateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      summary: Create user
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Updates the authenticated user's profile.
+      parameters:
+      - description: Updated user fields
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.userCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.userCreateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Update current user
+      tags:
+      - users
+  /users/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a single user. Users can read their own record; admins
+        can read any record.
+      parameters:
+      - description: User UUID
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.userCreateResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a user
+      tags:
+      - users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Returns the currently authenticated user. This is the only user
+        endpoint that web clients can call on page load without knowing their own
+        UUID.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.userCreateResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
