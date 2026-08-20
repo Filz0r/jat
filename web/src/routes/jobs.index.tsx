@@ -37,22 +37,29 @@ function RouteComponent() {
 		}),
 	]);
 
+	const CreateButton = (
+		<Button className="space-x-2 p-2" size="lg">
+			<Link to="/jobs/new">New Job Application</Link>
+			<Plus size={32} />
+		</Button>
+	);
+
 	return (
 		<AppShell>
 			<main className="mx-4">
 				<div className="py-4 text-center text-2xl">
 					<h1>Job Applications</h1>
 				</div>
-				<div className="flex justify-end py-2">
-					<Button className="space-x-2 p-2" size="lg">
-						<Link to="/jobs/new">New Job Application</Link>
-						<Plus size={32} />
-					</Button>
-				</div>
+				<div className="flex justify-end py-2">{CreateButton}</div>
 				{isDataLoading ? (
 					<div>Loading...</div>
 				) : !isError && data && data.data ? (
-					<DataTable data={data.data} columns={columns} />
+					<DataTable
+						data={data.data}
+						columns={columns}
+						noResultsMessage="No Jobs were found! You can create a new one using the button bellow!"
+						CreateButton={CreateButton}
+					/>
 				) : (
 					'fack'
 				)}

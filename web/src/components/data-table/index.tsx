@@ -23,13 +23,21 @@ import {
 	SelectValue,
 } from '#/components/ui/select.tsx';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { type ReactNode } from 'react';
 
 interface DataTableProps<TData extends RowData> {
 	columns: ColumnDef<DataTableFeatures, TData>[];
 	data: TData[];
+	noResultsMessage?: string;
+	CreateButton?: ReactNode | null;
 }
 
-export function DataTable<TData extends RowData>({ columns, data }: DataTableProps<TData>) {
+export function DataTable<TData extends RowData>({
+	columns,
+	data,
+	noResultsMessage = 'No results.',
+	CreateButton = null,
+}: DataTableProps<TData>) {
 	const table = useTable({
 		features,
 		data,
@@ -67,8 +75,14 @@ export function DataTable<TData extends RowData>({ columns, data }: DataTablePro
 						))
 					) : (
 						<TableRow>
-							<TableCell colSpan={columns.length} className="h-24 text-center">
-								No results.
+							<TableCell
+								colSpan={columns.length}
+								className="h-24 text-center text-sm"
+							>
+								<div className="flex flex-col items-center justify-evenly gap-y-2.5">
+									{noResultsMessage}
+									{CreateButton !== null ? CreateButton : null}
+								</div>
 							</TableCell>
 						</TableRow>
 					)}
