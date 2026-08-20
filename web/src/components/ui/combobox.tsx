@@ -253,6 +253,8 @@ function useComboboxAnchor() {
 	return React.useRef<HTMLDivElement | null>(null);
 }
 
+export type { ComboboxRootChangeEventDetails } from '@base-ui/react/combobox';
+
 export {
 	Combobox,
 	ComboboxInput,
