@@ -1,19 +1,14 @@
-import {
-	createContext,
-	type ReactNode,
-	useCallback,
-	useContext,
-	useMemo,
-	useSyncExternalStore,
-} from 'react';
+import type { ReactNode, Context } from 'react';
+import type { QueryClient } from '@tanstack/react-query';
 import type { components } from '#/api/gen-spec';
+
+import { createContext, useCallback, useMemo, useSyncExternalStore } from 'react';
 import { api } from '#/api/client';
 import { authStore } from '#/lib/auth-store';
-import { queryClient } from '#/router';
 
 export type User = components['schemas']['api.userCreateResponse'];
 
-interface AuthContextValue {
+export interface AuthContextValue {
 	initialized: boolean | null;
 	user: User | null;
 	isLoading: boolean;
@@ -21,7 +16,20 @@ interface AuthContextValue {
 	clearSession: () => void;
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AUTH_CONTEXT_KEY = '__jat_auth_context__';
+
+const existingContext =
+	typeof globalThis !== 'undefined'
+		? (globalThis as Record<string, unknown>)[AUTH_CONTEXT_KEY]
+		: undefined;
+
+export const AuthContext: Context<AuthContextValue | undefined> =
+	(existingContext as Context<AuthContextValue | undefined> | undefined) ??
+	createContext<AuthContextValue | undefined>(undefined);
+
+if (typeof globalThis !== 'undefined') {
+	(globalThis as Record<string, unknown>)[AUTH_CONTEXT_KEY] = AuthContext;
+}
 
 function useAuthStoreState() {
 	return useSyncExternalStore(
@@ -31,7 +39,13 @@ function useAuthStoreState() {
 	);
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({
+	children,
+	queryClient,
+}: {
+	children: ReactNode;
+	queryClient: QueryClient;
+}) {
 	const { initialized, user, isLoading } = useAuthStoreState();
 
 	const refreshUser = useCallback(async () => {
@@ -82,12 +96,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				isLoading: false,
 			});
 		}
-	}, []);
+	}, [queryClient]);
 
 	const clearSession = useCallback(() => {
 		authStore.setState({ user: null });
 		queryClient.removeQueries({ queryKey: ['me'] });
-	}, []);
+	}, [queryClient]);
 
 	const value = useMemo(
 		() => ({
@@ -101,12 +115,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	);
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-	const value = useContext(AuthContext);
-	if (!value) {
-		throw new Error('useAuth must be used within an AuthProvider');
-	}
-	return value;
 }

@@ -104,7 +104,7 @@ function RootComponent() {
 	return (
 		<ThemeProvider>
 			<QueryClientProvider client={queryClient}>
-				<AuthProvider>
+				<AuthProvider queryClient={queryClient}>
 					<SessionExpiredHandler />
 					<Outlet />
 					<TanStackDevtools
