@@ -32,7 +32,7 @@ const contextGetClientType contextKey = "clientType"
 
 type apiResponse struct {
 	Data    any    `json:"data,omitempty"`
-	Ok      bool   `json:"ok,omitempty" validate:"required"`
+	Ok      bool   `json:"ok" validate:"required"`
 	Message string `json:"message,omitempty"`
 	Error   string `json:"error,omitempty"`
 }
