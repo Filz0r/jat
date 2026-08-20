@@ -98,6 +98,7 @@ func (s *Server) handleGetAllCompanies() http.HandlerFunc {
 		response := make([]companyResponse, 0, len(companies))
 		for _, company := range companies {
 			temp := companyResponse{
+				ID:        company.ID,
 				Name:      company.Name,
 				CreatedAt: company.CreatedAt,
 				UpdatedAt: company.UpdatedAt,
