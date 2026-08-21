@@ -101,6 +101,8 @@ func (s *Server) loadRoutes() {
 		s.middlewareAuth(s.handleUpdateJobApplicationStatus()))
 	s.apiMux.Handle("DELETE /jobs/{jobID}",
 		s.middlewareAuth(s.handleDeleteJobApplication()))
+	s.apiMux.Handle("GET /jobs/{jobID}/history",
+		s.middlewareAuth(s.handleGetJobApplicationHistory()))
 
 	// Job Application Notes Handlers
 	// Same base path as jobs because all notes belong to a single job

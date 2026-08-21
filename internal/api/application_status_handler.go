@@ -298,3 +298,42 @@ func (s *Server) handleDeleteApplicationStatus() http.HandlerFunc {
 		s.respondWithJSON(w, 200, response)
 	}
 }
+
+// @Summary Get job application status history
+// @Description Returns the status change history for a single job application. Users can read their own; admins can read any.
+// @Tags job_applications
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param jobID path int true "Job application ID"
+// @Success 200 {object} apiResponse{data=[]applicationStatusHistoryResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Router /jobs/{jobID}/history [get]
+func (s *Server) handleGetJobApplicationHistory() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		rawJobId := r.PathValue("jobID")
+		jobID64, err := strconv.ParseUint(rawJobId, 10, 32)
+		if err != nil {
+			s.respondWithError(w, 400, "Error parsing Job Application ID", err)
+			return
+		}
+		jobID := uint(jobID64)
+		userID, _ := userIDFromContext(r.Context())
+		data, err := s.services.GetJobApplicationStatusChanges(userID, jobID)
+		if err != nil {
+			s.respondWithError(w, 400, "Could not find job application history data", err)
+			return
+		}
+		result := make([]applicationStatusHistoryResponse, 0, len(data))
+		for _, d := range data {
+			temp := createApplicationHistoryRequest(d)
+			result = append(result, temp)
+		}
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:      true,
+			Message: fmt.Sprintf("Found %d Job Application History changes", len(data)),
+			Data:    result,
+		})
+	}
+}
