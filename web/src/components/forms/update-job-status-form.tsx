@@ -25,17 +25,17 @@ import {
 	TooltipContent,
 } from '#/components/ui/tooltip.tsx';
 
-interface UpdateJobApplicationStatusProps {
+interface UpdateJobApplicationStatusFormProps {
 	currentStatus: number;
 	jobID: number;
 	refreshSelf?: boolean;
 }
 
-export default function UpdateJobStatus({
+export default function UpdateJobStatusForm({
 	currentStatus,
 	jobID,
 	refreshSelf = false,
-}: UpdateJobApplicationStatusProps) {
+}: UpdateJobApplicationStatusFormProps) {
 	const queryClient = useQueryClient();
 	const [isOpen, setIsOpen] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -137,7 +137,7 @@ export default function UpdateJobStatus({
 			Content={
 				<div>
 					{errorMessage && (
-						<p className="mb-4 text-sm text-destructive">{errorMessage}</p>
+						<p className="text-destructive mb-4 text-sm">{errorMessage}</p>
 					)}
 					<form.Field
 						name="status"
