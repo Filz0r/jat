@@ -109,30 +109,25 @@ func (sm *ServiceManager) UpdateJobApplicationStatus(
 	if sm.db == nil {
 		return database.JobApplication{}, errors.New("database not initialized")
 	}
-	application, err := sm.GetJobApplicationById(applicationID)
-	if err != nil {
-		return database.JobApplication{}, err
-	}
-	// Admins can't change statuses lol
 	if !sm.DoesUserOwnJobApplication(applicationID, userID) {
 		return database.JobApplication{}, errors.New("user does not own job application")
 	}
-	err = sm.db.Transaction(func(tx *gorm.DB) error {
+	err := sm.db.Transaction(func(tx *gorm.DB) error {
+		var application database.JobApplication
+		if err := tx.Where("id = ?", applicationID).First(&application).Error; err != nil {
+			return err
+		}
 		oldStatus := application.StatusID
 		application.StatusID = newStatusID
 		if err := tx.Save(&application).Error; err != nil {
 			return err
 		}
-		err := sm.CreateApplicationStatusChange(tx, application.ID, newStatusID, &oldStatus)
-		if err != nil {
-			return err
-		}
-		return nil
+		return sm.CreateApplicationStatusChange(tx, application.ID, newStatusID, &oldStatus)
 	})
 	if err != nil {
 		return database.JobApplication{}, err
 	}
-	return application, nil
+	return sm.GetJobApplicationById(applicationID)
 }
 
 func (sm *ServiceManager) DeleteJobApplication(applicationID uint, userID uuid.UUID) error {
