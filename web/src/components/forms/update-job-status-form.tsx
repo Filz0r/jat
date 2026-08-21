@@ -70,7 +70,9 @@ export default function UpdateJobStatusForm({
 			setErrorMessage(null);
 
 			if (refreshSelf) {
-				await queryClient.refetchQueries({ queryKey: ['get', '/jobs/{jobID}'] });
+				await queryClient.refetchQueries({
+					queryKey: ['get', '/jobs/{jobID}', { params: { path: { jobID } } }],
+				});
 			}
 			await queryClient.refetchQueries({ queryKey: ['get', '/jobs'] });
 			// TODO: add a toast on success
