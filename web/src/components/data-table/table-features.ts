@@ -9,6 +9,7 @@ import {
 	rowSelectionFeature,
 	rowSortingFeature,
 	sortFn_alphanumeric,
+	sortFn_datetime,
 	sortFn_text,
 	tableFeatures,
 } from '@tanstack/react-table';
@@ -25,7 +26,7 @@ export const features = tableFeatures({
 	paginatedRowModel: createPaginatedRowModel(),
 	sortedRowModel: createSortedRowModel(),
 	filterFns: { includesString: filterFn_includesString },
-	sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
+	sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text, datetime: sortFn_datetime },
 });
 
 // Pass this as the first generic argument to `ColumnDef`, `Column`, `Table`,
