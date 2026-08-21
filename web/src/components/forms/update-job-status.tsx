@@ -104,17 +104,17 @@ export default function UpdateJobStatus({
 	}
 
 	return (
-		<>
-			<ModularFormDialog
-				open={isOpen}
-				onClose={() => {
-					setIsOpen(false);
-					setErrorMessage(null);
-				}}
-				TriggerButton={
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger>
+		<ModularFormDialog
+			open={isOpen}
+			onClose={() => {
+				setIsOpen(false);
+				setErrorMessage(null);
+			}}
+			TriggerButton={
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger
+							render={
 								<Button
 									size="icon-sm"
 									className="bg-amber-500 hover:bg-amber-700"
@@ -123,64 +123,61 @@ export default function UpdateJobStatus({
 									<ChartNoAxesColumn />
 									<span className="sr-only">Update Job Application Status</span>
 								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p>Update Job Application Status</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
-				}
-				title={`Update status of job with id ${jobID}`}
-				description="You can update the status of the current job application so that you have better traceability during your job search."
-				form={form}
-				Content={
-					<div>
-						{errorMessage && (
-							<p className="text-destructive mb-4 text-sm">{errorMessage}</p>
-						)}
-						<form.Field
-							name="status"
-							validators={{
-								onChange: updateJobApplicationStatusSchema.shape.status,
-							}}
-							children={(field) => (
-								<FieldWrapper field={field} label="Status" className="flex-1">
-									<Select
-										value={field.state.value}
-										onValueChange={(value) => {
-											if (value) {
-												form.setFieldValue('status', value);
-											}
-										}}
-									>
-										<SelectTrigger className="w-full">
-											<SelectValue>
-												{
-													convertedData.find(
-														(s) => s.value === field.state.value,
-													)?.label
-												}
-											</SelectValue>
-										</SelectTrigger>
-										<SelectContent>
-											<SelectGroup>
-												{convertedData.map((status) => (
-													<SelectItem
-														key={status.value}
-														value={status.value}
-													>
-														{status.label}
-													</SelectItem>
-												))}
-											</SelectGroup>
-										</SelectContent>
-									</Select>
-								</FieldWrapper>
-							)}
+							}
 						/>
-					</div>
-				}
-			/>
-		</>
+						<TooltipContent>
+							<p>Update Job Application Status</p>
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+			}
+			title={`Update status of job with id ${jobID}`}
+			description="You can update the status of the current job application so that you have better traceability during your job search."
+			form={form}
+			Content={
+				<div>
+					{errorMessage && (
+						<p className="mb-4 text-sm text-destructive">{errorMessage}</p>
+					)}
+					<form.Field
+						name="status"
+						validators={{
+							onChange: updateJobApplicationStatusSchema.shape.status,
+						}}
+						children={(field) => (
+							<FieldWrapper field={field} label="Status" className="flex-1">
+								<Select
+									value={field.state.value}
+									onValueChange={(value) => {
+										if (value) {
+											form.setFieldValue('status', value);
+										}
+									}}
+								>
+									<SelectTrigger className="w-full">
+										<SelectValue>
+											{
+												convertedData.find(
+													(s) => s.value === field.state.value,
+												)?.label
+											}
+										</SelectValue>
+									</SelectTrigger>
+									<SelectContent>
+										<SelectGroup>
+											{convertedData.map((status) => (
+												<SelectItem key={status.value} value={status.value}>
+													{status.label}
+												</SelectItem>
+											))}
+										</SelectGroup>
+									</SelectContent>
+								</Select>
+							</FieldWrapper>
+						)}
+					/>
+				</div>
+			}
+		/>
 	);
 }
