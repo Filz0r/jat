@@ -8,7 +8,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools';
 
 import '../styles.css';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { AuthProvider } from '#/contexts/auth-context.tsx';
 import { ThemeProvider } from '#/contexts/theme-context.tsx';
 import { api, registerSessionExpiredHandler } from '#/api/client';
@@ -110,7 +110,7 @@ function RootComponent() {
 					<Outlet />
 					<TanStackDevtools
 						config={{
-							position: 'bottom-right',
+							position: 'middle-left',
 						}}
 						plugins={[
 							{
@@ -119,7 +119,7 @@ function RootComponent() {
 							},
 							{
 								name: 'TanStack Query Client',
-								render: <ReactQueryDevtools />,
+								render: <ReactQueryDevtoolsPanel />,
 							},
 						]}
 					/>
