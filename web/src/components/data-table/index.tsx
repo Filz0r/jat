@@ -1,6 +1,6 @@
 'use client';
 
-import type { ColumnDef, RowData } from '@tanstack/react-table';
+import type { ColumnDef, RowData, SortingState } from '@tanstack/react-table';
 import type { DataTableFeatures } from './table-features';
 import type { ReactNode } from 'react';
 
@@ -23,6 +23,7 @@ import {
 	SelectValue,
 } from '#/components/ui/select.tsx';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useState } from 'react';
 
 interface DataTableProps<TData extends RowData> {
 	columns: ColumnDef<DataTableFeatures, TData>[];
@@ -37,10 +38,16 @@ export function DataTable<TData extends RowData>({
 	noResultsMessage = 'No results.',
 	CreateButton = null,
 }: DataTableProps<TData>) {
+	const [sorting, setSorting] = useState<SortingState>([]);
+
 	const table = useTable({
 		features,
 		data,
 		columns,
+		onSortingChange: setSorting,
+		state: {
+			sorting,
+		},
 	});
 
 	return (
@@ -48,7 +55,7 @@ export function DataTable<TData extends RowData>({
 			<Table>
 				<TableHeader>
 					{table.getHeaderGroups().map((headerGroup) => (
-						<TableRow key={headerGroup.id}>
+						<TableRow key={headerGroup.id} className="bg-muted hover:bg-muted/80">
 							{headerGroup.headers.map((header) => {
 								return (
 									<TableHead key={header.id}>
