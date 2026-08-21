@@ -28,9 +28,14 @@ import {
 interface UpdateJobApplicationStatusProps {
 	currentStatus: number;
 	jobID: number;
+	refreshSelf?: boolean;
 }
 
-export default function UpdateJobStatus({ currentStatus, jobID }: UpdateJobApplicationStatusProps) {
+export default function UpdateJobStatus({
+	currentStatus,
+	jobID,
+	refreshSelf = false,
+}: UpdateJobApplicationStatusProps) {
 	const queryClient = useQueryClient();
 	const [isOpen, setIsOpen] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -63,7 +68,10 @@ export default function UpdateJobStatus({ currentStatus, jobID }: UpdateJobAppli
 
 			setIsOpen(false);
 			setErrorMessage(null);
-			// await queryClient.invalidateQueries({ queryKey: ['get', '/jobs'] });
+
+			if (refreshSelf) {
+				await queryClient.refetchQueries({ queryKey: ['get', '/jobs/{jobID}'] });
+			}
 			await queryClient.refetchQueries({ queryKey: ['get', '/jobs'] });
 			// TODO: add a toast on success
 		},
