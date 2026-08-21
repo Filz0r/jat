@@ -49,7 +49,7 @@ export function AppSidebar() {
 					<SidebarMenuItem>
 						<SidebarMenuButton size="lg" render={<Link to="/" />} tooltip="JAT">
 							{!open && (
-								<span className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+								<span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
 									J
 								</span>
 							)}

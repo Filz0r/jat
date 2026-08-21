@@ -109,7 +109,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 						)}
 					/>
 
-					{serverError && <p className="text-destructive text-xs">{serverError}</p>}
+					{serverError && <p className="text-xs text-destructive">{serverError}</p>}
 				</CardContent>
 
 				<CardFooter>

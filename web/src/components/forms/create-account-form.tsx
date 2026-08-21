@@ -163,7 +163,7 @@ export function CreateAccount({ onSuccess }: CreateAccountProps) {
 						)}
 					/>
 
-					{serverError && <p className="text-destructive text-xs">{serverError}</p>}
+					{serverError && <p className="text-xs text-destructive">{serverError}</p>}
 				</CardContent>
 
 				<CardFooter>

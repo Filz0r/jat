@@ -97,7 +97,7 @@ function StepIndicator({ currentStep }: { currentStep: SetupStep }) {
 				return (
 					<li key={step.key} className="flex items-center gap-2">
 						<span
-							className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+							className={`flex size-6 items-center justify-center rounded-full text-xs font-medium ${
 								isActive || isPast
 									? 'bg-primary text-primary-foreground'
 									: 'bg-muted text-muted-foreground'
@@ -107,7 +107,7 @@ function StepIndicator({ currentStep }: { currentStep: SetupStep }) {
 						</span>
 						<span
 							className={`text-xs ${
-								isActive ? 'text-foreground font-medium' : 'text-muted-foreground'
+								isActive ? 'font-medium text-foreground' : 'text-muted-foreground'
 							}`}
 						>
 							{step.label}

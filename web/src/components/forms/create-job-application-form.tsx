@@ -97,6 +97,7 @@ export default function CreateJobApplicationForm({ defaultStatus }: { defaultSta
 	}));
 
 	return (
+		// eslint-disable-next-line tailwindcss/no-arbitrary-value
 		<div className="flex min-h-[calc(100vh-2rem)] w-full p-4 sm:min-h-0 sm:justify-center">
 			<form
 				className="flex w-full flex-col justify-start"
@@ -248,7 +249,7 @@ export default function CreateJobApplicationForm({ defaultStatus }: { defaultSta
 								)}
 							/>
 						</div>
-						{serverError && <p className="text-destructive text-xs">{serverError}</p>}
+						{serverError && <p className="text-xs text-destructive">{serverError}</p>}
 					</CardContent>
 					<CardFooter className="flex flex-col gap-3 sm:flex-row sm:justify-stretch">
 						<form.Subscribe
