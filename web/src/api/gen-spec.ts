@@ -1247,6 +1247,68 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/jobs/{jobID}/history': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get job application status history
+		 * @description Returns the status change history for a single job application. Users can read their own; admins can read any.
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Job application ID */
+					jobID: number;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'] & {
+							data?: components['schemas']['api.applicationStatusHistoryResponse'][];
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Forbidden */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/jobs/{jobID}/notes': {
 		parameters: {
 			query?: never;
@@ -1800,14 +1862,21 @@ export interface components {
 			url: string;
 		};
 		'api.applicationResponse': {
-			company?: components['schemas']['api.companyResponse'];
-			created_at?: string;
+			company: components['schemas']['api.companyResponse'];
+			created_at: string;
 			id: number;
-			status?: components['schemas']['api.applicationStatusRequest'];
+			status: components['schemas']['api.applicationStatusRequest'];
 			title: string;
-			updated_at?: string;
+			updated_at: string;
 			url: string;
 			user_id: string;
+		};
+		'api.applicationStatusHistoryResponse': {
+			application_id: number;
+			created_at: string;
+			id: number;
+			new_status: components['schemas']['api.applicationStatusRequest'];
+			old_status: components['schemas']['api.applicationStatusRequest'];
 		};
 		'api.applicationStatusRequest': {
 			created_at?: string;
@@ -1844,7 +1913,7 @@ export interface components {
 			created_at: string;
 			id: number;
 			job_id: number;
-			status: string;
+			status: components['schemas']['api.applicationStatusRequest'];
 			updated_at: string;
 			user_id: string;
 		};

@@ -1394,6 +1394,78 @@
                 }
             }
         },
+        "/jobs/{jobID}/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the status change history for a single job application. Users can read their own; admins can read any.",
+                "tags": [
+                    "job_applications"
+                ],
+                "summary": "Get job application status history",
+                "parameters": [
+                    {
+                        "description": "Job application ID",
+                        "name": "jobID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/components/schemas/api.apiResponse"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/api.applicationStatusHistoryResponse"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.apiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.apiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/jobs/{jobID}/notes": {
             "get": {
                 "security": [
@@ -2148,8 +2220,12 @@
             "api.applicationResponse": {
                 "type": "object",
                 "required": [
+                    "company",
+                    "created_at",
                     "id",
+                    "status",
                     "title",
+                    "updated_at",
                     "url",
                     "user_id"
                 ],
@@ -2177,6 +2253,33 @@
                     },
                     "user_id": {
                         "type": "string"
+                    }
+                }
+            },
+            "api.applicationStatusHistoryResponse": {
+                "type": "object",
+                "required": [
+                    "application_id",
+                    "created_at",
+                    "id",
+                    "new_status",
+                    "old_status"
+                ],
+                "properties": {
+                    "application_id": {
+                        "type": "integer"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "new_status": {
+                        "$ref": "#/components/schemas/api.applicationStatusRequest"
+                    },
+                    "old_status": {
+                        "$ref": "#/components/schemas/api.applicationStatusRequest"
                     }
                 }
             },
@@ -2313,7 +2416,7 @@
                         "type": "integer"
                     },
                     "status": {
-                        "type": "string"
+                        "$ref": "#/components/schemas/api.applicationStatusRequest"
                     },
                     "updated_at": {
                         "type": "string"

@@ -49,10 +49,33 @@ definitions:
       user_id:
         type: string
     required:
+    - company
+    - created_at
     - id
+    - status
     - title
+    - updated_at
     - url
     - user_id
+    type: object
+  api.applicationStatusHistoryResponse:
+    properties:
+      application_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      new_status:
+        $ref: '#/definitions/api.applicationStatusRequest'
+      old_status:
+        $ref: '#/definitions/api.applicationStatusRequest'
+    required:
+    - application_id
+    - created_at
+    - id
+    - new_status
+    - old_status
     type: object
   api.applicationStatusRequest:
     properties:
@@ -138,7 +161,7 @@ definitions:
       job_id:
         type: integer
       status:
-        type: string
+        $ref: '#/definitions/api.applicationStatusRequest'
       updated_at:
         type: string
       user_id:
@@ -991,6 +1014,45 @@ paths:
       security:
       - BearerAuth: []
       summary: Get job application
+      tags:
+      - job_applications
+  /jobs/{jobID}/history:
+    get:
+      consumes:
+      - application/json
+      description: Returns the status change history for a single job application.
+        Users can read their own; admins can read any.
+      parameters:
+      - description: Job application ID
+        in: path
+        name: jobID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.applicationStatusHistoryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Get job application status history
       tags:
       - job_applications
   /jobs/{jobID}/notes:
