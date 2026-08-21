@@ -4,6 +4,7 @@
 @import '@fontsource-variable/jetbrains-mono';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant light (&:not(.dark *));
 
 @theme inline {
 	--font-heading: var(--font-mono);
