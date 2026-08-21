@@ -8,4 +8,9 @@ export const createJobApplicationSchema = z.object({
 	status: z.uint32('You need to select a status').min(1),
 });
 
+export const updateJobApplicationStatusSchema = z.object({
+	status: z.uint32('You need to select a status').min(1),
+});
+
 export type CreateJobApplication = z.infer<typeof createJobApplicationSchema>;
+export type UpdateJobApplicationStatusSchema = z.infer<typeof updateJobApplicationStatusSchema>;
