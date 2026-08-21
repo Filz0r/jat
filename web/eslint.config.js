@@ -2,9 +2,11 @@
 
 import { tanstackConfig } from '@tanstack/eslint-config';
 import queryPlugin from '@tanstack/eslint-plugin-query';
+import eslintPluginTailwindcss from 'eslint-plugin-tailwindcss';
 
 export default [
 	...tanstackConfig,
+	eslintPluginTailwindcss.configs.recommended,
 	{
 		plugins: {
 			'@tanstack/query': queryPlugin,
@@ -27,5 +29,20 @@ export default [
 			'src/components/ui/**.tsx',
 			'src/components/ui/**.js',
 		],
+	},
+	{
+		settings: {
+			// Define the tailwindcss settings with the MANDATORY `cssConfigPath`
+			tailwindcss: {
+				cssConfigPath: './src/styles.css',
+			},
+		},
+		// Optional: Customize the rules to your needs
+		rules: {
+			'tailwindcss/classnames-order': 'warn',
+			'tailwindcss/no-arbitrary-value': 'warn',
+			'tailwindcss/no-custom-classname': ['warn', { whitelist: ['custom\\-*'] }],
+			'tailwindcss/no-contradicting-classname': 'warn',
+		},
 	},
 ];
