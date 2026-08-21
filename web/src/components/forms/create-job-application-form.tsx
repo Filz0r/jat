@@ -23,7 +23,7 @@ import { useNavigate } from '@tanstack/react-router';
 
 export default function CreateJobApplicationForm({ defaultStatus }: { defaultStatus: number }) {
 	const navigate = useNavigate();
-
+	const queryClient = useQueryClient();
 	const [serverError, setServerError] = useState<string | null>(null);
 
 	const form = useForm({
@@ -55,6 +55,9 @@ export default function CreateJobApplicationForm({ defaultStatus }: { defaultSta
 				return;
 			}
 			form.reset();
+			await queryClient.refetchQueries({
+				queryKey: ['get', '/jobs'],
+			});
 			void navigate({ to: '/jobs', replace: true });
 		},
 	});
@@ -64,8 +67,6 @@ export default function CreateJobApplicationForm({ defaultStatus }: { defaultSta
 		isError: isErrorStatus,
 		isLoading: isLoadingStatus,
 	} = apiClient.useQuery('get', '/application_statuses');
-
-	const queryClient = useQueryClient();
 
 	const {
 		data: dataCompanies,
