@@ -10,7 +10,8 @@ export default function LogForm({
 		<>
 			{process.env.NODE_ENV === 'development' ? (
 				<Button
-					className="w-full bg-orange-400 hover:bg-orange-500"
+					type="button"
+					className="w-fit bg-orange-400 hover:bg-orange-500"
 					onClick={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
