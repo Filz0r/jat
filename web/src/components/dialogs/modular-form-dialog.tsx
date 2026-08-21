@@ -40,7 +40,7 @@ export default function ModularFormDialog({
 	return (
 		<Dialog open={open}>
 			<DialogTrigger render={TriggerButton} />
-			<DialogContent className="sm:max-w-sm">
+			<DialogContent className="sm:max-w-sm" showCloseButton={false}>
 				<form
 					noValidate
 					onSubmit={(e) => {
