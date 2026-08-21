@@ -17,6 +17,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { FilePlusCorner, FileCodeCorner } from 'lucide-react';
 import { api } from '#/api/client.ts';
 import type { JobApplicationNote } from '#/api/types.ts';
+import { toast } from '#/components/ui/toast.tsx';
 
 interface JobNoteFormPropsBase {
 	jobID: number;
@@ -104,7 +105,12 @@ export default function JobNoteForm(props: JobNoteFormProps) {
 
 			// Todo: uncomment bellow after adding note count to jobs fetching
 			// await queryClient.refetchQueries({ queryKey: ['get', '/jobs'] });
-			// TODO: add a toast on success
+			toast.add({
+				title:
+					edit && existingData
+						? `Updated note with id of ${existingData.id}`
+						: 'A new note was created',
+			});
 		},
 	});
 
@@ -185,7 +191,7 @@ export default function JobNoteForm(props: JobNoteFormProps) {
 			Content={
 				<div>
 					{errorMessage && (
-						<p className="mb-4 text-sm text-destructive">{errorMessage}</p>
+						<p className="text-destructive mb-4 text-sm">{errorMessage}</p>
 					)}
 					<form.Field
 						name="body"
