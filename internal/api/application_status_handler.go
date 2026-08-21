@@ -16,8 +16,42 @@ type applicationStatusRequest struct {
 	Status    string    `json:"status" validate:"required"`
 	Kind      string    `json:"kind" validate:"required"`
 	UserID    uuid.UUID `json:"user_id,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type applicationStatusHistoryResponse struct {
+	ID            uint                     `json:"id" validate:"required"`
+	ApplicationID uint                     `json:"application_id" validate:"required"`
+	OldStatus     applicationStatusRequest `json:"old_status" validate:"required"`
+	NewStatus     applicationStatusRequest `json:"new_status" validate:"required"`
+	CreatedAt     time.Time                `json:"created_at" validate:"required"`
+}
+
+func createApplicationHistoryRequest(d database.StatusHistory) applicationStatusHistoryResponse {
+	response := applicationStatusHistoryResponse{
+		ID:            d.ID,
+		ApplicationID: d.ApplicationID,
+		NewStatus:     createApplicationStatusRequest(d.NewStatus),
+		CreatedAt:     d.CreatedAt,
+	}
+
+	if d.OldStatus != nil {
+		response.OldStatus = createApplicationStatusRequest(*d.OldStatus)
+	}
+
+	return response
+}
+
+func createApplicationStatusRequest(d database.ApplicationStatus) applicationStatusRequest {
+	return applicationStatusRequest{
+		ID:        d.ID,
+		Status:    d.Status,
+		Kind:      d.Kind.String(),
+		UpdatedAt: d.UpdatedAt,
+		CreatedAt: d.CreatedAt,
+		UserID:    d.UserID,
+	}
 }
 
 // @Summary List current user's application statuses
@@ -40,14 +74,7 @@ func (s *Server) handleGetUserApplicationStatus() http.HandlerFunc {
 		}
 		converted := make([]applicationStatusRequest, 0, len(data))
 		for _, d := range data {
-			temp := applicationStatusRequest{
-				ID:        d.ID,
-				Status:    d.Status,
-				Kind:      d.Kind.String(),
-				UpdatedAt: d.UpdatedAt,
-				CreatedAt: d.CreatedAt,
-				UserID:    d.UserID,
-			}
+			temp := createApplicationStatusRequest(d)
 			converted = append(converted, temp)
 		}
 
@@ -174,15 +201,8 @@ func (s *Server) handleGetAnApplicationStatus() http.HandlerFunc {
 			return
 		}
 		response := apiResponse{
-			Ok: true,
-			Data: applicationStatusRequest{
-				ID:        record.ID,
-				Kind:      record.Kind.String(),
-				Status:    record.Status,
-				UpdatedAt: record.UpdatedAt,
-				CreatedAt: record.CreatedAt,
-				UserID:    record.UserID,
-			},
+			Ok:      true,
+			Data:    createApplicationStatusRequest(record),
 			Message: fmt.Sprintf("Found Application Status with ID %d", record.ID),
 		}
 		s.respondWithJSON(w, 200, response)
@@ -228,15 +248,8 @@ func (s *Server) handleCreateApplicationStatus() http.HandlerFunc {
 		}
 
 		response := apiResponse{
-			Ok: true,
-			Data: applicationStatusRequest{
-				ID:        saved.ID,
-				Kind:      saved.Kind.String(),
-				Status:    saved.Status,
-				UpdatedAt: saved.UpdatedAt,
-				CreatedAt: saved.CreatedAt,
-				UserID:    saved.UserID,
-			},
+			Ok:      true,
+			Data:    createApplicationStatusRequest(saved),
 			Message: "Created new application status",
 		}
 		s.respondWithJSON(w, 201, response)

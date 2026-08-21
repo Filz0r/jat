@@ -16,10 +16,10 @@ type applicationResponse struct {
 	Title     string                   `json:"title" validate:"required"`
 	URL       string                   `json:"url" validate:"required"`
 	UserID    uuid.UUID                `json:"user_id" validate:"required"`
-	CreatedAt time.Time                `json:"created_at,omitempty"`
-	UpdatedAt time.Time                `json:"updated_at,omitempty"`
-	Status    applicationStatusRequest `json:"status,omitempty"`
-	Company   companyResponse          `json:"company,omitempty"`
+	CreatedAt time.Time                `json:"created_at" validate:"required"`
+	UpdatedAt time.Time                `json:"updated_at" validate:"required"`
+	Status    applicationStatusRequest `json:"status" validate:"required"`
+	Company   companyResponse          `json:"company" validate:"required"`
 }
 
 type applicationRequest struct {
