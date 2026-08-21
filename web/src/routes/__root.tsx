@@ -15,6 +15,7 @@ import { api, registerSessionExpiredHandler } from '#/api/client';
 import { authStore } from '#/lib/auth-store';
 import type { User } from '#/lib/auth-store';
 import type { RouterContext } from '#/router';
+import { Toaster } from '#/components/ui/toast.tsx';
 
 export const Route = createRootRouteWithContext<RouterContext>()({
 	component: RootComponent,
@@ -124,6 +125,7 @@ function RootComponent() {
 					/>
 				</AuthProvider>
 			</QueryClientProvider>
+			<Toaster />
 		</ThemeProvider>
 	);
 }
