@@ -139,7 +139,7 @@ export default function UpdateJobStatusForm({
 			Content={
 				<div>
 					{errorMessage && (
-						<p className="text-destructive mb-4 text-sm">{errorMessage}</p>
+						<p className="mb-4 text-sm text-destructive">{errorMessage}</p>
 					)}
 					<form.Field
 						name="status"
