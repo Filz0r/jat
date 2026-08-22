@@ -156,26 +156,22 @@ export default function JobNoteForm(props: JobNoteFormProps) {
 						</Tooltip>
 					</TooltipProvider>
 				) : (
-					<div>
-						<Button
-							className={
-								edit
-									? 'bg-amber-500 hover:bg-amber-700'
-									: 'bg-green-500 hover:bg-green-700'
-							}
-							onClick={() => setIsOpen(true)}
-						>
+					<Button
+						className={
+							edit
+								? 'bg-amber-500 hover:bg-amber-700'
+								: 'bg-green-500 hover:bg-green-700'
+						}
+						onClick={() => setIsOpen(true)}
+					>
+						{edit ? 'Update this notes content' : 'Add a Note to this Job Application'}
+						<FilePlusCorner />
+						<span className="sr-only">
 							{edit
 								? 'Update this notes content'
 								: 'Add a Note to this Job Application'}
-							<FilePlusCorner />
-							<span className="sr-only">
-								{edit
-									? 'Update this notes content'
-									: 'Add a Note to this Job Application'}
-							</span>
-						</Button>
-					</div>
+						</span>
+					</Button>
 				)
 			}
 			title={
