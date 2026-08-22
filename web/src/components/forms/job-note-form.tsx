@@ -103,6 +103,7 @@ export default function JobNoteForm(props: JobNoteFormProps) {
 				queryKey: ['get', '/jobs/{jobID}/notes', { params: { path: { jobID } } }],
 			});
 
+			form.reset();
 			// Todo: uncomment bellow after adding note count to jobs fetching
 			// await queryClient.refetchQueries({ queryKey: ['get', '/jobs'] });
 			toast.add({
