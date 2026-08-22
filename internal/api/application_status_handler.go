@@ -21,11 +21,11 @@ type applicationStatusRequest struct {
 }
 
 type applicationStatusHistoryResponse struct {
-	ID            uint                     `json:"id" validate:"required"`
-	ApplicationID uint                     `json:"application_id" validate:"required"`
-	OldStatus     applicationStatusRequest `json:"old_status" validate:"required"`
-	NewStatus     applicationStatusRequest `json:"new_status" validate:"required"`
-	CreatedAt     time.Time                `json:"created_at" validate:"required"`
+	ID            uint                      `json:"id" validate:"required"`
+	ApplicationID uint                      `json:"application_id" validate:"required"`
+	OldStatus     *applicationStatusRequest `json:"old_status,omitempty"`
+	NewStatus     applicationStatusRequest  `json:"new_status" validate:"required"`
+	CreatedAt     time.Time                 `json:"created_at" validate:"required"`
 }
 
 func createApplicationHistoryRequest(d database.StatusHistory) applicationStatusHistoryResponse {
@@ -37,7 +37,8 @@ func createApplicationHistoryRequest(d database.StatusHistory) applicationStatus
 	}
 
 	if d.OldStatus != nil {
-		response.OldStatus = createApplicationStatusRequest(*d.OldStatus)
+		old := createApplicationStatusRequest(*d.OldStatus)
+		response.OldStatus = &old
 	}
 
 	return response
