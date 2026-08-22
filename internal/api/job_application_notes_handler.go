@@ -200,7 +200,7 @@ func (s *Server) handleDeleteJobNote() http.HandlerFunc {
 			s.respondWithError(w, 400, "Error parsing Job Application Request", err)
 			return
 		}
-		err = s.services.DeleteApplicationNoteByID(noteID, jobID, userID)
+		err = s.services.DeleteApplicationNoteByID(nil, noteID, jobID, userID)
 		if err != nil {
 			s.respondWithError(w, 400, "Error deleting note", err)
 			return

@@ -5,6 +5,7 @@ import (
 
 	"github.com/filz0r/jat/internal/database"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func (sm *ServiceManager) CreateJobNote(
@@ -132,18 +133,20 @@ func (sm *ServiceManager) UpdateJobNoteByID(
 }
 
 func (sm *ServiceManager) DeleteApplicationNoteByID(
+	tx *gorm.DB,
 	noteID uint,
 	jobID uint,
 	userID uuid.UUID,
 ) error {
-	if sm.db == nil {
+	db := sm.transactionOrDefault(tx)
+	if db == nil {
 		return errors.New("database not initialized")
 	}
 	dbNote, err := sm.GetJobApplicationNoteByID(noteID, jobID, userID)
 	if err != nil {
 		return err
 	}
-	result := sm.db.Delete(&dbNote)
+	result := db.Delete(&dbNote)
 	if result.Error != nil {
 		return result.Error
 	}

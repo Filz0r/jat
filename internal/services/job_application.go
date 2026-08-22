@@ -137,17 +137,33 @@ func (sm *ServiceManager) DeleteJobApplication(applicationID uint, userID uuid.U
 	if !sm.DoesUserOwnJobApplication(applicationID, userID) && !sm.IsUserAdmin(userID) {
 		return errors.New("user does not own job application")
 	}
-	res := sm.db.
-		Delete(&database.JobApplication{},
+
+	notes, err := sm.GetJobApplicationNotesByID(applicationID, userID)
+	if err != nil {
+		return err
+	}
+
+	err = sm.db.Transaction(func(tx *gorm.DB) error {
+		// this loop could be optimized with a single operation if performance issues arise
+		for _, note := range notes {
+			err := sm.DeleteApplicationNoteByID(tx, note.ID, applicationID, userID)
+			if err != nil {
+				return err
+			}
+		}
+		res := tx.Delete(
+			&database.JobApplication{},
 			"id = ?",
 			applicationID,
 		)
-	if res.Error != nil {
-		return res.Error
-	} else if res.RowsAffected == 0 {
-		return errors.New("job application does not exist")
-	}
-	return nil
+		if res.Error != nil {
+			return res.Error
+		} else if res.RowsAffected == 0 {
+			return errors.New("job application does not exist")
+		}
+		return nil
+	})
+	return err
 }
 
 func (sm *ServiceManager) DoesUserOwnJobApplication(jobID uint, userID uuid.UUID) bool {
