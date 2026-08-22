@@ -13,7 +13,7 @@ export const updateJobApplicationStatusSchema = z.object({
 });
 
 export const createJobApplicationNoteSchema = z.object({
-	body: z.string('You need to provide content').min(3).max(255),
+	body: z.string('You need to provide content').min(3).max(2048),
 });
 
 export type CreateJobApplication = z.infer<typeof createJobApplicationSchema>;
