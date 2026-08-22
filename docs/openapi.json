@@ -2262,8 +2262,7 @@
                     "application_id",
                     "created_at",
                     "id",
-                    "new_status",
-                    "old_status"
+                    "new_status"
                 ],
                 "properties": {
                     "application_id": {

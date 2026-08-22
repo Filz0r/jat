@@ -75,7 +75,6 @@ definitions:
     - created_at
     - id
     - new_status
-    - old_status
     type: object
   api.applicationStatusRequest:
     properties:

@@ -1876,7 +1876,7 @@ export interface components {
 			created_at: string;
 			id: number;
 			new_status: components['schemas']['api.applicationStatusRequest'];
-			old_status: components['schemas']['api.applicationStatusRequest'];
+			old_status?: components['schemas']['api.applicationStatusRequest'];
 		};
 		'api.applicationStatusRequest': {
 			created_at?: string;
