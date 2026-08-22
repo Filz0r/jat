@@ -42,10 +42,3 @@ func recordCompanyChange(
 	}
 	return nil
 }
-
-func (sm *ServiceManager) transactionOrDefault(tx *gorm.DB) *gorm.DB {
-	if tx != nil {
-		return tx
-	}
-	return sm.db
-}
