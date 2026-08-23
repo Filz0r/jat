@@ -3,8 +3,11 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"reflect"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -83,4 +86,43 @@ func (s *Server) respondWithJSON(w http.ResponseWriter, code int, payload apiRes
 	if err != nil {
 		log.Printf("Error writing response: %s", err)
 	}
+}
+
+func BindQuery[T any](r *http.Request) (T, error) {
+	var out T
+	vals := r.URL.Query()
+	v := reflect.ValueOf(&out).Elem()
+	t := v.Type()
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		name := field.Tag.Get("query")
+		if name == "" {
+			continue
+		}
+		raw := vals.Get(name)
+		if raw == "" {
+			continue
+		}
+		f := v.Field(i)
+		switch f.Kind() {
+		case reflect.Bool:
+			b, err := strconv.ParseBool(raw)
+			if err != nil {
+				return out, fmt.Errorf("%s must be a boolean (got %q)", name, raw)
+			}
+			f.SetBool(b)
+		case reflect.Int, reflect.Int64:
+			n, err := strconv.Atoi(raw)
+			if err != nil {
+				return out, fmt.Errorf("invalid integer value: %s", raw)
+			}
+			f.SetInt(int64(n))
+
+		case reflect.String:
+			f.SetString(raw)
+		default:
+			return out, fmt.Errorf("unsupported query field type %s for %s", f.Kind(), name)
+		}
+	}
+	return out, nil
 }
