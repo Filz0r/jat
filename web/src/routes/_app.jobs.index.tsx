@@ -76,7 +76,7 @@ function RouteComponent() {
 				return (
 					<div className="flex items-center justify-center">
 						<Badge className={'w-full py-2.5 ' + getColorFromKind(cellData.kind)}>
-							{cellData.status}
+							{cellData.archived ? cellData.status + ' (Archived)' : cellData.status}
 						</Badge>
 					</div>
 				);

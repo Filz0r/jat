@@ -46,7 +46,9 @@ export default function JobApplicationNotesRenderer({
 									Status
 								</span>
 								<Badge className={getColorFromKind(d.status.kind)}>
-									{d.status.status}
+									{d.status.archived
+										? d.status.status + ' (Archived)'
+										: d.status.status}
 								</Badge>
 							</span>
 							<div className="flex flex-col items-start space-y-2 text-xs text-gray-500">

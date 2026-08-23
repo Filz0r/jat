@@ -48,7 +48,9 @@ export default function JobApplicationInformationRenderer({
 					<div className="space-x-2">
 						<span>Current Status:</span>
 						<Badge className={'flex-1 ' + getColorFromKind(data.status.kind)}>
-							{data.status.status}
+							{data.status.archived
+								? data.status.status + ' (Archived)'
+								: data.status.status}
 						</Badge>
 					</div>
 					<div>

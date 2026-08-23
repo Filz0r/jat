@@ -24,7 +24,9 @@ export default function JobApplicationHistoryRenderer({
 								<div className="flex flex-col items-center justify-center space-x-2">
 									<span className="pb-2 font-bold text-primary">Old Status</span>
 									<Badge className={getColorFromKind(d.old_status.kind)}>
-										{d.old_status.status}
+										{d.old_status.archived
+											? d.old_status.status + ' (Archived)'
+											: d.old_status.status}
 									</Badge>
 								</div>
 							)}
@@ -33,7 +35,9 @@ export default function JobApplicationHistoryRenderer({
 									{d.old_status ? 'New Status' : 'Initial Status'}
 								</span>
 								<Badge className={getColorFromKind(d.new_status.kind)}>
-									{d.new_status.status}
+									{d.new_status.archived
+										? d.new_status.status + ' (Archived)'
+										: d.new_status.status}
 								</Badge>
 							</div>
 						</div>
