@@ -1882,7 +1882,7 @@ export interface components {
 			old_status?: components['schemas']['api.applicationStatusRequest'];
 		};
 		'api.applicationStatusRequest': {
-			archived?: boolean;
+			archived: boolean;
 			created_at: string;
 			id: number;
 			kind: string;

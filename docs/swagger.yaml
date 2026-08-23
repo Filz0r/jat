@@ -93,6 +93,7 @@ definitions:
       user_id:
         type: string
     required:
+    - archived
     - created_at
     - id
     - kind

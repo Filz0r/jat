@@ -2295,6 +2295,7 @@
             "api.applicationStatusRequest": {
                 "type": "object",
                 "required": [
+                    "archived",
                     "created_at",
                     "id",
                     "kind",

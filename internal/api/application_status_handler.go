@@ -18,7 +18,7 @@ type applicationStatusRequest struct {
 	UserID    uuid.UUID `json:"user_id,omitempty"`
 	UpdatedAt time.Time `json:"updated_at" validate:"required"`
 	CreatedAt time.Time `json:"created_at" validate:"required"`
-	Archived  bool      `json:"archived"`
+	Archived  bool      `json:"archived" validate:"required"`
 }
 
 type applicationStatusHistoryResponse struct {
