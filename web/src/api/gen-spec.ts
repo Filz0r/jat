@@ -145,7 +145,10 @@ export interface paths {
 		 */
 		get: {
 			parameters: {
-				query?: never;
+				query?: {
+					/** @description Include archived statuses */
+					include_archived?: boolean;
+				};
 				header?: never;
 				path?: never;
 				cookie?: never;
@@ -1879,11 +1882,12 @@ export interface components {
 			old_status?: components['schemas']['api.applicationStatusRequest'];
 		};
 		'api.applicationStatusRequest': {
-			created_at?: string;
+			archived?: boolean;
+			created_at: string;
 			id: number;
 			kind: string;
 			status: string;
-			updated_at?: string;
+			updated_at: string;
 			user_id?: string;
 		};
 		'api.companyBodyRequest': {

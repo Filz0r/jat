@@ -78,6 +78,8 @@ definitions:
     type: object
   api.applicationStatusRequest:
     properties:
+      archived:
+        type: boolean
       created_at:
         type: string
       id:
@@ -91,9 +93,11 @@ definitions:
       user_id:
         type: string
     required:
+    - created_at
     - id
     - kind
     - status
+    - updated_at
     type: object
   api.companyBodyRequest:
     properties:
@@ -308,6 +312,11 @@ paths:
       - application/json
       description: Returns all application statuses belonging to the authenticated
         user.
+      parameters:
+      - description: Include archived statuses
+        in: query
+        name: include_archived
+        type: boolean
       produces:
       - application/json
       responses:

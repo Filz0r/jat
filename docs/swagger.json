@@ -136,6 +136,14 @@
                     "application_statuses"
                 ],
                 "summary": "List current user's application statuses",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Include archived statuses",
+                        "name": "include_archived",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2041,11 +2049,16 @@
         "api.applicationStatusRequest": {
             "type": "object",
             "required": [
+                "created_at",
                 "id",
                 "kind",
-                "status"
+                "status",
+                "updated_at"
             ],
             "properties": {
+                "archived": {
+                    "type": "boolean"
+                },
                 "created_at": {
                     "type": "string"
                 },
