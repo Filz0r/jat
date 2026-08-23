@@ -47,6 +47,11 @@ func (sm *ServiceManager) CreateUserJobApplication(
 	if !sm.DoesCompanyExist(companyID) {
 		return database.JobApplication{}, errors.New("company does not exist")
 	}
+
+	if sm.IsStatusArchived(statusID) {
+		return database.JobApplication{}, errors.New("status is archived")
+	}
+
 	var application database.JobApplication
 	err := sm.db.Transaction(func(tx *gorm.DB) error {
 		application = database.JobApplication{
@@ -112,6 +117,11 @@ func (sm *ServiceManager) UpdateJobApplicationStatus(
 	if !sm.DoesUserOwnJobApplication(applicationID, userID) {
 		return database.JobApplication{}, errors.New("user does not own job application")
 	}
+
+	if sm.IsStatusArchived(newStatusID) {
+		return database.JobApplication{}, errors.New("status is archived")
+	}
+
 	err := sm.db.Transaction(func(tx *gorm.DB) error {
 		var application database.JobApplication
 		if err := tx.Where("id = ?", applicationID).First(&application).Error; err != nil {

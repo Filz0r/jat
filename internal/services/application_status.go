@@ -159,14 +159,17 @@ func (sm *ServiceManager) GetApplicationStatus(id uint) (database.ApplicationSta
 func (sm *ServiceManager) FindApplicationStatusByName(
 	userID uuid.UUID,
 	name string,
+	showArchived bool,
 ) (database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return database.ApplicationStatus{}, errors.New("database not initialized")
 	}
 	var applicationStatus database.ApplicationStatus
-
-	result := sm.db.
-		Where("lower(status) = lower(?) and user_id = ?", name, userID).
+	query := sm.db.Where("lower(status) = lower(?) and user_id = ?", name, userID)
+	if !showArchived {
+		query = query.Where("archived = ?", false)
+	}
+	result := query.
 		First(&applicationStatus)
 	if result.Error != nil {
 		return database.ApplicationStatus{}, result.Error
@@ -177,14 +180,19 @@ func (sm *ServiceManager) FindApplicationStatusByName(
 
 func (sm *ServiceManager) GetAllApplicationStatus(
 	userID uuid.UUID,
+	showArchived bool,
 ) ([]database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return []database.ApplicationStatus{}, errors.New("database not initialized")
 	}
 	var applicationStatus []database.ApplicationStatus
-	result := sm.db.
-		Where("user_id = ?", userID).
-		Find(&applicationStatus)
+	query := sm.db.
+		Where("user_id = ?", userID)
+	if !showArchived {
+		query = query.Where("archived = ?", false)
+	}
+
+	result := query.Find(&applicationStatus)
 
 	if result.Error != nil {
 		return []database.ApplicationStatus{}, result.Error
@@ -196,24 +204,48 @@ func (sm *ServiceManager) GetAllApplicationStatus(
 func (sm *ServiceManager) DeleteApplicationStatus(
 	userID uuid.UUID,
 	statusID uint,
+	softDelete bool,
 ) error {
 	if sm.db == nil {
 		return errors.New("database not initialized")
 	}
-	var applicationStatus database.ApplicationStatus
-	result := sm.db.
-		Delete(&applicationStatus, "id = ? and user_id = ?", statusID, userID)
-	return result.Error
+	if sm.IsStatusDefault(statusID, userID) {
+		return errors.New("cannot delete a default application status")
+	}
+	if softDelete {
+		var applicationStatus database.ApplicationStatus
+		result := sm.db.
+			Delete(&applicationStatus, "id = ? and user_id = ?", statusID, userID)
+		return result.Error
+	}
+	status, err := sm.GetApplicationStatus(statusID)
+	if err != nil {
+		return err
+	}
+	if !sm.IsUserAdmin(userID) && status.UserID != userID {
+		return errors.New("you are not allowed to make changes to this application status")
+	}
+	status.Archived = true
+	result := sm.db.Save(&status)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
 
 func (sm *ServiceManager) GetSuggestionForApplicationStatus(
 	userID uuid.UUID,
+	showArchived bool,
 ) ([]utils.SuggestionRecord, error) {
 	if sm.db == nil {
 		return []utils.SuggestionRecord{}, errors.New("database not initialized")
 	}
+	query := sm.db.Where("user_id = ?", userID)
+	if !showArchived {
+		query = query.Where("archived = ?", false)
+	}
 	var data []database.ApplicationStatus
-	result := sm.db.Where("user_id = ?", userID).Find(&data)
+	result := query.Find(&data)
 	if result.Error != nil {
 		return []utils.SuggestionRecord{}, result.Error
 	}
@@ -232,12 +264,16 @@ func (sm *ServiceManager) GetSuggestionForApplicationStatus(
 	return suggestionRecord, result.Error
 }
 
-func (sm *ServiceManager) GetAllApplicationStatusAdmin() ([]database.ApplicationStatus, error) {
+func (sm *ServiceManager) GetAllApplicationStatusAdmin(showArchived bool) ([]database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return []database.ApplicationStatus{}, errors.New("database not initialized")
 	}
 	var applicationStatus []database.ApplicationStatus
-	data := sm.db.Find(&applicationStatus)
+	query := sm.db.Where("archived = ?", false)
+	if showArchived {
+		query = query.Where("archived = ?", true)
+	}
+	data := query.Find(&applicationStatus)
 	if data.Error != nil {
 		return []database.ApplicationStatus{}, data.Error
 	}
@@ -260,5 +296,29 @@ func (sm *ServiceManager) DoesUserOwnApplicationStatus(
 		return false
 	}
 	return true
+}
 
+func (sm *ServiceManager) IsStatusArchived(statusID uint) bool {
+	if sm.db == nil {
+		return false
+	}
+	status, err := sm.GetApplicationStatus(statusID)
+	if err != nil {
+		return false
+	}
+	return status.Archived
+}
+
+func (sm *ServiceManager) IsStatusDefault(statusID uint, userID uuid.UUID) bool {
+	if sm.db == nil {
+		return false
+	}
+	user, err := sm.GetUserByID(userID)
+	if err != nil {
+		return false
+	}
+	if user.DefaultApplicationStatusID == nil {
+		return false
+	}
+	return *user.DefaultApplicationStatusID == statusID
 }

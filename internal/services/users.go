@@ -125,6 +125,9 @@ func (sm *ServiceManager) SetUserDefaultApplicationStatus(id uuid.UUID, statusID
 		return errors.New("database not initialized")
 	}
 	user := database.User{}
+	if sm.IsStatusArchived(statusID) {
+		return errors.New("cannot set a status that is archived as default")
+	}
 	result := sm.db.Where("id = ?", id).First(&user)
 	if result.Error != nil {
 		return result.Error

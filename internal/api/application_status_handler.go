@@ -16,8 +16,9 @@ type applicationStatusRequest struct {
 	Status    string    `json:"status" validate:"required"`
 	Kind      string    `json:"kind" validate:"required"`
 	UserID    uuid.UUID `json:"user_id,omitempty"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" validate:"required"`
+	CreatedAt time.Time `json:"created_at" validate:"required"`
+	Archived  bool      `json:"archived"`
 }
 
 type applicationStatusHistoryResponse struct {
@@ -26,6 +27,10 @@ type applicationStatusHistoryResponse struct {
 	OldStatus     *applicationStatusRequest `json:"old_status,omitempty"`
 	NewStatus     applicationStatusRequest  `json:"new_status" validate:"required"`
 	CreatedAt     time.Time                 `json:"created_at" validate:"required"`
+}
+
+type applicationStatusListQuery struct {
+	IncludeArchived bool `query:"include_archived"`
 }
 
 func createApplicationHistoryRequest(d database.StatusHistory) applicationStatusHistoryResponse {
@@ -52,6 +57,7 @@ func createApplicationStatusRequest(d database.ApplicationStatus) applicationSta
 		UpdatedAt: d.UpdatedAt,
 		CreatedAt: d.CreatedAt,
 		UserID:    d.UserID,
+		Archived:  d.Archived,
 	}
 }
 
@@ -61,6 +67,7 @@ func createApplicationStatusRequest(d database.ApplicationStatus) applicationSta
 // @Accept json
 // @Produce json
 // @Security BearerAuth
+// @Param include_archived query bool false "Include archived statuses"
 // @Success 200 {object} apiResponse{data=[]applicationStatusRequest}
 // @Failure 400 {object} apiResponse
 // @Failure 401 {object} apiResponse
@@ -68,7 +75,12 @@ func createApplicationStatusRequest(d database.ApplicationStatus) applicationSta
 func (s *Server) handleGetUserApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, _ := userIDFromContext(r.Context())
-		data, err := s.services.GetAllApplicationStatus(userID)
+		params, err := BindQuery[applicationStatusListQuery](r)
+		if err != nil {
+			s.respondWithError(w, 400, err.Error(), err)
+			return
+		}
+		data, err := s.services.GetAllApplicationStatus(userID, params.IncludeArchived)
 		if err != nil {
 			s.respondWithError(w, 400, "error getting application status", err)
 			return
@@ -82,14 +94,20 @@ func (s *Server) handleGetUserApplicationStatus() http.HandlerFunc {
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Data:    converted,
-			Message: "New Application Status created",
+			Message: fmt.Sprintf("Found %d Application Status", len(converted)),
 		})
 	}
 }
 
+// TODO: add this to the API when admin endpoints are implemented
 func (s *Server) handleGetAllApplicationStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data, err := s.services.GetAllApplicationStatusAdmin()
+		params, err := BindQuery[applicationStatusListQuery](r)
+		if err != nil {
+			s.respondWithError(w, 400, err.Error(), err)
+			return
+		}
+		data, err := s.services.GetAllApplicationStatusAdmin(params.IncludeArchived)
 		if err != nil {
 			s.respondWithError(w, 400, "error getting application status", err)
 			return
@@ -287,14 +305,14 @@ func (s *Server) handleDeleteApplicationStatus() http.HandlerFunc {
 			s.respondWithError(w, 403, "permission denied", nil)
 			return
 		}
-		err = s.services.DeleteApplicationStatus(userID, record.ID)
+		err = s.services.DeleteApplicationStatus(userID, record.ID, false)
 		if err != nil {
 			s.respondWithError(w, 400, "error deleting application status", err)
 			return
 		}
 		response := apiResponse{
 			Ok:      true,
-			Message: "application status deleted",
+			Message: "Application status deleted",
 		}
 		s.respondWithJSON(w, 200, response)
 	}
