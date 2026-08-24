@@ -29,13 +29,6 @@ export default function DeleteApplicationNote({ data, jobID }: DeleteApplication
 								},
 							},
 						}),
-						queryClient.refetchQueries({
-							queryKey: [
-								'get',
-								'/jobs/{jobID}/notes',
-								{ params: { path: { jobID } } },
-							],
-						}),
 					]),
 					{
 						loading: `Deleting note with id ${data.id}...`,
@@ -44,6 +37,9 @@ export default function DeleteApplicationNote({ data, jobID }: DeleteApplication
 							`Error deleting note: ${response.message}`,
 					},
 				);
+				await queryClient.refetchQueries({
+					queryKey: ['get', '/jobs/{jobID}/notes', { params: { path: { jobID } } }],
+				});
 			}}
 			triggerButton={
 				<Button className="rounded-3xl p-3" size="icon-sm" variant="destructive">
