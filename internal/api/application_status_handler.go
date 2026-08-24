@@ -12,6 +12,11 @@ import (
 )
 
 type applicationStatusRequest struct {
+	Status string `json:"status" validate:"required"`
+	Kind   string `json:"kind" validate:"required"`
+}
+
+type applicationStatusResponse struct {
 	ID        uint      `json:"id" validate:"required"`
 	Status    string    `json:"status" validate:"required"`
 	Kind      string    `json:"kind" validate:"required"`
@@ -22,11 +27,11 @@ type applicationStatusRequest struct {
 }
 
 type applicationStatusHistoryResponse struct {
-	ID            uint                      `json:"id" validate:"required"`
-	ApplicationID uint                      `json:"application_id" validate:"required"`
-	OldStatus     *applicationStatusRequest `json:"old_status,omitempty"`
-	NewStatus     applicationStatusRequest  `json:"new_status" validate:"required"`
-	CreatedAt     time.Time                 `json:"created_at" validate:"required"`
+	ID            uint                       `json:"id" validate:"required"`
+	ApplicationID uint                       `json:"application_id" validate:"required"`
+	OldStatus     *applicationStatusResponse `json:"old_status,omitempty"`
+	NewStatus     applicationStatusResponse  `json:"new_status" validate:"required"`
+	CreatedAt     time.Time                  `json:"created_at" validate:"required"`
 }
 
 type applicationStatusListQuery struct {
@@ -49,8 +54,8 @@ func createApplicationHistoryRequest(d database.StatusHistory) applicationStatus
 	return response
 }
 
-func createApplicationStatusRequest(d database.ApplicationStatus) applicationStatusRequest {
-	return applicationStatusRequest{
+func createApplicationStatusRequest(d database.ApplicationStatus) applicationStatusResponse {
+	return applicationStatusResponse{
 		ID:        d.ID,
 		Status:    d.Status,
 		Kind:      d.Kind.String(),
@@ -85,7 +90,7 @@ func (s *Server) handleGetUserApplicationStatus() http.HandlerFunc {
 			s.respondWithError(w, 400, "error getting application status", err)
 			return
 		}
-		converted := make([]applicationStatusRequest, 0, len(data))
+		converted := make([]applicationStatusResponse, 0, len(data))
 		for _, d := range data {
 			temp := createApplicationStatusRequest(d)
 			converted = append(converted, temp)
@@ -129,7 +134,7 @@ func (s *Server) handleGetAllApplicationStatus() http.HandlerFunc {
 // @Security BearerAuth
 // @Param statusID path int true "Application status ID"
 // @Param request body applicationStatusRequest true "Updated application status"
-// @Success 200 {object} apiResponse{data=applicationStatusRequest}
+// @Success 200 {object} apiResponse{data=applicationStatusResponse}
 // @Failure 400 {object} apiResponse
 // @Failure 403 {object} apiResponse
 // @Router /application_statuses/{statusID} [put]
@@ -164,7 +169,7 @@ func (s *Server) handleUpdateApplicationStatus() http.HandlerFunc {
 		}
 		response := apiResponse{
 			Ok: true,
-			Data: applicationStatusRequest{
+			Data: applicationStatusResponse{
 				ID:        saved.ID,
 				Kind:      saved.Kind.String(),
 				Status:    saved.Status,
@@ -185,7 +190,7 @@ func (s *Server) handleUpdateApplicationStatus() http.HandlerFunc {
 // @Produce json
 // @Security BearerAuth
 // @Param statusID path int true "Application status ID"
-// @Success 200 {object} apiResponse{data=applicationStatusRequest}
+// @Success 200 {object} apiResponse{data=applicationStatusResponse}
 // @Failure 400 {object} apiResponse
 // @Failure 403 {object} apiResponse
 // @Router /application_statuses/{statusID} [get]
@@ -235,7 +240,7 @@ func (s *Server) handleGetAnApplicationStatus() http.HandlerFunc {
 // @Produce json
 // @Security BearerAuth
 // @Param request body applicationStatusRequest true "Application status payload"
-// @Success 201 {object} apiResponse{data=applicationStatusRequest}
+// @Success 201 {object} apiResponse{data=applicationStatusResponse}
 // @Failure 400 {object} apiResponse
 // @Router /application_statuses [post]
 func (s *Server) handleCreateApplicationStatus() http.HandlerFunc {

@@ -12,14 +12,14 @@ import (
 )
 
 type applicationResponse struct {
-	ID        uint                     `json:"id" validate:"required"`
-	Title     string                   `json:"title" validate:"required"`
-	URL       string                   `json:"url" validate:"required"`
-	UserID    uuid.UUID                `json:"user_id" validate:"required"`
-	CreatedAt time.Time                `json:"created_at" validate:"required"`
-	UpdatedAt time.Time                `json:"updated_at" validate:"required"`
-	Status    applicationStatusRequest `json:"status" validate:"required"`
-	Company   companyResponse          `json:"company" validate:"required"`
+	ID        uint                      `json:"id" validate:"required"`
+	Title     string                    `json:"title" validate:"required"`
+	URL       string                    `json:"url" validate:"required"`
+	UserID    uuid.UUID                 `json:"user_id" validate:"required"`
+	CreatedAt time.Time                 `json:"created_at" validate:"required"`
+	UpdatedAt time.Time                 `json:"updated_at" validate:"required"`
+	Status    applicationStatusResponse `json:"status" validate:"required"`
+	Company   companyResponse           `json:"company" validate:"required"`
 }
 
 type applicationRequest struct {
@@ -51,7 +51,7 @@ func generateApplicationResponseFromRow(row database.JobApplication) application
 			CreatedBy: row.Company.CreatedBy,
 			UpdatedBy: row.Company.EditedBy,
 		},
-		Status: applicationStatusRequest{
+		Status: applicationStatusResponse{
 			ID:        row.StatusID,
 			CreatedAt: row.Status.CreatedAt,
 			UpdatedAt: row.Status.UpdatedAt,

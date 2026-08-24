@@ -12,13 +12,13 @@ import (
 )
 
 type noteData struct {
-	ID        uint                     `json:"id" validate:"required"`
-	Body      string                   `json:"body" validate:"required"`
-	Status    applicationStatusRequest `json:"status" validate:"required"`
-	UserID    uuid.UUID                `json:"user_id" validate:"required"`
-	JobID     uint                     `json:"job_id" validate:"required"`
-	CreatedAt time.Time                `json:"created_at" validate:"required"`
-	UpdatedAt time.Time                `json:"updated_at" validate:"required"`
+	ID        uint                      `json:"id" validate:"required"`
+	Body      string                    `json:"body" validate:"required"`
+	Status    applicationStatusResponse `json:"status" validate:"required"`
+	UserID    uuid.UUID                 `json:"user_id" validate:"required"`
+	JobID     uint                      `json:"job_id" validate:"required"`
+	CreatedAt time.Time                 `json:"created_at" validate:"required"`
+	UpdatedAt time.Time                 `json:"updated_at" validate:"required"`
 }
 
 type noteCreateRequest struct {
