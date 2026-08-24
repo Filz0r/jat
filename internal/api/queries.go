@@ -26,6 +26,12 @@ func setScalar(f reflect.Value, name, raw string) error {
 			return fmt.Errorf("%s must be an integer (got %q)", name, raw)
 		}
 		f.SetInt(int64(n))
+	case reflect.Uint, reflect.Uint32, reflect.Uint64:
+		n, err := strconv.ParseUint(raw, 10, 32)
+		if err != nil {
+			return fmt.Errorf("%s must be an integer (got %q)", name, raw)
+		}
+		f.SetUint(n)
 	case reflect.String:
 		f.SetString(raw)
 	default:
