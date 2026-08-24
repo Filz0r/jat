@@ -173,7 +173,7 @@
                                                 "data": {
                                                     "type": "array",
                                                     "items": {
-                                                        "$ref": "#/components/schemas/api.applicationStatusRequest"
+                                                        "$ref": "#/components/schemas/api.applicationStatusResponse"
                                                     }
                                                 }
                                             }
@@ -415,7 +415,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft-deletes an application status. Only the owner or an admin can delete it.",
+                "description": "Deletes an application status. If soft_delete=true, performs a soft delete (and cascades to linked job applications). Otherwise archives the status. Only the owner or an admin can delete it.",
                 "tags": [
                     "application_statuses"
                 ],
@@ -428,6 +428,14 @@
                         "required": true,
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Soft deletes the application status, if set to false it archives the status instead",
+                        "name": "soft_delete",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
                         }
                     }
                 ],

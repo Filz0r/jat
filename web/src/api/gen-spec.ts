@@ -162,7 +162,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.applicationStatusRequest'][];
+							data?: components['schemas']['api.applicationStatusResponse'][];
 						};
 					};
 				};
@@ -342,11 +342,14 @@ export interface paths {
 		post?: never;
 		/**
 		 * Delete application status
-		 * @description Soft-deletes an application status. Only the owner or an admin can delete it.
+		 * @description Deletes an application status. If soft_delete=true, performs a soft delete (and cascades to linked job applications). Otherwise archives the status. Only the owner or an admin can delete it.
 		 */
 		delete: {
 			parameters: {
-				query?: never;
+				query?: {
+					/** @description Soft deletes the application status, if set to false it archives the status instead */
+					soft_delete?: boolean;
+				};
 				header?: never;
 				path: {
 					/** @description Application status ID */

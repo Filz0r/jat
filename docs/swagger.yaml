@@ -339,7 +339,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/api.applicationStatusRequest'
+                    $ref: '#/definitions/api.applicationStatusResponse'
                   type: array
               type: object
         "400":
@@ -391,14 +391,20 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Soft-deletes an application status. Only the owner or an admin
-        can delete it.
+      description: Deletes an application status. If soft_delete=true, performs a
+        soft delete (and cascades to linked job applications). Otherwise archives
+        the status. Only the owner or an admin can delete it.
       parameters:
       - description: Application status ID
         in: path
         name: statusID
         required: true
         type: integer
+      - description: Soft deletes the application status, if set to false it archives
+          the status instead
+        in: query
+        name: soft_delete
+        type: boolean
       produces:
       - application/json
       responses:
