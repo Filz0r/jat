@@ -212,7 +212,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.applicationStatusRequest'];
+							data?: components['schemas']['api.applicationStatusResponse'];
 						};
 					};
 				};
@@ -263,7 +263,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.applicationStatusRequest'];
+							data?: components['schemas']['api.applicationStatusResponse'];
 						};
 					};
 				};
@@ -315,7 +315,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.applicationStatusRequest'];
+							data?: components['schemas']['api.applicationStatusResponse'];
 						};
 					};
 				};
@@ -1873,7 +1873,7 @@ export interface components {
 			company: components['schemas']['api.companyResponse'];
 			created_at: string;
 			id: number;
-			status: components['schemas']['api.applicationStatusRequest'];
+			status: components['schemas']['api.applicationStatusResponse'];
 			title: string;
 			updated_at: string;
 			url: string;
@@ -1883,10 +1883,14 @@ export interface components {
 			application_id: number;
 			created_at: string;
 			id: number;
-			new_status: components['schemas']['api.applicationStatusRequest'];
-			old_status?: components['schemas']['api.applicationStatusRequest'];
+			new_status: components['schemas']['api.applicationStatusResponse'];
+			old_status?: components['schemas']['api.applicationStatusResponse'];
 		};
 		'api.applicationStatusRequest': {
+			kind: string;
+			status: string;
+		};
+		'api.applicationStatusResponse': {
 			archived: boolean;
 			created_at: string;
 			id: number;
@@ -1922,7 +1926,7 @@ export interface components {
 			created_at: string;
 			id: number;
 			job_id: number;
-			status: components['schemas']['api.applicationStatusRequest'];
+			status: components['schemas']['api.applicationStatusResponse'];
 			updated_at: string;
 			user_id: string;
 		};

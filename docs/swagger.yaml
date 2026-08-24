@@ -39,7 +39,7 @@ definitions:
       id:
         type: integer
       status:
-        $ref: '#/definitions/api.applicationStatusRequest'
+        $ref: '#/definitions/api.applicationStatusResponse'
       title:
         type: string
       updated_at:
@@ -67,9 +67,9 @@ definitions:
       id:
         type: integer
       new_status:
-        $ref: '#/definitions/api.applicationStatusRequest'
+        $ref: '#/definitions/api.applicationStatusResponse'
       old_status:
-        $ref: '#/definitions/api.applicationStatusRequest'
+        $ref: '#/definitions/api.applicationStatusResponse'
     required:
     - application_id
     - created_at
@@ -77,6 +77,16 @@ definitions:
     - new_status
     type: object
   api.applicationStatusRequest:
+    properties:
+      kind:
+        type: string
+      status:
+        type: string
+    required:
+    - kind
+    - status
+    type: object
+  api.applicationStatusResponse:
     properties:
       archived:
         type: boolean
@@ -165,7 +175,7 @@ definitions:
       job_id:
         type: integer
       status:
-        $ref: '#/definitions/api.applicationStatusRequest'
+        $ref: '#/definitions/api.applicationStatusResponse'
       updated_at:
         type: string
       user_id:
@@ -366,7 +376,7 @@ paths:
             - $ref: '#/definitions/api.apiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/api.applicationStatusRequest'
+                  $ref: '#/definitions/api.applicationStatusResponse'
               type: object
         "400":
           description: Bad Request
@@ -430,7 +440,7 @@ paths:
             - $ref: '#/definitions/api.apiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/api.applicationStatusRequest'
+                  $ref: '#/definitions/api.applicationStatusResponse'
               type: object
         "400":
           description: Bad Request
@@ -472,7 +482,7 @@ paths:
             - $ref: '#/definitions/api.apiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/api.applicationStatusRequest'
+                  $ref: '#/definitions/api.applicationStatusResponse'
               type: object
         "400":
           description: Bad Request

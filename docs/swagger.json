@@ -220,7 +220,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/api.applicationStatusRequest"
+                                            "$ref": "#/definitions/api.applicationStatusResponse"
                                         }
                                     }
                                 }
@@ -275,7 +275,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/api.applicationStatusRequest"
+                                            "$ref": "#/definitions/api.applicationStatusResponse"
                                         }
                                     }
                                 }
@@ -343,7 +343,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/api.applicationStatusRequest"
+                                            "$ref": "#/definitions/api.applicationStatusResponse"
                                         }
                                     }
                                 }
@@ -2026,7 +2026,7 @@
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/api.applicationStatusRequest"
+                    "$ref": "#/definitions/api.applicationStatusResponse"
                 },
                 "title": {
                     "type": "string"
@@ -2061,14 +2061,29 @@
                     "type": "integer"
                 },
                 "new_status": {
-                    "$ref": "#/definitions/api.applicationStatusRequest"
+                    "$ref": "#/definitions/api.applicationStatusResponse"
                 },
                 "old_status": {
-                    "$ref": "#/definitions/api.applicationStatusRequest"
+                    "$ref": "#/definitions/api.applicationStatusResponse"
                 }
             }
         },
         "api.applicationStatusRequest": {
+            "type": "object",
+            "required": [
+                "kind",
+                "status"
+            ],
+            "properties": {
+                "kind": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.applicationStatusResponse": {
             "type": "object",
             "required": [
                 "archived",
@@ -2207,7 +2222,7 @@
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/api.applicationStatusRequest"
+                    "$ref": "#/definitions/api.applicationStatusResponse"
                 },
                 "updated_at": {
                     "type": "string"
