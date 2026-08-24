@@ -38,6 +38,10 @@ type applicationStatusListQuery struct {
 	IncludeArchived bool `query:"include_archived"`
 }
 
+type applicationStatusSoftDeleteQuery struct {
+	SoftDelete bool `query:"soft_delete"`
+}
+
 func createApplicationHistoryRequest(d database.StatusHistory) applicationStatusHistoryResponse {
 	response := applicationStatusHistoryResponse{
 		ID:            d.ID,
@@ -73,7 +77,7 @@ func createApplicationStatusRequest(d database.ApplicationStatus) applicationSta
 // @Produce json
 // @Security BearerAuth
 // @Param include_archived query bool false "Include archived statuses"
-// @Success 200 {object} apiResponse{data=[]applicationStatusRequest}
+// @Success 200 {object} apiResponse{data=[]applicationStatusResponse}
 // @Failure 400 {object} apiResponse
 // @Failure 401 {object} apiResponse
 // @Router /application_statuses [get]
@@ -281,12 +285,13 @@ func (s *Server) handleCreateApplicationStatus() http.HandlerFunc {
 }
 
 // @Summary Delete application status
-// @Description Soft-deletes an application status. Only the owner or an admin can delete it.
+// @Description Deletes an application status. If soft_delete=true, performs a soft delete (and cascades to linked job applications). Otherwise archives the status. Only the owner or an admin can delete it.
 // @Tags application_statuses
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param statusID path int true "Application status ID"
+// @Param soft_delete query bool false "Soft deletes the application status, if set to false it archives the status instead"
 // @Success 200 {object} apiResponse
 // @Failure 400 {object} apiResponse
 // @Failure 403 {object} apiResponse
@@ -300,6 +305,11 @@ func (s *Server) handleDeleteApplicationStatus() http.HandlerFunc {
 			s.respondWithError(w, 400, "invalid id format", err)
 			return
 		}
+		params, err := BindQuery[applicationStatusSoftDeleteQuery](r)
+		if err != nil {
+			s.respondWithError(w, 400, err.Error(), err)
+			return
+		}
 		record, err := s.services.GetApplicationStatus(uint(conv))
 		if err != nil {
 			s.respondWithError(w, 400, "error getting application status", err)
@@ -310,7 +320,7 @@ func (s *Server) handleDeleteApplicationStatus() http.HandlerFunc {
 			s.respondWithError(w, 403, "permission denied", nil)
 			return
 		}
-		err = s.services.DeleteApplicationStatus(userID, record.ID, false)
+		err = s.services.DeleteApplicationStatus(userID, record.ID, params.SoftDelete)
 		if err != nil {
 			s.respondWithError(w, 400, "error deleting application status", err)
 			return

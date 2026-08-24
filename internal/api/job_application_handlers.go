@@ -263,7 +263,7 @@ func (s *Server) handleDeleteJobApplication() http.HandlerFunc {
 			s.respondWithError(w, 400, "Invalid job id", err)
 			return
 		}
-		err = s.services.DeleteJobApplication(uint(jobID64), userID)
+		err = s.services.DeleteJobApplication(nil, uint(jobID64), userID)
 		if err != nil {
 			s.respondWithError(w, 400, err.Error(), err)
 			return

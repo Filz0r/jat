@@ -149,7 +149,7 @@ func (sm *ServiceManager) UpdateJobApplicationStatus(
 	return sm.GetJobApplicationById(applicationID)
 }
 
-func (sm *ServiceManager) DeleteJobApplication(applicationID uint, userID uuid.UUID) error {
+func (sm *ServiceManager) DeleteJobApplication(tx *gorm.DB, applicationID uint, userID uuid.UUID) error {
 	if sm.db == nil {
 		return errors.New("database not initialized")
 	}
@@ -162,7 +162,8 @@ func (sm *ServiceManager) DeleteJobApplication(applicationID uint, userID uuid.U
 		return err
 	}
 
-	err = sm.db.Transaction(func(tx *gorm.DB) error {
+	db := sm.transactionOrDefault(tx)
+	err = db.Transaction(func(tx *gorm.DB) error {
 		// this loop could be optimized with a single operation if performance issues arise
 		for _, note := range notes {
 			err := sm.DeleteApplicationNoteByID(tx, note.ID, applicationID, userID)
@@ -194,4 +195,16 @@ func (sm *ServiceManager) DoesUserOwnJobApplication(jobID uint, userID uuid.UUID
 		return false
 	}
 	return jobApplication.UserID == userID
+}
+
+func (sm *ServiceManager) FindJobApplicationByStatus(userID uuid.UUID, statusID uint) ([]database.JobApplication, error) {
+	if sm.db == nil {
+		return []database.JobApplication{}, errors.New("database not initialized")
+	}
+	var jobApplications []database.JobApplication
+	result := sm.db.Where("status_id = ? and user_id = ?", statusID, userID).Find(&jobApplications)
+	if result.Error != nil {
+		return []database.JobApplication{}, result.Error
+	}
+	return jobApplications, nil
 }

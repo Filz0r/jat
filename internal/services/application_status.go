@@ -7,6 +7,7 @@ import (
 	"github.com/filz0r/jat/internal/database"
 	"github.com/filz0r/jat/internal/utils"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type applicationKindMapping struct {
@@ -213,10 +214,21 @@ func (sm *ServiceManager) DeleteApplicationStatus(
 		return errors.New("cannot delete a default application status")
 	}
 	if softDelete {
-		var applicationStatus database.ApplicationStatus
-		result := sm.db.
-			Delete(&applicationStatus, "id = ? and user_id = ?", statusID, userID)
-		return result.Error
+		jobApplications, err := sm.FindJobApplicationByStatus(userID, statusID)
+		if err != nil {
+			return err
+		}
+		err = sm.db.Transaction(func(tx *gorm.DB) error {
+			for _, jobApplication := range jobApplications {
+				err := sm.DeleteJobApplication(tx, jobApplication.ID, userID)
+				if err != nil {
+					return err
+				}
+			}
+			var applicationStatus database.ApplicationStatus
+			return tx.Delete(&applicationStatus, "id = ? and user_id = ?", statusID, userID).Error
+		})
+		return err
 	}
 	status, err := sm.GetApplicationStatus(statusID)
 	if err != nil {
