@@ -121,6 +121,7 @@ export default function JobNoteForm(props: JobNoteFormProps) {
 			onClose={() => {
 				setIsOpen(false);
 				setErrorMessage(null);
+				form.reset();
 			}}
 			TriggerButton={
 				!largeTrigger ? (
@@ -188,7 +189,7 @@ export default function JobNoteForm(props: JobNoteFormProps) {
 			Content={
 				<div>
 					{errorMessage && (
-						<p className="mb-4 text-sm text-destructive">{errorMessage}</p>
+						<p className="text-destructive mb-4 text-sm">{errorMessage}</p>
 					)}
 					<form.Field
 						name="body"
