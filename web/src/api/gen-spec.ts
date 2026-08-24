@@ -1041,7 +1041,12 @@ export interface paths {
 		 */
 		get: {
 			parameters: {
-				query?: never;
+				query?: {
+					/** @description Filter by Company IDs */
+					company_id?: number[];
+					/** @description Filter by Status IDs */
+					status_id?: number[];
+				};
 				header?: never;
 				path?: never;
 				cookie?: never;

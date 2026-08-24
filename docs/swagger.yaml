@@ -890,6 +890,21 @@ paths:
       consumes:
       - application/json
       description: Returns all job applications belonging to the authenticated user.
+      parameters:
+      - collectionFormat: csv
+        description: Filter by Company IDs
+        in: query
+        items:
+          type: integer
+        name: company_id
+        type: array
+      - collectionFormat: csv
+        description: Filter by Status IDs
+        in: query
+        items:
+          type: integer
+        name: status_id
+        type: array
       produces:
       - application/json
       responses:

@@ -1154,6 +1154,34 @@
                     "job_applications"
                 ],
                 "summary": "List current user's job applications",
+                "parameters": [
+                    {
+                        "description": "Filter by Company IDs",
+                        "name": "company_id",
+                        "in": "query",
+                        "style": "form",
+                        "explode": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    {
+                        "description": "Filter by Status IDs",
+                        "name": "status_id",
+                        "in": "query",
+                        "style": "form",
+                        "explode": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

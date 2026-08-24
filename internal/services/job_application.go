@@ -9,19 +9,28 @@ import (
 	"gorm.io/gorm"
 )
 
-func (sm *ServiceManager) GetUserJobApplications(userID uuid.UUID) ([]database.JobApplication, error) {
+func (sm *ServiceManager) GetUserJobApplications(userID uuid.UUID, companyIDs, statusIDs []uint) ([]database.JobApplication, error) {
 	if sm.db == nil {
 		return nil, errors.New("database not initialized")
 	}
 
 	var applications []database.JobApplication
 
-	result := sm.db.
+	query := sm.db.
 		Where("user_id = ?", userID).
 		Preload("Status").
 		Preload("Company").
-		Order("created_at desc").
-		Find(&applications)
+		Order("created_at desc")
+
+	if len(companyIDs) > 0 {
+		query = query.Where("company_id IN (?)", companyIDs)
+	}
+
+	if len(statusIDs) > 0 {
+		query = query.Where("status_id IN (?)", statusIDs)
+	}
+
+	result := query.Find(&applications)
 
 	if result.Error != nil {
 		return nil, result.Error

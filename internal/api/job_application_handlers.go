@@ -30,6 +30,11 @@ type applicationRequest struct {
 	CreatedAt time.Time `json:"created_at" validate:"required"`
 }
 
+type jobApplicationQueries struct {
+	StatusID  []uint `query:"status_id"`
+	CompanyID []uint `query:"company_id"`
+}
+
 func generateApplicationResponseFromRow(row database.JobApplication) applicationResponse {
 	res := applicationResponse{
 		ID:        row.ID,
@@ -67,6 +72,8 @@ func generateApplicationResponseFromRow(row database.JobApplication) application
 // @Accept json
 // @Produce json
 // @Security BearerAuth
+// @Param company_id query []integer false "Filter by Company IDs"
+// @Param status_id  query []integer false "Filter by Status IDs"
 // @Success 200 {object} apiResponse{data=[]applicationResponse}
 // @Failure 400 {object} apiResponse
 // @Failure 401 {object} apiResponse
@@ -74,7 +81,12 @@ func generateApplicationResponseFromRow(row database.JobApplication) application
 func (s *Server) handleGetUserJobApplications() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, _ := userIDFromContext(r.Context())
-		data, err := s.services.GetUserJobApplications(userID)
+		params, err := BindQuery[jobApplicationQueries](r)
+		if err != nil {
+			s.respondWithError(w, 400, err.Error(), err)
+			return
+		}
+		data, err := s.services.GetUserJobApplications(userID, params.CompanyID, params.StatusID)
 		if err != nil {
 			s.respondWithError(w, 400, "Could not get job applications", err)
 			return
