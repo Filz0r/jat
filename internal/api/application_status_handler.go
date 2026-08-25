@@ -371,3 +371,36 @@ func (s *Server) handleGetJobApplicationHistory() http.HandlerFunc {
 		})
 	}
 }
+
+// @Summary Unarchive application status
+// @Description Restores an archived application status. Only the owner or an admin can unarchive it.
+// @Tags application_statuses
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param statusID path int true "Application status ID"
+// @Success 200 {object} apiResponse
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Router /application_statuses/{statusID}/unarchive [put]
+func (s *Server) handleUnarchiveJobApplicationStatus() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		param := r.PathValue("statusID")
+		statusID64, err := strconv.ParseUint(param, 10, 32)
+		if err != nil {
+			s.respondWithError(w, 400, "invalid id format", err)
+			return
+		}
+		userID, _ := userIDFromContext(r.Context())
+		err = s.services.UnarchiveJobApplicationStatus(uint(statusID64), userID)
+		if err != nil {
+			s.respondWithError(w, 400, "error unarchiving job application status", err)
+			return
+		}
+		response := apiResponse{
+			Ok:      true,
+			Message: "Unarchived job application status",
+		}
+		s.respondWithJSON(w, 200, response)
+	}
+}

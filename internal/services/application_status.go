@@ -334,3 +334,29 @@ func (sm *ServiceManager) IsStatusDefault(statusID uint, userID uuid.UUID) bool 
 	}
 	return *user.DefaultApplicationStatusID == statusID
 }
+
+func (sm *ServiceManager) UnarchiveJobApplicationStatus(statusID uint, userID uuid.UUID) error {
+	if sm.db == nil {
+		return errors.New("database not initialized")
+	}
+	if !sm.DoesUserOwnApplicationStatus(userID, statusID) && !sm.IsUserAdmin(userID) {
+		return errors.New("user does not own job application status")
+	}
+
+	db := sm.transactionOrDefault(sm.db)
+	err := db.Transaction(func(tx *gorm.DB) error {
+		status, err := sm.GetApplicationStatus(tx, statusID)
+		if err != nil {
+			return err
+		}
+		if !status.Archived {
+			return errors.New("job application status is not archived")
+		}
+		status.Archived = false
+		if err := tx.Save(status).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}

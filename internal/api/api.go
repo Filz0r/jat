@@ -89,6 +89,7 @@ func (s *Server) loadRoutes() {
 	s.apiMux.Handle("PUT /application_statuses/{statusID}", s.middlewareAuth(s.handleUpdateApplicationStatus()))
 	s.apiMux.Handle("DELETE /application_statuses/{statusID}", s.middlewareAuth(s.handleDeleteApplicationStatus()))
 	s.apiMux.Handle("POST /application_statuses", s.middlewareAuth(s.handleCreateApplicationStatus()))
+	s.apiMux.Handle("PUT /application_statuses/{statusID}/unarchive", s.middlewareAuth(s.handleUnarchiveJobApplicationStatus()))
 
 	// Job applications Handlers
 	s.apiMux.Handle("GET /jobs",
