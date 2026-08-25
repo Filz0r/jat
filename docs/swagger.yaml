@@ -503,6 +503,38 @@ paths:
       summary: Update application status
       tags:
       - application_statuses
+  /application_statuses/{statusID}/unarchive:
+    put:
+      consumes:
+      - application/json
+      description: Restores an archived application status. Only the owner or an admin
+        can unarchive it.
+      parameters:
+      - description: Application status ID
+        in: path
+        name: statusID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Unarchive application status
+      tags:
+      - application_statuses
   /auth/login:
     post:
       consumes:

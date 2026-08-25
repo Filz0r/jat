@@ -418,6 +418,55 @@
                 }
             }
         },
+        "/application_statuses/{statusID}/unarchive": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Restores an archived application status. Only the owner or an admin can unarchive it.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "application_statuses"
+                ],
+                "summary": "Unarchive application status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Application status ID",
+                        "name": "statusID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Authenticates a user. For web clients the response includes two Set-Cookie headers: access_token (HttpOnly; Secure; SameSite=Strict; Path=/api; Max-Age=300) and refresh_token (HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=5184000). TUI clients receive the tokens in the response body. The X-Jat-Client-Type header is required by the server middleware but is set automatically by the generated web client.",
