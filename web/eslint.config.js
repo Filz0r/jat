@@ -2,11 +2,13 @@
 
 import { tanstackConfig } from '@tanstack/eslint-config';
 import queryPlugin from '@tanstack/eslint-plugin-query';
+import pluginRouter from '@tanstack/eslint-plugin-router';
 import eslintPluginTailwindcss from 'eslint-plugin-tailwindcss';
 
 export default [
 	...tanstackConfig,
 	eslintPluginTailwindcss.configs.recommended,
+	...pluginRouter.configs['flat/recommended'],
 	{
 		plugins: {
 			'@tanstack/query': queryPlugin,

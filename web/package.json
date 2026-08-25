@@ -47,6 +47,7 @@
 		"@tanstack/devtools-vite": "latest",
 		"@tanstack/eslint-config": "latest",
 		"@tanstack/eslint-plugin-query": "^5.101.4",
+		"@tanstack/eslint-plugin-router": "^1.162.0",
 		"@tanstack/react-query-devtools": "^5.101.4",
 		"@tanstack/router-cli": "^1.132.0",
 		"@tanstack/router-plugin": "latest",
