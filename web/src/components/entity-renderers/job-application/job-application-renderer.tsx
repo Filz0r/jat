@@ -10,9 +10,9 @@ import {
 } from '#/components/ui/accordion.tsx';
 import UpdateJobStatusForm from '#/components/forms/update-job-status-form.tsx';
 import JobNoteForm from '#/components/forms/job-note-form.tsx';
-import JobApplicationNotesRenderer from '#/components/entity-renderers/job-application-notes-renderer.tsx';
-import JobApplicationHistoryRenderer from '#/components/entity-renderers/job-application-history-renderer.tsx';
-import JobApplicationInformationRenderer from '#/components/entity-renderers/job-application-information-renderer.tsx';
+import JobApplicationNotesRenderer from '#/components/entity-renderers/job-application/job-application-notes-renderer.tsx';
+import JobApplicationHistoryRenderer from '#/components/entity-renderers/job-application/job-application-history-renderer.tsx';
+import JobApplicationInformationRenderer from '#/components/entity-renderers/job-application/job-application-information-renderer.tsx';
 import DeleteJobApplication from '#/components/actions/delete-job-application.tsx';
 
 export default function JobApplicationRenderer({ data }: { data: JobApplication }) {
@@ -38,7 +38,7 @@ export default function JobApplicationRenderer({ data }: { data: JobApplication 
 		<div className="my-3.5">
 			<Accordion multiple defaultValue={['info', 'notes']}>
 				<AccordionItem key="info" value="info" disabled>
-					<div className="relative flex items-center justify-center border-b py-2 text-2xl font-bold text-primary">
+					<div className="text-primary relative flex items-center justify-center border-b py-2 text-2xl font-bold">
 						Information
 						<span className="absolute right-2 space-x-1">
 							<UpdateJobStatusForm
@@ -55,7 +55,7 @@ export default function JobApplicationRenderer({ data }: { data: JobApplication 
 				</AccordionItem>
 
 				<AccordionItem key="notes" value="notes">
-					<div className="relative flex items-center justify-center border-b py-2 text-2xl font-bold text-primary">
+					<div className="text-primary relative flex items-center justify-center border-b py-2 text-2xl font-bold">
 						Notes
 						{noteData && noteData.data && noteData.data.length > 0 && (
 							<span className="absolute right-2 space-x-1">
@@ -75,7 +75,7 @@ export default function JobApplicationRenderer({ data }: { data: JobApplication 
 				</AccordionItem>
 				<AccordionItem key="history" value="history">
 					<AccordionTrigger className="hover:no-underline">
-						<span className="flex-1 text-center text-2xl font-bold text-primary">
+						<span className="text-primary flex-1 text-center text-2xl font-bold">
 							Status History
 						</span>
 					</AccordionTrigger>

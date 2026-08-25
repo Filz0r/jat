@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { apiClient } from '#/api/client.ts';
 import { Skeleton } from '#/components/ui/skeleton.tsx';
-import JobApplicationRenderer from '#/components/entity-renderers/job-application-renderer.tsx';
+import JobApplicationRenderer from '#/components/entity-renderers/job-application/job-application-renderer.tsx';
 
 export const Route = createFileRoute('/_app/jobs/$jobID')({
 	component: RouteComponent,
