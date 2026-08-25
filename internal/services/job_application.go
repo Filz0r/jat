@@ -201,10 +201,61 @@ func (sm *ServiceManager) FindJobApplicationByStatus(userID uuid.UUID, statusID 
 	if sm.db == nil {
 		return []database.JobApplication{}, errors.New("database not initialized")
 	}
+
+	jobIDs := make(map[uint]struct{})
+
+	var byCurrent []database.JobApplication
+	if err := sm.db.
+		Where("status_id = ? and user_id = ?", statusID, userID).
+		Find(&byCurrent).Error; err != nil {
+		return nil, err
+	}
+	for _, j := range byCurrent {
+		jobIDs[j.ID] = struct{}{}
+	}
+
+	var byNewHistory []database.StatusHistory
+	if err := sm.db.
+		Where("new_status_id = ? AND application_id IN (SELECT id FROM job_applications WHERE user_id = ?)", statusID, userID).
+		Find(&byNewHistory).Error; err != nil {
+		return nil, err
+	}
+	for _, h := range byNewHistory {
+		jobIDs[h.ApplicationID] = struct{}{}
+	}
+
+	var byOldHistory []database.StatusHistory
+	if err := sm.db.
+		Where("old_status_id = ? AND application_id IN (SELECT id FROM job_applications WHERE user_id = ?)", statusID, userID).
+		Find(&byOldHistory).Error; err != nil {
+		return nil, err
+	}
+	for _, h := range byOldHistory {
+		jobIDs[h.ApplicationID] = struct{}{}
+	}
+
+	var byNote []database.ApplicationNote
+	if err := sm.db.
+		Where("status_id = ? AND application_id IN (SELECT id FROM job_applications WHERE user_id = ?)", statusID, userID).
+		Find(&byNote).Error; err != nil {
+		return nil, err
+	}
+	for _, n := range byNote {
+		jobIDs[n.ApplicationID] = struct{}{}
+	}
+
+	if len(jobIDs) == 0 {
+		return []database.JobApplication{}, nil
+	}
+
+	ids := make([]uint, 0, len(jobIDs))
+	for id := range jobIDs {
+		ids = append(ids, id)
+	}
+
 	var jobApplications []database.JobApplication
-	result := sm.db.Where("status_id = ? and user_id = ?", statusID, userID).Find(&jobApplications)
-	if result.Error != nil {
-		return []database.JobApplication{}, result.Error
+	if err := sm.db.Where("id IN ?", ids).Find(&jobApplications).Error; err != nil {
+		return nil, err
 	}
 	return jobApplications, nil
 }
