@@ -208,7 +208,7 @@ func (s *Server) handleGetAnApplicationStatus() http.HandlerFunc {
 		}
 		userID, _ := userIDFromContext(r.Context())
 
-		record, err := s.services.GetApplicationStatus(uint(conv))
+		record, err := s.services.GetApplicationStatus(nil, uint(conv))
 		if err != nil {
 			s.respondWithError(w, 400, "error getting application status", err)
 			return
@@ -310,7 +310,7 @@ func (s *Server) handleDeleteApplicationStatus() http.HandlerFunc {
 			s.respondWithError(w, 400, err.Error(), err)
 			return
 		}
-		record, err := s.services.GetApplicationStatus(uint(conv))
+		record, err := s.services.GetApplicationStatus(nil, uint(conv))
 		if err != nil {
 			s.respondWithError(w, 400, "error getting application status", err)
 			return

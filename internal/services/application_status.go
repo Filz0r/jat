@@ -103,7 +103,7 @@ func (sm *ServiceManager) UpdateApplicationStatus(
 		return database.ApplicationStatus{}, errors.New("database not initialized")
 	}
 
-	applicationStatus, err := sm.GetApplicationStatus(statusID)
+	applicationStatus, err := sm.GetApplicationStatus(nil, statusID)
 	if err != nil {
 		return database.ApplicationStatus{}, err
 	}
@@ -140,13 +140,13 @@ func (sm *ServiceManager) UpdateApplicationStatus(
 	return applicationStatus, nil
 }
 
-func (sm *ServiceManager) GetApplicationStatus(id uint) (database.ApplicationStatus, error) {
+func (sm *ServiceManager) GetApplicationStatus(tx *gorm.DB, id uint) (database.ApplicationStatus, error) {
 	if sm.db == nil {
 		return database.ApplicationStatus{}, errors.New("database not initialized")
 	}
-
+	db := sm.transactionOrDefault(tx)
 	var applicationStatus database.ApplicationStatus
-	result := sm.db.
+	result := db.
 		Where("id = ?", id).
 		First(&applicationStatus)
 
@@ -230,7 +230,7 @@ func (sm *ServiceManager) DeleteApplicationStatus(
 		})
 		return err
 	}
-	status, err := sm.GetApplicationStatus(statusID)
+	status, err := sm.GetApplicationStatus(nil, statusID)
 	if err != nil {
 		return err
 	}
@@ -314,7 +314,7 @@ func (sm *ServiceManager) IsStatusArchived(statusID uint) bool {
 	if sm.db == nil {
 		return false
 	}
-	status, err := sm.GetApplicationStatus(statusID)
+	status, err := sm.GetApplicationStatus(nil, statusID)
 	if err != nil {
 		return false
 	}
