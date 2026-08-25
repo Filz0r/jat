@@ -19,7 +19,7 @@ func (s *Server) middlewareLogRequest(next http.Handler) http.Handler {
 		s.logger.Printf(
 			"%s %s -> %s%d%s in %s",
 			r.Method,
-			r.URL.Path,
+			r.URL.RequestURI(),
 			statusColor(recorder.status),
 			recorder.status,
 			reset,
