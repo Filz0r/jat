@@ -15,6 +15,8 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppCompaniesRouteImport } from './routes/_app.companies'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppApplication_statusIndexRouteImport } from './routes/_app.application_status.index'
+import { Route as AppApplication_statusStatusIDRouteImport } from './routes/_app.application_status.$statusID'
 import { Route as AppJobsIndexRouteImport } from './routes/_app.jobs.index'
 import { Route as AppJobsJobIDRouteImport } from './routes/_app.jobs.$jobID'
 import { Route as AppJobsNewRouteImport } from './routes/_app.jobs.new'
@@ -48,6 +50,18 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppApplication_statusIndexRoute =
+  AppApplication_statusIndexRouteImport.update({
+    id: '/application_status/',
+    path: '/application_status/',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppApplication_statusStatusIDRoute =
+  AppApplication_statusStatusIDRouteImport.update({
+    id: '/application_status/$statusID',
+    path: '/application_status/$statusID',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppJobsIndexRoute = AppJobsIndexRouteImport.update({
   id: '/jobs/',
   path: '/jobs/',
@@ -70,8 +84,10 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/companies': typeof AppCompaniesRoute
   '/settings': typeof AppSettingsRoute
+  '/application_status/$statusID': typeof AppApplication_statusStatusIDRoute
   '/jobs/$jobID': typeof AppJobsJobIDRoute
   '/jobs/new': typeof AppJobsNewRoute
+  '/application_status/': typeof AppApplication_statusIndexRoute
   '/jobs/': typeof AppJobsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -80,8 +96,10 @@ export interface FileRoutesByTo {
   '/companies': typeof AppCompaniesRoute
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
+  '/application_status/$statusID': typeof AppApplication_statusStatusIDRoute
   '/jobs/$jobID': typeof AppJobsJobIDRoute
   '/jobs/new': typeof AppJobsNewRoute
+  '/application_status': typeof AppApplication_statusIndexRoute
   '/jobs': typeof AppJobsIndexRoute
 }
 export interface FileRoutesById {
@@ -92,8 +110,10 @@ export interface FileRoutesById {
   '/_app/companies': typeof AppCompaniesRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/application_status/$statusID': typeof AppApplication_statusStatusIDRoute
   '/_app/jobs/$jobID': typeof AppJobsJobIDRoute
   '/_app/jobs/new': typeof AppJobsNewRoute
+  '/_app/application_status/': typeof AppApplication_statusIndexRoute
   '/_app/jobs/': typeof AppJobsIndexRoute
 }
 export interface FileRouteTypes {
@@ -104,8 +124,10 @@ export interface FileRouteTypes {
     | '/setup'
     | '/companies'
     | '/settings'
+    | '/application_status/$statusID'
     | '/jobs/$jobID'
     | '/jobs/new'
+    | '/application_status/'
     | '/jobs/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -114,8 +136,10 @@ export interface FileRouteTypes {
     | '/companies'
     | '/settings'
     | '/'
+    | '/application_status/$statusID'
     | '/jobs/$jobID'
     | '/jobs/new'
+    | '/application_status'
     | '/jobs'
   id:
     | '__root__'
@@ -125,8 +149,10 @@ export interface FileRouteTypes {
     | '/_app/companies'
     | '/_app/settings'
     | '/_app/'
+    | '/_app/application_status/$statusID'
     | '/_app/jobs/$jobID'
     | '/_app/jobs/new'
+    | '/_app/application_status/'
     | '/_app/jobs/'
   fileRoutesById: FileRoutesById
 }
@@ -180,6 +206,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/application_status/': {
+      id: '/_app/application_status/'
+      path: '/application_status'
+      fullPath: '/application_status/'
+      preLoaderRoute: typeof AppApplication_statusIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/application_status/$statusID': {
+      id: '/_app/application_status/$statusID'
+      path: '/application_status/$statusID'
+      fullPath: '/application_status/$statusID'
+      preLoaderRoute: typeof AppApplication_statusStatusIDRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/jobs/': {
       id: '/_app/jobs/'
       path: '/jobs'
@@ -208,8 +248,10 @@ interface AppRouteChildren {
   AppCompaniesRoute: typeof AppCompaniesRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppApplication_statusStatusIDRoute: typeof AppApplication_statusStatusIDRoute
   AppJobsJobIDRoute: typeof AppJobsJobIDRoute
   AppJobsNewRoute: typeof AppJobsNewRoute
+  AppApplication_statusIndexRoute: typeof AppApplication_statusIndexRoute
   AppJobsIndexRoute: typeof AppJobsIndexRoute
 }
 
@@ -217,8 +259,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppCompaniesRoute: AppCompaniesRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppApplication_statusStatusIDRoute: AppApplication_statusStatusIDRoute,
   AppJobsJobIDRoute: AppJobsJobIDRoute,
   AppJobsNewRoute: AppJobsNewRoute,
+  AppApplication_statusIndexRoute: AppApplication_statusIndexRoute,
   AppJobsIndexRoute: AppJobsIndexRoute,
 }
 
