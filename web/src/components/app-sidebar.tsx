@@ -4,6 +4,7 @@ import {
 	IconHome,
 	IconSettings,
 	IconLayoutSidebar,
+	IconChartColumn,
 } from '@tabler/icons-react';
 
 import {
@@ -26,6 +27,7 @@ import { Link } from '@tanstack/react-router';
 const mainNavItems: NavItem[] = [
 	{ title: 'Home', to: '/', icon: IconHome },
 	{ title: 'Jobs', to: '/jobs', icon: IconBriefcase },
+	{ title: 'Application Status', to: '/application_status', icon: IconChartColumn },
 	{ title: 'Companies', to: '/companies', icon: IconBuilding },
 	{ title: 'Account Settings', to: '/settings', icon: IconSettings },
 ];
