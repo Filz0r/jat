@@ -18,6 +18,8 @@ interface ModularDeleteEntityDialogProps {
 	onClose: () => void | Promise<void>;
 	triggerButton: ReactElement;
 	deleteButtonMessage: string;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 }
 
 export default function ModularDeleteEntityDialog({
@@ -27,9 +29,11 @@ export default function ModularDeleteEntityDialog({
 	onClose,
 	triggerButton,
 	deleteButtonMessage,
+	open,
+	onOpenChange,
 }: ModularDeleteEntityDialogProps) {
 	return (
-		<Dialog>
+		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogTrigger render={triggerButton} />
 
 			<DialogContent className="sm:max-w-sm" showCloseButton={false}>
