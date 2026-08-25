@@ -16,6 +16,22 @@ export const createJobApplicationNoteSchema = z.object({
 	body: z.string('You need to provide content').min(3).max(2048),
 });
 
+const applicationStatusKinds = [
+	'applied',
+	'rejected',
+	'ghosted',
+	'interviewed',
+	'irrelevant',
+	'accepted',
+];
+export const applicationStatusKindSchema = z.enum(applicationStatusKinds);
+
+export const jobApplicationStatusSchema = z.object({
+	status: z.string().min(3).max(64),
+	kind: applicationStatusKindSchema,
+});
+
 export type CreateJobApplication = z.infer<typeof createJobApplicationSchema>;
 export type UpdateJobApplicationStatusSchema = z.infer<typeof updateJobApplicationStatusSchema>;
 export type CreateJobApplicationNote = z.infer<typeof createJobApplicationNoteSchema>;
+export type ApplicationStatusSchema = z.infer<typeof jobApplicationStatusSchema>;
