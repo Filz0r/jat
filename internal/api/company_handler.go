@@ -27,6 +27,25 @@ type companyResponse struct {
 
 //TODO: Fix 500 response codes when possible
 
+func createCompanyResponse(data database.Company, totalCount, userCount int64, includeCounts bool) companyResponse {
+	result := companyResponse{
+		ID:        data.ID,
+		Name:      data.Name,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: data.UpdatedAt,
+		CreatedBy: data.CreatedBy,
+		EditedBy:  data.EditedBy,
+	}
+	if data.Website != nil {
+		result.Website = *data.Website
+	}
+	if includeCounts {
+		result.TotalCount = totalCount
+		result.UserCount = userCount
+	}
+	return result
+}
+
 // @Summary Create company
 // @Description Creates a new company.
 // @Tags companies
