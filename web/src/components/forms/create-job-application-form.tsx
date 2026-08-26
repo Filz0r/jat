@@ -249,7 +249,7 @@ export default function CreateJobApplicationForm({ defaultStatus }: { defaultSta
 								)}
 							/>
 						</div>
-						{serverError && <p className="text-xs text-destructive">{serverError}</p>}
+						{serverError && <p className="text-destructive text-xs">{serverError}</p>}
 					</CardContent>
 					<CardFooter className="flex flex-col gap-3 sm:flex-row sm:justify-stretch">
 						<form.Subscribe

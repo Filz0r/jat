@@ -38,7 +38,7 @@ export default function FieldWrapper({ field, label, children, className }: Fiel
 			<Label htmlFor={field.name}>{label}</Label>
 			{children}
 			{showErrors && messages.length > 0 && (
-				<p className="text-xs text-destructive">{messages.join(', ')}</p>
+				<p className="text-destructive text-xs">{messages.join(', ')}</p>
 			)}
 		</div>
 	);

@@ -107,7 +107,7 @@ function StepIndicator({ currentStep }: { currentStep: SetupStep }) {
 						</span>
 						<span
 							className={`text-xs ${
-								isActive ? 'font-medium text-foreground' : 'text-muted-foreground'
+								isActive ? 'text-foreground font-medium' : 'text-muted-foreground'
 							}`}
 						>
 							{step.label}

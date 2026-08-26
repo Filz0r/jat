@@ -17,7 +17,7 @@ export default function JobApplicationInformationRenderer({
 				<h1 className="flex w-full flex-col justify-evenly space-y-2 px-10 py-2 text-center text-lg">
 					<div className="flex items-center justify-center">
 						<div>
-							<span className="font-bold text-primary">Title:</span>
+							<span className="text-primary font-bold">Title:</span>
 							{data.title}
 						</div>
 
@@ -34,11 +34,11 @@ export default function JobApplicationInformationRenderer({
 					<span>
 						<span>
 							{/* TODO: change to platform link to website*/}
-							<span className="font-bold text-primary">Company:</span>
+							<span className="text-primary font-bold">Company:</span>
 							{data.company.name}
 						</span>
 						{data.company.website && (
-							<a href={data.company.website} className="font-bold text-primary">
+							<a href={data.company.website} className="text-primary font-bold">
 								Website <ArrowUpRightIcon data-icon="inline-end" />
 							</a>
 						)}

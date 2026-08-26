@@ -34,9 +34,9 @@ export default function JobApplicationNotesRenderer({
 			{data.map((d, idx) => (
 				<Item
 					key={`job-${jobID}-note-${d.id}`}
-					className="mt-1 flex w-full flex-col flex-nowrap items-stretch gap-0 border border-accent p-0"
+					className="border-accent mt-1 flex w-full flex-col flex-nowrap items-stretch gap-0 border p-0"
 				>
-					<ItemHeader className="w-full border-b border-b-accent px-3 py-2.5">
+					<ItemHeader className="border-b-accent w-full border-b px-3 py-2.5">
 						<div className="flex flex-col">
 							<span className="text-lg">Note {idx + 1}</span>
 						</div>
@@ -61,12 +61,12 @@ export default function JobApplicationNotesRenderer({
 						<ItemContent className="min-w-0 flex-1">
 							<ItemDescription className="flex flex-col rounded-lg p-1">
 								<span className="pl-2 font-bold">Content</span>
-								<span className="mt-2 rounded-lg border border-accent p-2 wrap-anywhere">
+								<span className="border-accent mt-2 rounded-lg border p-2 wrap-anywhere">
 									{d.body}
 								</span>
 							</ItemDescription>
 						</ItemContent>
-						<ItemActions className="h-full shrink-0 rounded-xl border border-accent bg-background/20 p-3">
+						<ItemActions className="border-accent bg-background/20 h-full shrink-0 rounded-xl border p-3">
 							<JobNoteForm jobID={jobID} edit existingData={d} />
 							<DeleteApplicationNote jobID={jobID} data={d} />
 						</ItemActions>

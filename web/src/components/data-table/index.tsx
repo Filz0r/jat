@@ -95,7 +95,7 @@ export function DataTable<TData extends RowData>({
 				</TableBody>
 			</Table>
 
-			<div className="mt-2 flex items-center justify-between border-t border-t-accent p-2">
+			<div className="border-t-accent mt-2 flex items-center justify-between border-t p-2">
 				<div className="flex items-center space-x-2">
 					<p className="text-sm font-medium">Rows per page</p>
 					<Select

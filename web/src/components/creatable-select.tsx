@@ -173,16 +173,16 @@ export function CreatableSelect({
 				/>
 				<ComboboxContent>
 					{createError && (
-						<p className="px-2 pt-2 text-xs text-destructive">{createError}</p>
+						<p className="text-destructive px-2 pt-2 text-xs">{createError}</p>
 					)}
 					<ComboboxList>
 						{isLoading && (
-							<div className="px-2 py-1.5 text-xs text-muted-foreground">
+							<div className="text-muted-foreground px-2 py-1.5 text-xs">
 								Loading...
 							</div>
 						)}
 						{!isLoading && isError && (
-							<div className="px-2 py-1.5 text-xs text-destructive">
+							<div className="text-destructive px-2 py-1.5 text-xs">
 								Failed to load
 							</div>
 						)}
