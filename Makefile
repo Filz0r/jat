@@ -5,9 +5,11 @@ BUILD_DATE=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 CC=go
 FLAGS=-X github.com/filz0r/jat/internal/version.Version=$(CURRENT_RELEASE) -X github.com/filz0r/jat/internal/version.Commit=$(GIT_COMMIT) -X github.com/filz0r/jat/internal/version.BuildDate=$(BUILD_DATE)
 
+COMPOSE_FILE=docker-compose.db.yml
+
 all: $(NAME)
 
-$(NAME):
+$(NAME): build_web
 	@echo "Compiling new server binary"
 	@echo "Version: $(CURRENT_RELEASE)"
 	@echo "Git Commit: $(GIT_COMMIT)"
@@ -34,9 +36,39 @@ test:
 
 build_server: $(NAME)
 
-dev_server: clean_server build_server
-	./jat server
-
 re: clean_server build_server
 
-.PHONY: all re test clean_server build_server
+generate_api:
+	@swag init -g main.go
+	@rm -f docs/docs.go
+	@cd web && npx swagger2openapi ../docs/swagger.json -o ../docs/openapi.json
+	@cd web && npx openapi-typescript ../docs/openapi.json -o ./src/api/gen-spec.ts
+
+install_web:
+	@cd web && npm install
+
+build_web:
+	@cd web && npm run build
+	@rm -rf internal/api/webdist
+	@cp -r web/dist internal/api/webdist
+
+dev_backend:
+	@go run . server
+
+dev_frontend:
+	@cd web && npm run dev
+
+dev_db_down:
+	@docker compose -f $(COMPOSE_FILE) down
+
+dev_db_up:
+	@docker compose -f $(COMPOSE_FILE) up -d
+
+reset_db:
+	@echo "dropping $(NAME) database and creating a new one with the same name"
+	@docker exec jat sh -c 'psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS $(NAME) WITH (FORCE);" && psql -U postgres -d postgres -c "CREATE DATABASE $(NAME);"'
+
+connect_db:
+	@docker exec -it $(NAME) psql -U postgres -d $(NAME)
+
+.PHONY: all re test clean_server build_server generate_api install_web build_web dev-backend dev-frontend dev
