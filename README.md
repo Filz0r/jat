@@ -38,17 +38,39 @@ go install github.com/filz0r/jat@latest
 
 ## Development
 
-To build and run the server locally:
+### Requirements
+
+- Go 1.26+
+- Node.js and npm (for the React web UI)
+- `swag` CLI (`go install github.com/swaggo/swag/cmd/swag@latest`)
+- PostgreSQL (see `docker-compose.standalone.yml` for a local database)
+
+### Building
 
 ```bash
-# Build the binary
-make build_server
+# Install frontend dependencies
+make install_web
 
-# Build and start the server in development mode
-make dev_server
+# Generate the OpenAPI spec and TypeScript client
+make generate_api
+
+# Build a single binary that embeds the React app
+make build_server
 ```
 
-The server expects environment variables to be configured. A sample `.env` file is provided in the repository for reference.
+### Running locally
+
+Start a local PostgreSQL instance and copy `.env.sample` to `.env`, then run the server and frontend dev servers in separate terminals:
+
+```bash
+# Terminal 1
+make dev-backend
+
+# Terminal 2
+make dev-frontend
+```
+
+The Vite dev server proxies `/api` to `http://localhost:4200`, keeping the browser origin consistent with the backend's `Secure; SameSite=Strict` cookies.
 
 ## Roadmap
 
