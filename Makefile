@@ -43,6 +43,7 @@ generate_api:
 	@rm -f docs/docs.go
 	@cd web && npx swagger2openapi ../docs/swagger.json -o ../docs/openapi.json
 	@cd web && npx openapi-typescript ../docs/openapi.json -o ./src/api/gen-spec.ts
+	@cd web && npx prettier --write src/api/gen-spec.ts
 
 install_web:
 	@cd web && npm install
