@@ -693,7 +693,12 @@ export interface paths {
 		 */
 		get: {
 			parameters: {
-				query?: never;
+				query?: {
+					/** @description Include a count of user applications for this company */
+					user_count?: boolean;
+					/** @description Include a count of total applications (global) for this company */
+					total_count?: boolean;
+				};
 				header?: never;
 				path?: never;
 				cookie?: never;
@@ -795,7 +800,12 @@ export interface paths {
 		 */
 		get: {
 			parameters: {
-				query?: never;
+				query?: {
+					/** @description Include a count of user applications for this company */
+					user_count?: boolean;
+					/** @description Include a count of total applications (global) for this company */
+					total_count?: boolean;
+				};
 				header?: never;
 				path: {
 					/** @description Company ID */
@@ -938,6 +948,71 @@ export interface paths {
 				};
 			};
 		};
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/company/{companyID}/count': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Count Company Job Applications
+		 * @description Counts the Job Applications a company has company ID. If the total_count query param is true it returns the total applications for a company, otherwise it returns the total applications for the user
+		 */
+		get: {
+			parameters: {
+				query?: {
+					/** @description Include a count of total applications (global) for this company */
+					total_count?: boolean;
+				};
+				header?: never;
+				path: {
+					/** @description Company ID */
+					companyID: number;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'] & {
+							data?: components['schemas']['api.apiCountResult'];
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
 		options?: never;
 		head?: never;
 		patch?: never;
@@ -1920,6 +1995,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		'api.apiCountResult': {
+			count: number;
+		};
 		'api.apiResponse': {
 			data?: unknown;
 			message: string;
@@ -1967,12 +2045,14 @@ export interface components {
 			website?: string;
 		};
 		'api.companyResponse': {
-			createdAt: string;
-			createdBy: string;
+			created_at: string;
+			created_by: string;
+			edited_by: string;
 			id: number;
 			name: string;
-			updatedAt: string;
-			updatedBy: string;
+			total_count?: number;
+			updated_at: string;
+			user_count?: number;
 			website?: string;
 		};
 		'api.loginResponse': {

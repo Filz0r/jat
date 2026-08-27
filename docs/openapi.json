@@ -773,6 +773,24 @@
                     "companies"
                 ],
                 "summary": "List all companies",
+                "parameters": [
+                    {
+                        "description": "Include a count of user applications for this company",
+                        "name": "user_count",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "description": "Include a count of total applications (global) for this company",
+                        "name": "total_count",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -901,6 +919,22 @@
                         "required": true,
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Include a count of user applications for this company",
+                        "name": "user_count",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "description": "Include a count of total applications (global) for this company",
+                        "name": "total_count",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
                         }
                     }
                 ],
@@ -1064,6 +1098,83 @@
                     },
                     "403": {
                         "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.apiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.apiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/count": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Counts the Job Applications a company has company ID. If the total_count query param is true it returns the total applications for a company, otherwise it returns the total applications for the user",
+                "tags": [
+                    "companies"
+                ],
+                "summary": "Count Company Job Applications",
+                "parameters": [
+                    {
+                        "description": "Company ID",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Include a count of total applications (global) for this company",
+                        "name": "total_count",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/components/schemas/api.apiResponse"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "data": {
+                                                    "$ref": "#/components/schemas/api.apiCountResult"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2277,6 +2388,17 @@
             }
         },
         "schemas": {
+            "api.apiCountResult": {
+                "type": "object",
+                "required": [
+                    "count"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer"
+                    }
+                }
+            },
             "api.apiResponse": {
                 "type": "object",
                 "required": [
@@ -2451,18 +2573,21 @@
             "api.companyResponse": {
                 "type": "object",
                 "required": [
-                    "createdAt",
-                    "createdBy",
+                    "created_at",
+                    "created_by",
+                    "edited_by",
                     "id",
                     "name",
-                    "updatedAt",
-                    "updatedBy"
+                    "updated_at"
                 ],
                 "properties": {
-                    "createdAt": {
+                    "created_at": {
                         "type": "string"
                     },
-                    "createdBy": {
+                    "created_by": {
+                        "type": "string"
+                    },
+                    "edited_by": {
                         "type": "string"
                     },
                     "id": {
@@ -2471,11 +2596,14 @@
                     "name": {
                         "type": "string"
                     },
-                    "updatedAt": {
+                    "total_count": {
+                        "type": "integer"
+                    },
+                    "updated_at": {
                         "type": "string"
                     },
-                    "updatedBy": {
-                        "type": "string"
+                    "user_count": {
+                        "type": "integer"
                     },
                     "website": {
                         "type": "string"

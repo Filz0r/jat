@@ -1,5 +1,12 @@
 basePath: /api
 definitions:
+  api.apiCountResult:
+    properties:
+      count:
+        type: integer
+    required:
+    - count
+    type: object
   api.apiResponse:
     properties:
       data: {}
@@ -121,27 +128,31 @@ definitions:
     type: object
   api.companyResponse:
     properties:
-      createdAt:
+      created_at:
         type: string
-      createdBy:
+      created_by:
+        type: string
+      edited_by:
         type: string
       id:
         type: integer
       name:
         type: string
-      updatedAt:
+      total_count:
+        type: integer
+      updated_at:
         type: string
-      updatedBy:
-        type: string
+      user_count:
+        type: integer
       website:
         type: string
     required:
-    - createdAt
-    - createdBy
+    - created_at
+    - created_by
+    - edited_by
     - id
     - name
-    - updatedAt
-    - updatedBy
+    - updated_at
     type: object
   api.loginResponse:
     properties:
@@ -687,6 +698,15 @@ paths:
       consumes:
       - application/json
       description: Returns every company in the system.
+      parameters:
+      - description: Include a count of user applications for this company
+        in: query
+        name: user_count
+        type: boolean
+      - description: Include a count of total applications (global) for this company
+        in: query
+        name: total_count
+        type: boolean
       produces:
       - application/json
       responses:
@@ -795,6 +815,14 @@ paths:
         name: companyID
         required: true
         type: integer
+      - description: Include a count of user applications for this company
+        in: query
+        name: user_count
+        type: boolean
+      - description: Include a count of total applications (global) for this company
+        in: query
+        name: total_count
+        type: boolean
       produces:
       - application/json
       responses:
@@ -859,6 +887,48 @@ paths:
       security:
       - BearerAuth: []
       summary: Update company
+      tags:
+      - companies
+  /company/{companyID}/count:
+    get:
+      consumes:
+      - application/json
+      description: Counts the Job Applications a company has company ID. If the total_count
+        query param is true it returns the total applications for a company, otherwise
+        it returns the total applications for the user
+      parameters:
+      - description: Company ID
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: Include a count of total applications (global) for this company
+        in: query
+        name: total_count
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.apiCountResult'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Count Company Job Applications
       tags:
       - companies
   /health:
