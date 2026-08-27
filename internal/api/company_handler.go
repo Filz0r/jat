@@ -16,13 +16,6 @@ type companyBodyRequest struct {
 }
 
 type companyResponse struct {
-	ID        uint      `json:"id,omitempty" validate:"required"`
-	Name      string    `json:"name" validate:"required"`
-	Website   string    `json:"website,omitempty"`
-	CreatedAt time.Time `json:"createdAt" validate:"required"`
-	UpdatedAt time.Time `json:"updatedAt" validate:"required"`
-	CreatedBy uuid.UUID `json:"createdBy" validate:"required"`
-	UpdatedBy uuid.UUID `json:"updatedBy" validate:"required"`
 	ID         uint      `json:"id,omitempty" validate:"required"`
 	Name       string    `json:"name" validate:"required"`
 	Website    string    `json:"website,omitempty"`
