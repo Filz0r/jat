@@ -30,6 +30,10 @@ const contextKeyRefreshToken contextKey = "refreshToken"
 const contextUserAdmin contextKey = "userAdmin"
 const contextGetClientType contextKey = "clientType"
 
+type apiCountResult struct {
+	Count int64 `json:"count" validate:"required"`
+}
+
 type apiResponse struct {
 	Data    any    `json:"data,omitempty"`
 	Ok      bool   `json:"ok" validate:"required"`
