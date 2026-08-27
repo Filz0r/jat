@@ -23,6 +23,16 @@ type companyResponse struct {
 	UpdatedAt time.Time `json:"updatedAt" validate:"required"`
 	CreatedBy uuid.UUID `json:"createdBy" validate:"required"`
 	UpdatedBy uuid.UUID `json:"updatedBy" validate:"required"`
+	ID         uint      `json:"id,omitempty" validate:"required"`
+	Name       string    `json:"name" validate:"required"`
+	Website    string    `json:"website,omitempty"`
+	CreatedAt  time.Time `json:"created_at" validate:"required"`
+	UpdatedAt  time.Time `json:"updated_at" validate:"required"`
+	CreatedBy  uuid.UUID `json:"created_by" validate:"required"`
+	EditedBy   uuid.UUID `json:"edited_by" validate:"required"`
+	UserCount  int64     `json:"user_count,omitempty"`
+	TotalCount int64     `json:"total_count,omitempty"`
+}
 }
 
 //TODO: Fix 500 response codes when possible
