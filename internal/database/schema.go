@@ -60,6 +60,8 @@ type JobApplication struct {
 
 	CompanyID uint    `gorm:"not null,index"`
 	Company   Company `gorm:"foreignKey:CompanyID;references:ID"`
+
+	Notes []ApplicationNote `gorm:"foreignKey:ApplicationID"`
 }
 
 type RefreshToken struct {
