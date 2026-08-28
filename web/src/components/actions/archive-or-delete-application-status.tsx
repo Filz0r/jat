@@ -8,12 +8,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Trash } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#/components/ui/tooltip.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 
 interface ArchiveOrDeleteApplicationStatusProps {
 	statusID: number;
@@ -72,32 +67,30 @@ export default function ArchiveOrDeleteApplicationStatus({
 				}
 			}}
 			triggerButton={
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<Button
-									className="rounded-3xl p-3"
-									size="icon-sm"
-									variant="destructive"
-									onClick={() => setOpen(true)}
-								>
-									<Trash />
-									<span className="sr-only">
-										{softDelete ? 'Delete' : 'Archive'} this Application Status
-									</span>
-								</Button>
-							}
-						/>
-						<TooltipContent>
-							<p>
-								{softDelete
-									? 'Delete this Application Status and all matching Job Applications'
-									: 'Archive this Application Status'}
-							</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button
+								className="rounded-3xl p-3"
+								size="icon-sm"
+								variant="destructive"
+								onClick={() => setOpen(true)}
+							>
+								<Trash />
+								<span className="sr-only">
+									{softDelete ? 'Delete' : 'Archive'} this Application Status
+								</span>
+							</Button>
+						}
+					/>
+					<TooltipContent>
+						<p>
+							{softDelete
+								? 'Delete this Application Status and all matching Job Applications'
+								: 'Archive this Application Status'}
+						</p>
+					</TooltipContent>
+				</Tooltip>
 			}
 			deleteButtonMessage={`${softDelete ? 'Delete' : 'Archive'} Note`}
 		/>

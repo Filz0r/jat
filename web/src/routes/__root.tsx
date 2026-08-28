@@ -16,6 +16,7 @@ import { authStore } from '#/lib/auth-store';
 import type { User } from '#/lib/auth-store';
 import type { RouterContext } from '#/router';
 import { Toaster } from '#/components/ui/toast.tsx';
+import { TooltipProvider } from '#/components/ui/tooltip.tsx';
 
 export const Route = createRootRouteWithContext<RouterContext>()({
 	component: RootComponent,
@@ -104,28 +105,30 @@ function RootComponent() {
 
 	return (
 		<ThemeProvider>
-			<QueryClientProvider client={queryClient}>
-				<AuthProvider queryClient={queryClient}>
-					<SessionExpiredHandler />
-					<Outlet />
-					<TanStackDevtools
-						config={{
-							position: 'middle-left',
-						}}
-						plugins={[
-							{
-								name: 'TanStack Router',
-								render: <TanStackRouterDevtoolsPanel />,
-							},
-							{
-								name: 'TanStack Query Client',
-								render: <ReactQueryDevtoolsPanel />,
-							},
-						]}
-					/>
-				</AuthProvider>
-			</QueryClientProvider>
-			<Toaster />
+			<TooltipProvider>
+				<QueryClientProvider client={queryClient}>
+					<AuthProvider queryClient={queryClient}>
+						<SessionExpiredHandler />
+						<Outlet />
+						<TanStackDevtools
+							config={{
+								position: 'middle-left',
+							}}
+							plugins={[
+								{
+									name: 'TanStack Router',
+									render: <TanStackRouterDevtoolsPanel />,
+								},
+								{
+									name: 'TanStack Query Client',
+									render: <ReactQueryDevtoolsPanel />,
+								},
+							]}
+						/>
+					</AuthProvider>
+				</QueryClientProvider>
+				<Toaster />
+			</TooltipProvider>
 		</ThemeProvider>
 	);
 }

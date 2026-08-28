@@ -12,12 +12,7 @@ import { ArrowUpDown, Eye } from 'lucide-react';
 import { Badge } from '#/components/ui/badge.tsx';
 import { getColorFromKind } from '#/lib/utils.ts';
 import CreateApplicationStatusForm from '#/components/forms/application-status-form.tsx';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#/components/ui/tooltip.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import ArchiveOrDeleteApplicationStatus from '#/components/actions/archive-or-delete-application-status.tsx';
@@ -145,33 +140,31 @@ function RouteComponent() {
 
 				return (
 					<div className="flex justify-center gap-x-2">
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger
-									render={
-										<Button
-											size="icon-sm"
-											onClick={(e) => {
-												e.preventDefault();
-												e.stopPropagation();
-												navigate({
-													to: '/application_status/$statusID',
-													params: { statusID: cellData.id.toString() },
-												});
-											}}
-										>
-											<Eye />
-											<span className="sr-only">
-												View Application Status Page
-											</span>
-										</Button>
-									}
-								/>
-								<TooltipContent>
-									<p>View Application Status Page</p>
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<Button
+										size="icon-sm"
+										onClick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											navigate({
+												to: '/application_status/$statusID',
+												params: { statusID: cellData.id.toString() },
+											});
+										}}
+									>
+										<Eye />
+										<span className="sr-only">
+											View Application Status Page
+										</span>
+									</Button>
+								}
+							/>
+							<TooltipContent>
+								<p>View Application Status Page</p>
+							</TooltipContent>
+						</Tooltip>
 						{cellData.archived && (
 							<UnarchiveApplicationStatus statusID={cellData.id} data={cellData} />
 						)}

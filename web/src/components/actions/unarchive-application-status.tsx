@@ -5,12 +5,7 @@ import { api } from '#/api/client.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '#/components/ui/button.tsx';
 import { useState } from 'react';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#/components/ui/tooltip.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import ModularInformationDialog from '#/components/dialogs/modular-information-dialog.tsx';
 import { IconRestore } from '@tabler/icons-react';
 
@@ -29,7 +24,7 @@ export default function UnarchiveApplicationStatus({
 	const [open, setOpen] = useState(false);
 
 	return (
-		<TooltipProvider>
+		<>
 			<Tooltip>
 				<TooltipTrigger
 					render={
@@ -92,6 +87,6 @@ export default function UnarchiveApplicationStatus({
 					setOpen(false);
 				}}
 			/>
-		</TooltipProvider>
+		</>
 	);
 }

@@ -1,12 +1,7 @@
 import { Item, ItemActions, ItemContent, ItemHeader } from '#/components/ui/item.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { IconLink } from '@tabler/icons-react';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#/components/ui/tooltip.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import type { JobApplication } from '#/api/types.ts';
 import { Link, linkOptions } from '@tanstack/react-router';
 
@@ -48,20 +43,18 @@ export default function ApplicationStatusJobApplicationItemRenderer({
 				</ItemContent>
 				<ItemActions className="border-accent bg-background/20 h-full shrink-0 rounded-xl border p-3">
 					<Link {...linkOpts}>
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger
-									render={
-										<Button size="icon-sm">
-											<IconLink />
-										</Button>
-									}
-								/>
-								<TooltipContent>
-									<p>Navigate to this Job Application</p>
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<Button size="icon-sm">
+										<IconLink />
+									</Button>
+								}
+							/>
+							<TooltipContent>
+								<p>Navigate to this Job Application</p>
+							</TooltipContent>
+						</Tooltip>
 					</Link>
 				</ItemActions>
 			</div>

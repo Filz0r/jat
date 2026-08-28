@@ -7,12 +7,7 @@ import ModularFormDialog from '#/components/dialogs/modular-form-dialog.tsx';
 import { useState } from 'react';
 import FieldWrapper from '#/components/field-wrapper.tsx';
 import { Textarea } from '#/components/ui/textarea.tsx';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#/components/ui/tooltip.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { FilePlusCorner, FileCodeCorner } from 'lucide-react';
 import { api } from '#/api/client.ts';
@@ -125,37 +120,35 @@ export default function JobNoteForm(props: JobNoteFormProps) {
 			}}
 			TriggerButton={
 				!largeTrigger ? (
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger
-								render={
-									<Button
-										size="icon-sm"
-										className={
-											edit
-												? 'bg-amber-500 hover:bg-amber-700'
-												: 'bg-green-500 hover:bg-green-700'
-										}
-										onClick={() => setIsOpen(true)}
-									>
-										{edit ? <FileCodeCorner /> : <FilePlusCorner />}
-										<span className="sr-only">
-											{edit
-												? 'Update this notes content'
-												: 'Add a Note to this Job Application'}
-										</span>
-									</Button>
-								}
-							/>
-							<TooltipContent>
-								<p>
-									{edit
-										? 'Update this notes content'
-										: 'Add a Note to this Job Application'}
-								</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<Button
+									size="icon-sm"
+									className={
+										edit
+											? 'bg-amber-500 hover:bg-amber-700'
+											: 'bg-green-500 hover:bg-green-700'
+									}
+									onClick={() => setIsOpen(true)}
+								>
+									{edit ? <FileCodeCorner /> : <FilePlusCorner />}
+									<span className="sr-only">
+										{edit
+											? 'Update this notes content'
+											: 'Add a Note to this Job Application'}
+									</span>
+								</Button>
+							}
+						/>
+						<TooltipContent>
+							<p>
+								{edit
+									? 'Update this notes content'
+									: 'Add a Note to this Job Application'}
+							</p>
+						</TooltipContent>
+					</Tooltip>
 				) : (
 					<Button
 						className={

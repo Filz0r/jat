@@ -10,12 +10,7 @@ import { ArrowUpDown, ArrowUpRightIcon, Eye, Plus } from 'lucide-react';
 import { getColorFromKind } from '#/lib/utils.ts';
 import { Badge } from '#/components/ui/badge.tsx';
 import UpdateJobStatusForm from '#/components/forms/update-job-status-form.tsx';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#/components/ui/tooltip.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import JobNoteForm from '#/components/forms/job-note-form.tsx';
 import DeleteJobApplication from '#/components/actions/delete-job-application.tsx';
 
@@ -148,31 +143,29 @@ function RouteComponent() {
 
 				return (
 					<div className="flex justify-center gap-x-2">
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger
-									render={
-										<Button
-											size="icon-sm"
-											onClick={(e) => {
-												e.preventDefault();
-												e.stopPropagation();
-												navigate({
-													to: '/jobs/$jobID',
-													params: { jobID: cellData.id.toString() },
-												});
-											}}
-										>
-											<Eye />
-											<span className="sr-only">View Job Application</span>
-										</Button>
-									}
-								/>
-								<TooltipContent>
-									<p>View Job Application</p>
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<Button
+										size="icon-sm"
+										onClick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											navigate({
+												to: '/jobs/$jobID',
+												params: { jobID: cellData.id.toString() },
+											});
+										}}
+									>
+										<Eye />
+										<span className="sr-only">View Job Application</span>
+									</Button>
+								}
+							/>
+							<TooltipContent>
+								<p>View Job Application</p>
+							</TooltipContent>
+						</Tooltip>
 
 						<UpdateJobStatusForm
 							currentStatus={cellData.status.id}

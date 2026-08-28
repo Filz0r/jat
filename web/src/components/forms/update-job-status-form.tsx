@@ -18,12 +18,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '#/components/ui/button.tsx';
 import { ChartNoAxesColumn } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-	Tooltip,
-	TooltipProvider,
-	TooltipTrigger,
-	TooltipContent,
-} from '#/components/ui/tooltip.tsx';
+import { Tooltip, TooltipTrigger, TooltipContent } from '#/components/ui/tooltip.tsx';
 
 interface UpdateJobApplicationStatusFormProps {
 	currentStatus: number;
@@ -113,25 +108,23 @@ export default function UpdateJobStatusForm({
 				setErrorMessage(null);
 			}}
 			TriggerButton={
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<Button
-									size="icon-sm"
-									className="bg-amber-500 hover:bg-amber-700"
-									onClick={() => setIsOpen(true)}
-								>
-									<ChartNoAxesColumn />
-									<span className="sr-only">Update Job Application Status</span>
-								</Button>
-							}
-						/>
-						<TooltipContent>
-							<p>Update Job Application Status</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button
+								size="icon-sm"
+								className="bg-amber-500 hover:bg-amber-700"
+								onClick={() => setIsOpen(true)}
+							>
+								<ChartNoAxesColumn />
+								<span className="sr-only">Update Job Application Status</span>
+							</Button>
+						}
+					/>
+					<TooltipContent>
+						<p>Update Job Application Status</p>
+					</TooltipContent>
+				</Tooltip>
 			}
 			title={`Update status of job with id ${jobID}`}
 			description="You can update the status of the current job application so that you have better traceability during your job search."

@@ -7,12 +7,7 @@ import {
 	jobApplicationStatusSchema,
 } from '#/schemas/job-applications.ts';
 import ModularFormDialog from '#/components/dialogs/modular-form-dialog.tsx';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#/components/ui/tooltip.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { IconFilter2Plus, IconFilter2Edit } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -135,37 +130,35 @@ export default function ApplicationStatusForm({
 			form={form}
 			TriggerButton={
 				!largeTrigger ? (
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger
-								render={
-									<Button
-										size="icon-sm"
-										className={
-											edit
-												? 'bg-amber-500 hover:bg-amber-700'
-												: 'bg-green-500 hover:bg-green-700'
-										}
-										onClick={() => setIsOpen(true)}
-									>
-										{edit ? <IconFilter2Edit /> : <IconFilter2Plus />}
-										<span className="sr-only">
-											{edit
-												? 'Update this Application Status'
-												: 'Add a new Application Status'}
-										</span>
-									</Button>
-								}
-							/>
-							<TooltipContent>
-								<p>
-									{edit
-										? 'Update this Application Status'
-										: 'Add a new Application Status'}
-								</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<Button
+									size="icon-sm"
+									className={
+										edit
+											? 'bg-amber-500 hover:bg-amber-700'
+											: 'bg-green-500 hover:bg-green-700'
+									}
+									onClick={() => setIsOpen(true)}
+								>
+									{edit ? <IconFilter2Edit /> : <IconFilter2Plus />}
+									<span className="sr-only">
+										{edit
+											? 'Update this Application Status'
+											: 'Add a new Application Status'}
+									</span>
+								</Button>
+							}
+						/>
+						<TooltipContent>
+							<p>
+								{edit
+									? 'Update this Application Status'
+									: 'Add a new Application Status'}
+							</p>
+						</TooltipContent>
+					</Tooltip>
 				) : (
 					<Button
 						className={
