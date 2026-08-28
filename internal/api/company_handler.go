@@ -17,15 +17,17 @@ type companyBodyRequest struct {
 }
 
 type companyResponse struct {
-	ID         uint      `json:"id,omitempty" validate:"required"`
-	Name       string    `json:"name" validate:"required"`
-	Website    string    `json:"website,omitempty"`
-	CreatedAt  time.Time `json:"created_at" validate:"required"`
-	UpdatedAt  time.Time `json:"updated_at" validate:"required"`
-	CreatedBy  uuid.UUID `json:"created_by" validate:"required"`
-	EditedBy   uuid.UUID `json:"edited_by" validate:"required"`
-	UserCount  int64     `json:"user_count,omitempty"`
-	TotalCount int64     `json:"total_count,omitempty"`
+	ID            uint                `json:"id,omitempty" validate:"required"`
+	Name          string              `json:"name" validate:"required"`
+	Website       string              `json:"website,omitempty"`
+	CreatedAt     time.Time           `json:"created_at" validate:"required"`
+	UpdatedAt     time.Time           `json:"updated_at" validate:"required"`
+	CreatedBy     uuid.UUID           `json:"created_by" validate:"required"`
+	EditedBy      uuid.UUID           `json:"edited_by" validate:"required"`
+	UserCount     int64               `json:"user_count,omitempty"`
+	TotalCount    int64               `json:"total_count,omitempty"`
+	CreatedByUser *userCreateResponse `json:"created_by_user,omitempty"`
+	UpdatedByUser *userCreateResponse `json:"updated_by_user,omitempty"`
 }
 
 type companyListQuery struct {
@@ -37,9 +39,21 @@ type countCompanyQuery struct {
 	TotalCount bool `query:"total_count"`
 }
 
+type companyChangeHistoryResponse struct {
+	ID         uint               `json:"id" validate:"required"`
+	CompanyID  uint               `json:"company_id" validate:"required"`
+	OldName    string             `json:"old_name,omitempty" validate:"required"`
+	NewName    string             `json:"new_name,omitempty" validate:"required"`
+	OldWebsite string             `json:"old_website,omitempty" validate:"required"`
+	NewWebsite string             `json:"new_website,omitempty" validate:"required"`
+	CreatedAt  time.Time          `json:"created_at" validate:"required"`
+	ChangedBy  userCreateResponse `json:"changed_by" validate:"required"`
+	Reverted   bool               `json:"reverted" validate:"required"`
+}
+
 //TODO: Fix 500 response codes when possible
 
-func createCompanyResponse(data database.Company, totalCount, userCount int64, includeCounts bool) companyResponse {
+func createCompanyResponse(data database.Company, totalCount, userCount int64, includeCounts bool, cbUser, ebUser *database.User) companyResponse {
 	result := companyResponse{
 		ID:        data.ID,
 		Name:      data.Name,
@@ -54,6 +68,37 @@ func createCompanyResponse(data database.Company, totalCount, userCount int64, i
 	if includeCounts {
 		result.TotalCount = totalCount
 		result.UserCount = userCount
+	}
+	if cbUser != nil {
+		userResponse := createUserResponse(*cbUser)
+		result.CreatedByUser = &userResponse
+	}
+	if ebUser != nil {
+		userResponse := createUserResponse(*ebUser)
+		result.UpdatedByUser = &userResponse
+	}
+	return result
+}
+
+func createCompanyChangeHistoryResponse(data database.CompanyChangeHistory) companyChangeHistoryResponse {
+	result := companyChangeHistoryResponse{
+		ID:        data.ID,
+		CompanyID: data.CompanyID,
+		CreatedAt: data.CreatedAt,
+		Reverted:  data.Reverted,
+		ChangedBy: createUserResponse(data.ChangedByUser),
+	}
+	if data.OldNameValue != nil {
+		result.OldName = *data.OldNameValue
+	}
+	if data.NewNameValue != nil {
+		result.NewName = *data.NewNameValue
+	}
+	if data.OldWebsiteValue != nil {
+		result.OldWebsite = *data.OldWebsiteValue
+	}
+	if data.NewWebsiteValue != nil {
+		result.NewWebsite = *data.NewWebsiteValue
 	}
 	return result
 }
@@ -92,7 +137,7 @@ func (s *Server) handleCreateCompany() http.HandlerFunc {
 			return
 		}
 
-		response := createCompanyResponse(company, 0, 0, false)
+		response := createCompanyResponse(company, 0, 0, false, nil, nil)
 		s.respondWithJSON(w, 201, apiResponse{
 			Ok:      true,
 			Data:    response,
@@ -178,7 +223,7 @@ func (s *Server) handleUpdateACompany() http.HandlerFunc {
 			s.respondWithError(w, 400, "error updating company", err)
 			return
 		}
-		response := createCompanyResponse(company, 0, 0, false)
+		response := createCompanyResponse(company, 0, 0, false, nil, nil)
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Data:    response,
@@ -221,7 +266,7 @@ func (s *Server) handleGetACompany() http.HandlerFunc {
 			return
 		}
 		includeCounts := params.UserCount || params.TotalCount
-		response := createCompanyResponse(data, counts.TotalCount, counts.UserCount, includeCounts)
+		response := createCompanyResponse(data, counts.TotalCount, counts.UserCount, includeCounts, nil, nil)
 		if data.Website != nil {
 			response.Website = *data.Website
 		}
