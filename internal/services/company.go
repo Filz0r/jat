@@ -121,7 +121,7 @@ func (sm *ServiceManager) FindCompany(name string) (database.Company, error) {
 func (sm *ServiceManager) GetAllCompanies(
 	tx *gorm.DB,
 	userID uuid.UUID,
-	includeTotal, includeUser bool,
+	preloadUsers, includeTotal, includeUser bool,
 ) ([]database.Company, map[uint]utils.CompanyCounts, error) {
 	if sm.db == nil {
 		return []database.Company{}, map[uint]utils.CompanyCounts{}, errors.New("database not initialized")
@@ -133,7 +133,11 @@ func (sm *ServiceManager) GetAllCompanies(
 	var counts map[uint]utils.CompanyCounts
 
 	err := db.Transaction(func(tx *gorm.DB) error {
-		if err := db.Find(&companies).Error; err != nil {
+		query := tx
+		if preloadUsers {
+			query = query.Preload("CreatedByUser").Preload("EditedByUser")
+		}
+		if err := query.Find(&companies).Error; err != nil {
 			return err
 		}
 		if len(companies) == 0 || (!includeTotal && !includeUser) {
@@ -180,7 +184,7 @@ func (sm *ServiceManager) GetAllCompaniesSuggestions() ([]utils.SuggestionRecord
 	if sm.db == nil {
 		return []utils.SuggestionRecord{}, errors.New("database not initialized")
 	}
-	result, _, err := sm.GetAllCompanies(nil, uuid.Nil, false, false)
+	result, _, err := sm.GetAllCompanies(nil, uuid.Nil, false, false, false)
 	if err != nil {
 		return []utils.SuggestionRecord{}, err
 	}

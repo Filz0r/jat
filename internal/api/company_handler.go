@@ -31,8 +31,9 @@ type companyResponse struct {
 }
 
 type companyListQuery struct {
-	UserCount  bool `query:"user_count"`
-	TotalCount bool `query:"total_count"`
+	UserCount    bool `query:"user_count"`
+	TotalCount   bool `query:"total_count"`
+	PreloadUsers bool `query:"preload_users"`
 }
 
 type countCompanyQuery struct {
@@ -147,14 +148,16 @@ func (s *Server) handleCreateCompany() http.HandlerFunc {
 }
 
 // @Summary List all companies
-// @Description Returns every company in the system.
+// @Description Returns every company in the system. (returns 403 if a non admin user passes the preload_users query param)
 // @Tags companies
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param user_count query bool false "Include a count of user applications for this company"
+// @Param preload_users query bool false "Include user data for the creation/edits of companies (admin only)"
 // @Param total_count query bool false "Include a count of total applications (global) for this company"
 // @Success 200 {object} apiResponse{data=[]companyResponse}
+// @Failure 403 {object} apiResponse
 // @Failure 400 {object} apiResponse
 // @Router /company [get]
 func (s *Server) handleGetAllCompanies() http.HandlerFunc {
@@ -165,7 +168,17 @@ func (s *Server) handleGetAllCompanies() http.HandlerFunc {
 			s.respondWithError(w, 400, "invalid query", err)
 			return
 		}
-		companies, counts, err := s.services.GetAllCompanies(nil, userID, params.TotalCount, params.UserCount)
+		if params.PreloadUsers && !s.services.IsUserAdmin(userID) {
+			s.respondWithError(w, 403, "forbidden", nil)
+			return
+		}
+		companies, counts, err := s.services.GetAllCompanies(
+			nil,
+			userID,
+			params.PreloadUsers,
+			params.TotalCount,
+			params.UserCount,
+		)
 		if err != nil {
 			s.respondWithError(w, 400, "error getting all companies", err)
 			return
@@ -173,11 +186,21 @@ func (s *Server) handleGetAllCompanies() http.HandlerFunc {
 		response := make([]companyResponse, 0, len(companies))
 		for _, company := range companies {
 			includeCounts := params.UserCount || params.TotalCount
+			var cbUser, ebUser *database.User
+			if params.PreloadUsers {
+				cbUser = &company.CreatedByUser
+				ebUser = &company.CreatedByUser
+			} else {
+				cbUser = nil
+				ebUser = nil
+			}
 			temp := createCompanyResponse(
 				company,
 				counts[company.ID].TotalCount,
 				counts[company.ID].UserCount,
 				includeCounts,
+				cbUser,
+				ebUser,
 			)
 			response = append(response, temp)
 		}
