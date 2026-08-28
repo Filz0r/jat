@@ -70,6 +70,7 @@ func (s *Server) loadRoutes() {
 	// TODO: add a method to fetch the current sessions
 
 	// user handlers
+	s.apiMux.Handle("GET /users", s.middlewareAdminUser(s.handleGetAllUsers()))
 	s.apiMux.Handle("POST /users", s.handleUserCreate())
 	s.apiMux.Handle("GET /users/me", s.middlewareAuth(s.handleGetCurrentUser()))
 	s.apiMux.Handle("GET /users/{userID}",
@@ -116,7 +117,6 @@ func (s *Server) loadRoutes() {
 	s.apiMux.Handle("DELETE /jobs/{jobID}/notes/{noteID}", s.middlewareAuth(s.handleDeleteJobNote()))
 
 	// admin handlers
-	s.apiMux.Handle("GET /admin/users", s.middlewareAdminUser(s.handleGetAllUsers()))
 	s.apiMux.Handle("GET /admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(true)))
 	s.apiMux.Handle("DELETE /admin/users/{userID}", s.middlewareAdminUser(s.handleMakeUserAdmin(false)))
 	// TODO: add a restore company change endpoint for admins
