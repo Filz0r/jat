@@ -24,15 +24,18 @@ import {
 } from '#/components/ui/select.tsx';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useState } from 'react';
+import { useTanStackTableDevtools } from '@tanstack/react-table-devtools';
 
 interface DataTableProps<TData extends RowData> {
 	columns: ColumnDef<DataTableFeatures, TData>[];
 	data: TData[];
 	noResultsMessage?: string;
 	CreateButton?: ReactNode | null;
+	keyName: string;
 }
 
 export function DataTable<TData extends RowData>({
+	keyName,
 	columns,
 	data,
 	noResultsMessage = 'No results.',
@@ -41,6 +44,7 @@ export function DataTable<TData extends RowData>({
 	const [sorting, setSorting] = useState<SortingState>([]);
 
 	const table = useTable({
+		key: keyName,
 		features,
 		data,
 		columns,
@@ -49,6 +53,8 @@ export function DataTable<TData extends RowData>({
 			sorting,
 		},
 	});
+
+	useTanStackTableDevtools(table);
 
 	return (
 		<div className="overflow-hidden rounded-md border">

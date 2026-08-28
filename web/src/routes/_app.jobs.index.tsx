@@ -196,6 +196,7 @@ function RouteComponent() {
 				<div>Loading...</div>
 			) : !isError && data && data.data ? (
 				<DataTable
+					keyName="jobs-table"
 					data={data.data}
 					columns={columns}
 					noResultsMessage="No Jobs were found! You can create a new one using the button bellow!"

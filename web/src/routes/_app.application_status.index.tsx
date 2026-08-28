@@ -214,6 +214,7 @@ function RouteComponent() {
 				<Skeleton className="size-fit" />
 			) : !isError && data && data.data ? (
 				<DataTable
+					keyName="application-status-table"
 					data={data.data}
 					columns={columns}
 					noResultsMessage="No Jobs were found! You can create a new one using the button bellow!"

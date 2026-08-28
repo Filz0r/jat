@@ -5,7 +5,8 @@ import { Outlet, createRootRouteWithContext, useRouter } from '@tanstack/react-r
 
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TanStackDevtools } from '@tanstack/react-devtools';
-
+import { tableDevtoolsPlugin } from '@tanstack/react-table-devtools';
+import { formDevtoolsPlugin } from '@tanstack/react-form-devtools';
 import '../styles.css';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
@@ -123,6 +124,8 @@ function RootComponent() {
 									name: 'TanStack Query Client',
 									render: <ReactQueryDevtoolsPanel />,
 								},
+								tableDevtoolsPlugin(),
+								formDevtoolsPlugin(),
 							]}
 						/>
 					</AuthProvider>
