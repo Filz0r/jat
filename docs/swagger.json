@@ -8,61 +8,6 @@
     },
     "basePath": "/api",
     "paths": {
-        "/admin/users": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Admin-only endpoint that returns every user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "admin"
-                ],
-                "summary": "List all users",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/api.apiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/api.userCreateResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.apiResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/api.apiResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/admin/users/{userID}": {
             "get": {
                 "security": [
@@ -679,7 +624,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns every company in the system.",
+                "description": "Returns every company in the system. (returns 403 if a non admin user passes the preload_users query param)",
                 "consumes": [
                     "application/json"
                 ],
@@ -695,6 +640,12 @@
                         "type": "boolean",
                         "description": "Include a count of user applications for this company",
                         "name": "user_count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include user data for the creation/edits of companies (admin only)",
+                        "name": "preload_users",
                         "in": "query"
                     },
                     {
@@ -728,6 +679,12 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/api.apiResponse"
                         }
@@ -1046,6 +1003,128 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the history of changes to a company record (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "companies",
+                    "admin"
+                ],
+                "summary": "Get history of changes to a company",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Company ID",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.apiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/api.companyChangeHistoryResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/history/{changeID}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Reverts a change that was made to a company record (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "companies",
+                    "admin"
+                ],
+                "summary": "Reverts a company change record",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Company ID",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Change ID",
+                        "name": "changeID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
                         }
                     },
                     "400": {
@@ -1881,6 +1960,59 @@
             }
         },
         "/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin-only endpoint that returns every user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "List all users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.apiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/api.userCreateResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -2290,6 +2422,49 @@
                 }
             }
         },
+        "api.companyChangeHistoryResponse": {
+            "type": "object",
+            "required": [
+                "changed_by",
+                "company_id",
+                "created_at",
+                "id",
+                "new_name",
+                "new_website",
+                "old_name",
+                "old_website",
+                "reverted"
+            ],
+            "properties": {
+                "changed_by": {
+                    "$ref": "#/definitions/api.userCreateResponse"
+                },
+                "company_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "new_name": {
+                    "type": "string"
+                },
+                "new_website": {
+                    "type": "string"
+                },
+                "old_name": {
+                    "type": "string"
+                },
+                "old_website": {
+                    "type": "string"
+                },
+                "reverted": {
+                    "type": "boolean"
+                }
+            }
+        },
         "api.companyResponse": {
             "type": "object",
             "required": [
@@ -2307,6 +2482,9 @@
                 "created_by": {
                     "type": "string"
                 },
+                "created_by_user": {
+                    "$ref": "#/definitions/api.userCreateResponse"
+                },
                 "edited_by": {
                     "type": "string"
                 },
@@ -2321,6 +2499,9 @@
                 },
                 "updated_at": {
                     "type": "string"
+                },
+                "updated_by_user": {
+                    "$ref": "#/definitions/api.userCreateResponse"
                 },
                 "user_count": {
                     "type": "integer"

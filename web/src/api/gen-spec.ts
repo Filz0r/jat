@@ -4,65 +4,6 @@
  */
 
 export interface paths {
-	'/admin/users': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/**
-		 * List all users
-		 * @description Admin-only endpoint that returns every user.
-		 */
-		get: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				/** @description OK */
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.userCreateResponse'][];
-						};
-					};
-				};
-				/** @description Bad Request */
-				400: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json': components['schemas']['api.apiResponse'];
-					};
-				};
-				/** @description Forbidden */
-				403: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json': components['schemas']['api.apiResponse'];
-					};
-				};
-			};
-		};
-		put?: never;
-		post?: never;
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
 	'/admin/users/{userID}': {
 		parameters: {
 			query?: never;
@@ -689,13 +630,15 @@ export interface paths {
 		};
 		/**
 		 * List all companies
-		 * @description Returns every company in the system.
+		 * @description Returns every company in the system. (returns 403 if a non admin user passes the preload_users query param)
 		 */
 		get: {
 			parameters: {
 				query?: {
 					/** @description Include a count of user applications for this company */
 					user_count?: boolean;
+					/** @description Include user data for the creation/edits of companies (admin only) */
+					preload_users?: boolean;
 					/** @description Include a count of total applications (global) for this company */
 					total_count?: boolean;
 				};
@@ -718,6 +661,15 @@ export interface paths {
 				};
 				/** @description Bad Request */
 				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Forbidden */
+				403: {
 					headers: {
 						[name: string]: unknown;
 					};
@@ -1011,6 +963,130 @@ export interface paths {
 			};
 		};
 		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/company/{companyID}/history': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get history of changes to a company
+		 * @description Returns the history of changes to a company record (admin only)
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Company ID */
+					companyID: number;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'] & {
+							data?: components['schemas']['api.companyChangeHistoryResponse'][];
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/company/{companyID}/history/{changeID}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/**
+		 * Reverts a company change record
+		 * @description Reverts a change that was made to a company record (admin only)
+		 */
+		put: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Company ID */
+					companyID: number;
+					/** @description Change ID */
+					changeID: number;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+			};
+		};
 		post?: never;
 		delete?: never;
 		options?: never;
@@ -1774,7 +1850,50 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		get?: never;
+		/**
+		 * List all users
+		 * @description Admin-only endpoint that returns every user.
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'] & {
+							data?: components['schemas']['api.userCreateResponse'][];
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Forbidden */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+			};
+		};
 		/**
 		 * Update current user
 		 * @description Updates the authenticated user's profile.
@@ -2044,14 +2163,27 @@ export interface components {
 			name: string;
 			website?: string;
 		};
+		'api.companyChangeHistoryResponse': {
+			changed_by: components['schemas']['api.userCreateResponse'];
+			company_id: number;
+			created_at: string;
+			id: number;
+			new_name: string;
+			new_website: string;
+			old_name: string;
+			old_website: string;
+			reverted: boolean;
+		};
 		'api.companyResponse': {
 			created_at: string;
 			created_by: string;
+			created_by_user?: components['schemas']['api.userCreateResponse'];
 			edited_by: string;
 			id: number;
 			name: string;
 			total_count?: number;
 			updated_at: string;
+			updated_by_user?: components['schemas']['api.userCreateResponse'];
 			user_count?: number;
 			website?: string;
 		};

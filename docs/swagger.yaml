@@ -126,12 +126,45 @@ definitions:
     required:
     - name
     type: object
+  api.companyChangeHistoryResponse:
+    properties:
+      changed_by:
+        $ref: '#/definitions/api.userCreateResponse'
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      new_name:
+        type: string
+      new_website:
+        type: string
+      old_name:
+        type: string
+      old_website:
+        type: string
+      reverted:
+        type: boolean
+    required:
+    - changed_by
+    - company_id
+    - created_at
+    - id
+    - new_name
+    - new_website
+    - old_name
+    - old_website
+    - reverted
+    type: object
   api.companyResponse:
     properties:
       created_at:
         type: string
       created_by:
         type: string
+      created_by_user:
+        $ref: '#/definitions/api.userCreateResponse'
       edited_by:
         type: string
       id:
@@ -142,6 +175,8 @@ definitions:
         type: integer
       updated_at:
         type: string
+      updated_by_user:
+        $ref: '#/definitions/api.userCreateResponse'
       user_count:
         type: integer
       website:
@@ -260,38 +295,6 @@ info:
   title: Job Application Tracker (JAT) API
   version: 0.2.0
 paths:
-  /admin/users:
-    get:
-      consumes:
-      - application/json
-      description: Admin-only endpoint that returns every user.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/api.apiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/api.userCreateResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.apiResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/api.apiResponse'
-      security:
-      - BearerAuth: []
-      summary: List all users
-      tags:
-      - admin
   /admin/users/{userID}:
     get:
       consumes:
@@ -697,11 +700,17 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns every company in the system.
+      description: Returns every company in the system. (returns 403 if a non admin
+        user passes the preload_users query param)
       parameters:
       - description: Include a count of user applications for this company
         in: query
         name: user_count
+        type: boolean
+      - description: Include user data for the creation/edits of companies (admin
+          only)
+        in: query
+        name: preload_users
         type: boolean
       - description: Include a count of total applications (global) for this company
         in: query
@@ -723,6 +732,10 @@ paths:
               type: object
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/api.apiResponse'
       security:
@@ -931,6 +944,82 @@ paths:
       summary: Count Company Job Applications
       tags:
       - companies
+  /company/{companyID}/history:
+    get:
+      consumes:
+      - application/json
+      description: Returns the history of changes to a company record (admin only)
+      parameters:
+      - description: Company ID
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.companyChangeHistoryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Get history of changes to a company
+      tags:
+      - companies
+      - admin
+  /company/{companyID}/history/{changeID}:
+    put:
+      consumes:
+      - application/json
+      description: Reverts a change that was made to a company record (admin only)
+      parameters:
+      - description: Company ID
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: Change ID
+        in: path
+        name: changeID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Reverts a company change record
+      tags:
+      - companies
+      - admin
   /health:
     get:
       consumes:
@@ -1432,6 +1521,37 @@ paths:
       tags:
       - job_applications
   /users:
+    get:
+      consumes:
+      - application/json
+      description: Admin-only endpoint that returns every user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.userCreateResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: List all users
+      tags:
+      - admin
     post:
       consumes:
       - application/json
