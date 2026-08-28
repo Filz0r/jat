@@ -45,3 +45,17 @@ export async function redirectIfAuthenticated(ctx: GuardContext) {
 		throw redirect({ to: '/' });
 	}
 }
+
+export async function requireAdmin(ctx: GuardContext) {
+	await ctx.context.authStore.whenReady();
+	const { user } = ctx.context.authStore.getState();
+
+	if (!user) {
+		throw redirect({ to: '/login' });
+	}
+
+	const isAdmin = user.is_admin || false;
+	if (!isAdmin) {
+		throw redirect({ to: '/' });
+	}
+}
