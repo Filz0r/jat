@@ -279,7 +279,7 @@ func (s *Server) handleDeleteACompany() http.HandlerFunc {
 // @Failure 400 {object} apiResponse
 // @Failure 404 {object} apiResponse
 // @Router /company/{companyID}/count [get]
-func (s *Server) CountCompanyApplications() http.HandlerFunc {
+func (s *Server) handleCountCompanyApplications() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, _ := userIDFromContext(r.Context())
 		rawID := r.PathValue("companyID")
