@@ -83,6 +83,8 @@ func (s *Server) loadRoutes() {
 	s.apiMux.Handle("GET /company/{companyID}", s.middlewareAuth(s.handleGetACompany()))
 	s.apiMux.Handle("PUT /company/{companyID}", s.middlewareAuth(s.handleUpdateACompany()))
 	s.apiMux.Handle("DELETE /company/{companyID}", s.middlewareAdminUser(s.handleDeleteACompany()))
+	s.apiMux.Handle("GET /company/{companyID}/history", s.middlewareAdminUser(s.handleGetCompanyHistory()))
+	s.apiMux.Handle("PUT /company/{companyID}/history/{changeID}", s.middlewareAdminUser(s.handleGetCompanyHistory()))
 	// kinda irrelevant since the get /api/company/{companyID} has a query params that already returns count
 	s.apiMux.Handle("GET /company/{companyID}/count", s.middlewareAuth(s.handleCountCompanyApplications()))
 

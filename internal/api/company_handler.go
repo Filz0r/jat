@@ -376,3 +376,82 @@ func (s *Server) handleCountCompanyApplications() http.HandlerFunc {
 		s.respondWithJSON(w, 200, response)
 	}
 }
+
+// @Summary Get history of changes to a company
+// @Description Returns the history of changes to a company record (admin only)
+// @Tags companies
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param companyID path int true "Company ID"
+// @Success 200 {object} apiResponse{data=[]companyChangeHistoryResponse}
+// @Failure 400 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /company/{companyID}/history [get]
+func (s *Server) handleGetCompanyHistory() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, _ := userIDFromContext(r.Context())
+		id := r.PathValue("companyID")
+		companyID64, err := strconv.ParseUint(id, 10, 32)
+		if err != nil {
+			s.respondWithError(w, 400, "impossible to convert param", err)
+			return
+		}
+		history, err := s.services.GetCompanyHistory(nil, userID, uint(companyID64))
+		if err != nil {
+			s.respondWithError(w, 404, "company not found", err)
+			return
+		}
+		responseData := make([]companyChangeHistoryResponse, 0, len(history))
+		for _, record := range history {
+			temp := createCompanyChangeHistoryResponse(record)
+			responseData = append(responseData, temp)
+		}
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:      true,
+			Data:    responseData,
+			Message: fmt.Sprintf("Found %d company history", len(history)),
+		})
+	}
+}
+
+// @Summary Reverts a company change record
+// @Description Reverts a change that was made to a company record (admin only)
+// @Tags companies
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param companyID path int true "Company ID"
+// @Param changeID path int true "Change ID"
+// @Success 200 {object} apiResponse
+// @Failure 400 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /company/{companyID}/history/{changeID} [put]
+func (s *Server) handleRestoreACompanyChange() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, _ := userIDFromContext(r.Context())
+		id := r.PathValue("companyID")
+		companyID64, err := strconv.ParseUint(id, 10, 32)
+		if err != nil {
+			s.respondWithError(w, 400, "impossible to convert param", err)
+			return
+		}
+		change := r.PathValue("changeID")
+		changeID64, err := strconv.ParseUint(change, 10, 32)
+		if err != nil {
+			s.respondWithError(w, 400, "impossible to convert param", err)
+			return
+		}
+		err = s.services.RevertCompanyChange(nil, userID, uint(companyID64), uint(changeID64))
+		if err != nil {
+			s.respondWithError(w, 404, "company not found", err)
+			return
+		}
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:      true,
+			Message: "Company change restored",
+		})
+	}
+}
