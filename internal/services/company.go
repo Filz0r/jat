@@ -246,8 +246,14 @@ func (sm *ServiceManager) DeleteCompanyByID(tx *gorm.DB, id uint, userID uuid.UU
 	}
 	db := sm.transactionOrDefault(tx)
 
-	err := db.Transaction(func(tx *gorm.DB) error {
-		company, _, err := sm.GetCompanyByID(tx, id, userID, false, false)
+	err := db.Transaction(func(_tx *gorm.DB) error {
+		company, _, err := sm.GetCompanyByID(_tx, id, userID, false, false)
+
+		applications, err := sm.GetAllCompanyApplications(_tx, company.ID)
+
+		if err != nil {
+			return err
+		}
 
 		if err != nil {
 			return err
@@ -257,9 +263,16 @@ func (sm *ServiceManager) DeleteCompanyByID(tx *gorm.DB, id uint, userID uuid.UU
 			return errors.New("only admin users can delete companies")
 		}
 
+		for _, application := range applications {
+			err = sm.DeleteJobApplication(_tx, application.ID, userID)
+			if err != nil {
+				return err
+			}
+		}
+
 		company.EditedBy = userID
 
-		result := tx.Delete(&company)
+		result := _tx.Delete(&company)
 		if result.Error != nil {
 			return result.Error
 		}
