@@ -173,7 +173,7 @@ func (s *Server) handleUpdateACompany() http.HandlerFunc {
 			s.respondWithError(w, 400, "error parsing body", err)
 			return
 		}
-		company, err := s.services.UpdateCompany(companyID, userID, body.Name, body.Website)
+		company, err := s.services.UpdateCompany(nil, companyID, userID, body.Name, body.Website)
 		if err != nil {
 			s.respondWithError(w, 400, "error updating company", err)
 			return

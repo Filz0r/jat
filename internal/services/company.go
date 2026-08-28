@@ -45,14 +45,20 @@ func (sm *ServiceManager) CreateCompany(userID uuid.UUID, companyName, websiteUr
 	return company, result.Error
 }
 
-func (sm *ServiceManager) UpdateCompany(companyID uint, userID uuid.UUID, name, url string) (database.Company, error) {
+func (sm *ServiceManager) UpdateCompany(
+	tx *gorm.DB,
+	companyID uint,
+	userID uuid.UUID,
+	name, url string,
+) (database.Company, error) {
 	if sm.db == nil {
 		return database.Company{}, errors.New("database not initialized")
 	}
+	db := sm.transactionOrDefault(tx)
 	var updated database.Company
-	err := sm.db.Transaction(func(tx *gorm.DB) error {
+	err := db.Transaction(func(_tx *gorm.DB) error {
 		var current database.Company
-		if err := tx.First(&current, companyID).Error; err != nil {
+		if err := _tx.First(&current, companyID).Error; err != nil {
 			return err
 		}
 		var urlPtr *string
@@ -67,10 +73,10 @@ func (sm *ServiceManager) UpdateCompany(companyID uint, userID uuid.UUID, name, 
 		}
 
 		if err := recordCompanyChange(
-			tx,
+			_tx,
 			companyID,
 			name, current.Name,
-			urlPtr, current.Website,
+			current.Website, urlPtr,
 			userID,
 		); err != nil {
 			return err
@@ -81,7 +87,7 @@ func (sm *ServiceManager) UpdateCompany(companyID uint, userID uuid.UUID, name, 
 		current.Website = urlPtr
 		current.UpdatedAt = time.Now()
 
-		if err := tx.Save(&current).Error; err != nil {
+		if err := _tx.Save(&current).Error; err != nil {
 			return err
 		}
 
