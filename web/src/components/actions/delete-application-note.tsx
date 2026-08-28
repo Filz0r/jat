@@ -6,6 +6,8 @@ import { api } from '#/api/client.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '#/components/ui/button.tsx';
 import { Trash } from 'lucide-react';
+import { useState } from 'react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 
 interface DeleteApplicationNoteProps {
 	jobID: number;
@@ -14,8 +16,11 @@ interface DeleteApplicationNoteProps {
 
 export default function DeleteApplicationNote({ data, jobID }: DeleteApplicationNoteProps) {
 	const queryClient = useQueryClient();
+	const [open, setOpen] = useState(false);
 	return (
 		<ModularDeleteEntityDialog
+			open={open}
+			onOpenChange={setOpen}
 			message="You are deleting this note, this is only reversible by administrative users, are you sure?"
 			title={`Delete note with id of ${data.id}`}
 			onClose={async () => {
@@ -40,12 +45,27 @@ export default function DeleteApplicationNote({ data, jobID }: DeleteApplication
 				await queryClient.refetchQueries({
 					queryKey: ['get', '/jobs/{jobID}/notes', { params: { path: { jobID } } }],
 				});
+				setOpen(false);
 			}}
 			triggerButton={
-				<Button className="rounded-3xl p-3" size="icon-sm" variant="destructive">
-					<Trash />
-					<span className="sr-only">Delete this data</span>
-				</Button>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button
+								className="rounded-3xl p-3"
+								size="icon-sm"
+								variant="destructive"
+								onClick={() => setOpen(true)}
+							>
+								<Trash />
+								<span className="sr-only">Delete Job Application Note</span>
+							</Button>
+						}
+					/>
+					<TooltipContent>
+						<p>Delete Job Application Note</p>
+					</TooltipContent>
+				</Tooltip>
 			}
 			deleteButtonMessage="Delete Note"
 		/>
