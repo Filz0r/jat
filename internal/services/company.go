@@ -299,3 +299,16 @@ func (sm *ServiceManager) CountCompanyApplications(tx *gorm.DB, companyID uint, 
 	}
 	return count, nil
 }
+
+func (sm *ServiceManager) GetAllCompanyApplications(tx *gorm.DB, companyID uint) ([]database.JobApplication, error) {
+	if sm.db == nil {
+		return nil, errors.New("database not initialized")
+	}
+	db := sm.transactionOrDefault(tx)
+	var companies database.Company
+	result := db.Preload("JobApplications").Where("id = ?", companyID).Find(&companies)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return companies.JobApplications, nil
+}
