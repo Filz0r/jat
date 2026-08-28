@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/filz0r/jat/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -35,6 +36,25 @@ type userCreateResponse struct {
 	Username        string    `json:"username" validate:"required"`
 	IsAdmin         bool      `json:"is_admin,omitempty"`
 	DefaultStatusID uint      `json:"default_status_id,omitempty"`
+}
+
+func createUserResponse(data database.User) userCreateResponse {
+	result := userCreateResponse{
+		UserID:    data.ID,
+		Email:     data.Email,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: data.UpdatedAt,
+		Username:  data.Username,
+	}
+
+	if data.IsAdmin {
+		result.IsAdmin = true
+	}
+	if data.DefaultApplicationStatusID != nil {
+		result.DefaultStatusID = *data.DefaultApplicationStatusID
+	}
+
+	return result
 }
 
 // @Summary Create user
@@ -113,7 +133,7 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 // @Success 200 {object} apiResponse{data=[]userCreateResponse}
 // @Failure 400 {object} apiResponse
 // @Failure 403 {object} apiResponse
-// @Router /admin/users [get]
+// @Router /users [get]
 func (s *Server) handleGetAllUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		isAdmin, ok := userAdminFromContext(r.Context())
