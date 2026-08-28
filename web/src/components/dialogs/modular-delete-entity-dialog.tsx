@@ -18,8 +18,8 @@ interface ModularDeleteEntityDialogProps {
 	onClose: () => void | Promise<void>;
 	triggerButton: ReactElement;
 	deleteButtonMessage: string;
-	open?: boolean;
-	onOpenChange?: (open: boolean) => void;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
 }
 
 export default function ModularDeleteEntityDialog({
