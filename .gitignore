@@ -11,3 +11,5 @@ web/dist
 internal/api/webdist
 
 docs/docs.go
+
+tmp/

@@ -54,7 +54,7 @@ build_web:
 	@cp -r web/dist internal/api/webdist
 
 dev_backend:
-	@go run . server
+	@air
 
 dev_frontend:
 	@cd web && npm run dev
