@@ -2733,10 +2733,6 @@
                     "company_id",
                     "created_at",
                     "id",
-                    "new_name",
-                    "new_website",
-                    "old_name",
-                    "old_website",
                     "reverted"
                 ],
                 "properties": {

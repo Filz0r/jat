@@ -40,10 +40,10 @@ type countCompanyQuery struct {
 type companyChangeHistoryResponse struct {
 	ID         uint               `json:"id" validate:"required"`
 	CompanyID  uint               `json:"company_id" validate:"required"`
-	OldName    string             `json:"old_name,omitempty" validate:"required"`
-	NewName    string             `json:"new_name,omitempty" validate:"required"`
-	OldWebsite string             `json:"old_website,omitempty" validate:"required"`
-	NewWebsite string             `json:"new_website,omitempty" validate:"required"`
+	NewName    string             `json:"new_name,omitempty"`
+	OldWebsite string             `json:"old_website,omitempty"`
+	NewWebsite string             `json:"new_website,omitempty"`
+	OldName    string             `json:"old_name,omitempty"`
 	CreatedAt  time.Time          `json:"created_at" validate:"required"`
 	ChangedBy  userCreateResponse `json:"changed_by" validate:"required"`
 	Reverted   bool               `json:"reverted" validate:"required"`

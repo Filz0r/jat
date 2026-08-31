@@ -2168,10 +2168,10 @@ export interface components {
 			company_id: number;
 			created_at: string;
 			id: number;
-			new_name: string;
-			new_website: string;
-			old_name: string;
-			old_website: string;
+			new_name?: string;
+			new_website?: string;
+			old_name?: string;
+			old_website?: string;
 			reverted: boolean;
 		};
 		'api.companyResponse': {
