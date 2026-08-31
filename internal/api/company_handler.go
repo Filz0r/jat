@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/filz0r/jat/internal/database"
-	"github.com/google/uuid"
 )
 
 type companyBodyRequest struct {
@@ -22,8 +21,6 @@ type companyResponse struct {
 	Website       string              `json:"website,omitempty"`
 	CreatedAt     time.Time           `json:"created_at" validate:"required"`
 	UpdatedAt     time.Time           `json:"updated_at" validate:"required"`
-	CreatedBy     uuid.UUID           `json:"created_by" validate:"required"`
-	EditedBy      uuid.UUID           `json:"edited_by" validate:"required"`
 	UserCount     int64               `json:"user_count,omitempty"`
 	TotalCount    int64               `json:"total_count,omitempty"`
 	CreatedByUser *userCreateResponse `json:"created_by_user,omitempty"`
@@ -60,8 +57,6 @@ func createCompanyResponse(data database.Company, totalCount, userCount int64, i
 		Name:      data.Name,
 		CreatedAt: data.CreatedAt,
 		UpdatedAt: data.UpdatedAt,
-		CreatedBy: data.CreatedBy,
-		EditedBy:  data.EditedBy,
 	}
 	if data.Website != nil {
 		result.Website = *data.Website

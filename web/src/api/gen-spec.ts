@@ -2176,9 +2176,7 @@ export interface components {
 		};
 		'api.companyResponse': {
 			created_at: string;
-			created_by: string;
 			created_by_user?: components['schemas']['api.userCreateResponse'];
-			edited_by: string;
 			id: number;
 			name: string;
 			total_count?: number;

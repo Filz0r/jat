@@ -2773,8 +2773,6 @@
                 "type": "object",
                 "required": [
                     "created_at",
-                    "created_by",
-                    "edited_by",
                     "id",
                     "name",
                     "updated_at"
@@ -2783,14 +2781,8 @@
                     "created_at": {
                         "type": "string"
                     },
-                    "created_by": {
-                        "type": "string"
-                    },
                     "created_by_user": {
                         "$ref": "#/components/schemas/api.userCreateResponse"
-                    },
-                    "edited_by": {
-                        "type": "string"
                     },
                     "id": {
                         "type": "integer"
