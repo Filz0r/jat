@@ -77,6 +77,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 		return {};
 	},
+	errorComponent: (e) => <div>Error loading app: {e.error.message}</div>,
 });
 
 function SessionExpiredHandler() {
