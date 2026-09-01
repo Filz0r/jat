@@ -75,7 +75,7 @@ func (sm *ServiceManager) UpdateCompany(
 		if err := recordCompanyChange(
 			_tx,
 			companyID,
-			name, current.Name,
+			current.Name, name,
 			current.Website, urlPtr,
 			userID,
 		); err != nil {
