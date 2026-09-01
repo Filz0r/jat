@@ -439,7 +439,7 @@ func (s *Server) handleRestoreACompanyChange() http.HandlerFunc {
 			s.respondWithError(w, 400, "impossible to convert param", err)
 			return
 		}
-		err = s.services.RevertCompanyChange(nil, userID, uint(companyID64), uint(changeID64))
+		err = s.services.RevertCompanyChange(nil, userID, uint(changeID64), uint(companyID64))
 		if err != nil {
 			s.respondWithError(w, 404, "company not found", err)
 			return
