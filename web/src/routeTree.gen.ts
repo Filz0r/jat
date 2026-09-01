@@ -14,12 +14,16 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
 import { Route as AppApplication_statusIndexRouteImport } from './routes/_app.application_status.index'
 import { Route as AppApplication_statusStatusIDRouteImport } from './routes/_app.application_status.$statusID'
 import { Route as AppCompaniesIndexRouteImport } from './routes/_app.companies.index'
+import { Route as AppCompaniesCompanyIDRouteImport } from './routes/_app.companies.$companyID'
 import { Route as AppJobsIndexRouteImport } from './routes/_app.jobs.index'
 import { Route as AppJobsJobIDRouteImport } from './routes/_app.jobs.$jobID'
 import { Route as AppJobsNewRouteImport } from './routes/_app.jobs.new'
+import { Route as AppAdminUsersIndexRouteImport } from './routes/_app.admin.users.index'
+import { Route as AppAdminUsersUserIDRouteImport } from './routes/_app.admin.users.$userID'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -45,6 +49,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppApplication_statusIndexRoute =
   AppApplication_statusIndexRouteImport.update({
     id: '/application_status/',
@@ -62,6 +71,11 @@ const AppCompaniesIndexRoute = AppCompaniesIndexRouteImport.update({
   path: '/companies/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCompaniesCompanyIDRoute = AppCompaniesCompanyIDRouteImport.update({
+  id: '/companies/$companyID',
+  path: '/companies/$companyID',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppJobsIndexRoute = AppJobsIndexRouteImport.update({
   id: '/jobs/',
   path: '/jobs/',
@@ -77,6 +91,16 @@ const AppJobsNewRoute = AppJobsNewRouteImport.update({
   path: '/jobs/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminUsersIndexRoute = AppAdminUsersIndexRouteImport.update({
+  id: '/admin/users/',
+  path: '/admin/users/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminUsersUserIDRoute = AppAdminUsersUserIDRouteImport.update({
+  id: '/admin/users/$userID',
+  path: '/admin/users/$userID',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -84,11 +108,15 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/settings': typeof AppSettingsRoute
   '/application_status/$statusID': typeof AppApplication_statusStatusIDRoute
+  '/companies/$companyID': typeof AppCompaniesCompanyIDRoute
   '/jobs/$jobID': typeof AppJobsJobIDRoute
   '/jobs/new': typeof AppJobsNewRoute
+  '/admin/': typeof AppAdminIndexRoute
   '/application_status/': typeof AppApplication_statusIndexRoute
   '/companies/': typeof AppCompaniesIndexRoute
   '/jobs/': typeof AppJobsIndexRoute
+  '/admin/users/$userID': typeof AppAdminUsersUserIDRoute
+  '/admin/users/': typeof AppAdminUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -96,11 +124,15 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
   '/application_status/$statusID': typeof AppApplication_statusStatusIDRoute
+  '/companies/$companyID': typeof AppCompaniesCompanyIDRoute
   '/jobs/$jobID': typeof AppJobsJobIDRoute
   '/jobs/new': typeof AppJobsNewRoute
+  '/admin': typeof AppAdminIndexRoute
   '/application_status': typeof AppApplication_statusIndexRoute
   '/companies': typeof AppCompaniesIndexRoute
   '/jobs': typeof AppJobsIndexRoute
+  '/admin/users/$userID': typeof AppAdminUsersUserIDRoute
+  '/admin/users': typeof AppAdminUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -110,11 +142,15 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
   '/_app/application_status/$statusID': typeof AppApplication_statusStatusIDRoute
+  '/_app/companies/$companyID': typeof AppCompaniesCompanyIDRoute
   '/_app/jobs/$jobID': typeof AppJobsJobIDRoute
   '/_app/jobs/new': typeof AppJobsNewRoute
+  '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/application_status/': typeof AppApplication_statusIndexRoute
   '/_app/companies/': typeof AppCompaniesIndexRoute
   '/_app/jobs/': typeof AppJobsIndexRoute
+  '/_app/admin/users/$userID': typeof AppAdminUsersUserIDRoute
+  '/_app/admin/users/': typeof AppAdminUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -124,11 +160,15 @@ export interface FileRouteTypes {
     | '/setup'
     | '/settings'
     | '/application_status/$statusID'
+    | '/companies/$companyID'
     | '/jobs/$jobID'
     | '/jobs/new'
+    | '/admin/'
     | '/application_status/'
     | '/companies/'
     | '/jobs/'
+    | '/admin/users/$userID'
+    | '/admin/users/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -136,11 +176,15 @@ export interface FileRouteTypes {
     | '/settings'
     | '/'
     | '/application_status/$statusID'
+    | '/companies/$companyID'
     | '/jobs/$jobID'
     | '/jobs/new'
+    | '/admin'
     | '/application_status'
     | '/companies'
     | '/jobs'
+    | '/admin/users/$userID'
+    | '/admin/users'
   id:
     | '__root__'
     | '/_app'
@@ -149,11 +193,15 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/'
     | '/_app/application_status/$statusID'
+    | '/_app/companies/$companyID'
     | '/_app/jobs/$jobID'
     | '/_app/jobs/new'
+    | '/_app/admin/'
     | '/_app/application_status/'
     | '/_app/companies/'
     | '/_app/jobs/'
+    | '/_app/admin/users/$userID'
+    | '/_app/admin/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -199,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin/': {
+      id: '/_app/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AppAdminIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/application_status/': {
       id: '/_app/application_status/'
       path: '/application_status'
@@ -218,6 +273,13 @@ declare module '@tanstack/react-router' {
       path: '/companies'
       fullPath: '/companies/'
       preLoaderRoute: typeof AppCompaniesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/companies/$companyID': {
+      id: '/_app/companies/$companyID'
+      path: '/companies/$companyID'
+      fullPath: '/companies/$companyID'
+      preLoaderRoute: typeof AppCompaniesCompanyIDRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/jobs/': {
@@ -241,6 +303,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppJobsNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin/users/': {
+      id: '/_app/admin/users/'
+      path: '/admin/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AppAdminUsersIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin/users/$userID': {
+      id: '/_app/admin/users/$userID'
+      path: '/admin/users/$userID'
+      fullPath: '/admin/users/$userID'
+      preLoaderRoute: typeof AppAdminUsersUserIDRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -248,22 +324,30 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppApplication_statusStatusIDRoute: typeof AppApplication_statusStatusIDRoute
+  AppCompaniesCompanyIDRoute: typeof AppCompaniesCompanyIDRoute
   AppJobsJobIDRoute: typeof AppJobsJobIDRoute
   AppJobsNewRoute: typeof AppJobsNewRoute
+  AppAdminIndexRoute: typeof AppAdminIndexRoute
   AppApplication_statusIndexRoute: typeof AppApplication_statusIndexRoute
   AppCompaniesIndexRoute: typeof AppCompaniesIndexRoute
   AppJobsIndexRoute: typeof AppJobsIndexRoute
+  AppAdminUsersUserIDRoute: typeof AppAdminUsersUserIDRoute
+  AppAdminUsersIndexRoute: typeof AppAdminUsersIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
   AppApplication_statusStatusIDRoute: AppApplication_statusStatusIDRoute,
+  AppCompaniesCompanyIDRoute: AppCompaniesCompanyIDRoute,
   AppJobsJobIDRoute: AppJobsJobIDRoute,
   AppJobsNewRoute: AppJobsNewRoute,
+  AppAdminIndexRoute: AppAdminIndexRoute,
   AppApplication_statusIndexRoute: AppApplication_statusIndexRoute,
   AppCompaniesIndexRoute: AppCompaniesIndexRoute,
   AppJobsIndexRoute: AppJobsIndexRoute,
+  AppAdminUsersUserIDRoute: AppAdminUsersUserIDRoute,
+  AppAdminUsersIndexRoute: AppAdminUsersIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
