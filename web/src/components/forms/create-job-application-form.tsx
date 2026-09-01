@@ -21,7 +21,13 @@ import { Button } from '#components/ui/button';
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 
-export default function CreateJobApplicationForm({ defaultStatus }: { defaultStatus: number }) {
+export default function CreateJobApplicationForm({
+	defaultStatus,
+	preSelectedCompany,
+}: {
+	defaultStatus: number;
+	preSelectedCompany: number | undefined;
+}) {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const [serverError, setServerError] = useState<string | null>(null);
@@ -31,7 +37,7 @@ export default function CreateJobApplicationForm({ defaultStatus }: { defaultSta
 			title: '',
 			url: '',
 			createdAt: new Date(),
-			company: 0,
+			company: preSelectedCompany ? preSelectedCompany : 0,
 			status: defaultStatus,
 		} satisfies CreateJobApplication,
 		validators: {

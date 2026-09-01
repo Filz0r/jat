@@ -1,5 +1,9 @@
 import z from 'zod';
 
+export const preSelectCompanyQuerySchema = z.object({
+	company_id: z.number().positive().optional(),
+});
+
 export const createJobApplicationSchema = z.object({
 	title: z.string('You need to provide a title for this job').min(3).max(100),
 	url: z.httpUrl('You need to provide an URL'),
