@@ -40,22 +40,26 @@ export default function ModularFormDialog({
 	return (
 		<Dialog open={open}>
 			<DialogTrigger render={TriggerButton} />
-			<DialogContent className="sm:max-w-sm" showCloseButton={false}>
+			<DialogContent className="p-0 sm:max-w-sm" showCloseButton={false}>
 				<form
 					noValidate
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						form.handleSubmit();
+						void form.handleSubmit();
 					}}
 					className="space-y-4"
 				>
-					<DialogHeader>
-						<DialogTitle>{title}</DialogTitle>
-						{description && <DialogDescription>{description}</DialogDescription>}
+					<DialogHeader className="border-b px-2 pt-3 pb-2">
+						<DialogTitle className="text-primary text-center">{title}</DialogTitle>
+						{description && (
+							<DialogDescription className="bg-muted rounded-lg px-1 py-2 text-center text-[11px] font-extralight">
+								{description}
+							</DialogDescription>
+						)}
 					</DialogHeader>
-					{Content}
-					<DialogFooter>
+					<div className="px-3">{Content}</div>
+					<DialogFooter className="border-t px-2 pt-3 pb-3.5">
 						<DialogClose render={CloseButton} onClick={onClose} />
 						<form.Subscribe
 							selector={(state) => [state.canSubmit, state.isSubmitting]}
