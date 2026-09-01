@@ -12,7 +12,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '#/components/ui/select.tsx';
-import ModularInformationDialog from '#/components/dialogs/modular-information-dialog.tsx';
 import ModularFormDialog from '#/components/dialogs/modular-form-dialog.tsx';
 import { useMemo, useState } from 'react';
 import { Button } from '#/components/ui/button.tsx';
@@ -74,7 +73,7 @@ export default function UpdateJobStatusForm({
 		},
 	});
 
-	const { data, isError } = apiClient.useQuery('get', '/application_statuses');
+	const { data } = apiClient.useQuery('get', '/application_statuses');
 
 	const convertedData = useMemo(() => {
 		if (!data || !data.ok || !data.data) return [];
@@ -83,22 +82,6 @@ export default function UpdateJobStatusForm({
 			value: status.id,
 		}));
 	}, [data]);
-
-	const queryErrorMessage =
-		isError || !data || !data.ok || !data.data
-			? data?.message || 'Error loading application statuses'
-			: null;
-
-	if (queryErrorMessage && isOpen) {
-		return (
-			<ModularInformationDialog
-				open
-				title="Error Loading Data"
-				message={queryErrorMessage}
-				onClose={() => setIsOpen(false)}
-			/>
-		);
-	}
 
 	return (
 		<ModularFormDialog
