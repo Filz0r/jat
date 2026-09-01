@@ -116,7 +116,7 @@ func (sm *ServiceManager) RevertCompanyChange(
 		if entry.NewNameValue != nil && entry.OldNameValue != nil {
 			company.Name = *entry.OldNameValue
 		}
-		if entry.NewWebsiteValue != nil {
+		if entry.NewWebsiteValue != nil || entry.OldWebsiteValue != nil {
 			// OldWebsiteValue can be restored to nil if the website is previously nil, this is by design
 			company.Website = entry.OldWebsiteValue
 		}
