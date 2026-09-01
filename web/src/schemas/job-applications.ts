@@ -35,7 +35,18 @@ export const jobApplicationStatusSchema = z.object({
 	kind: applicationStatusKindSchema,
 });
 
+export const companySchema = z.object({
+	name: z.string('You need to provide a name').min(3).max(255),
+	website: z.optional(
+		z
+			.string()
+			.transform((v) => (v === '' ? undefined : v))
+			.pipe(z.httpUrl().optional()),
+	),
+});
+
 export type CreateJobApplication = z.infer<typeof createJobApplicationSchema>;
 export type UpdateJobApplicationStatusSchema = z.infer<typeof updateJobApplicationStatusSchema>;
 export type CreateJobApplicationNote = z.infer<typeof createJobApplicationNoteSchema>;
 export type ApplicationStatusSchema = z.infer<typeof jobApplicationStatusSchema>;
+export type CompanySchema = z.infer<typeof companySchema>;
