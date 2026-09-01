@@ -20,6 +20,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '#/components/ui/card.
 import { Button } from '#components/ui/button';
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import HttpLinkInput from '#/components/http-link-input.tsx';
 
 export default function CreateJobApplicationForm({
 	defaultStatus,
@@ -141,12 +142,13 @@ export default function CreateJobApplicationForm({
 							validators={{ onChange: createJobApplicationSchema.shape.url }}
 							children={(field) => (
 								<FieldWrapper field={field} label="Posting URL">
-									<Input
+									<HttpLinkInput
 										id={field.name}
 										name={field.name}
+										placeholder="example.com"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
+										onChange={(v) => field.handleChange(v)}
 									/>
 								</FieldWrapper>
 							)}
