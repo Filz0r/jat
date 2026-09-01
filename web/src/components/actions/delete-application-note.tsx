@@ -1,6 +1,5 @@
 import type { APIResponse, JobApplicationNote } from '#/api/types.ts';
 
-import ModularDeleteEntityDialog from '#/components/dialogs/modular-delete-entity-dialog.tsx';
 import { toast } from '#components/ui/toast';
 import { api } from '#/api/client.ts';
 import { useQueryClient } from '@tanstack/react-query';
@@ -8,6 +7,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Trash } from 'lucide-react';
 import { useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
+import ModularActionDialog from '#/components/dialogs/modular-action-dialog.tsx';
 
 interface DeleteApplicationNoteProps {
 	jobID: number;
@@ -18,12 +18,13 @@ export default function DeleteApplicationNote({ data, jobID }: DeleteApplication
 	const queryClient = useQueryClient();
 	const [open, setOpen] = useState(false);
 	return (
-		<ModularDeleteEntityDialog
+		<ModularActionDialog
 			open={open}
-			onOpenChange={setOpen}
+			// onOpenChange={setOpen}
 			message="You are deleting this note, this is only reversible by administrative users, are you sure?"
 			title={`Delete note with id of ${data.id}`}
-			onClose={async () => {
+			onClose={() => setOpen(false)}
+			onConfirm={async () => {
 				await toast.promise(
 					Promise.all([
 						api.DELETE('/jobs/{jobID}/notes/{noteID}', {
@@ -47,7 +48,7 @@ export default function DeleteApplicationNote({ data, jobID }: DeleteApplication
 				});
 				setOpen(false);
 			}}
-			triggerButton={
+			trigger={
 				<Tooltip>
 					<TooltipTrigger
 						render={
@@ -67,7 +68,8 @@ export default function DeleteApplicationNote({ data, jobID }: DeleteApplication
 					</TooltipContent>
 				</Tooltip>
 			}
-			deleteButtonMessage="Delete Note"
+			actionLabel="Delete Note"
+			destructive
 		/>
 	);
 }

@@ -1,6 +1,5 @@
 import type { APIResponse } from '#/api/types.ts';
 import { useQueryClient } from '@tanstack/react-query';
-import ModularDeleteEntityDialog from '#/components/dialogs/modular-delete-entity-dialog.tsx';
 import { api } from '#/api/client.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Trash } from 'lucide-react';
@@ -8,6 +7,7 @@ import { toast } from '#/components/ui/toast.tsx';
 import { useNavigate } from '@tanstack/react-router';
 import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import { useState } from 'react';
+import ModularActionDialog from '#/components/dialogs/modular-action-dialog.tsx';
 
 interface DeleteJobApplicationProps {
 	jobID: number;
@@ -22,12 +22,13 @@ export default function DeleteJobApplication({
 	const navigate = useNavigate();
 	const [open, setOpen] = useState(false);
 	return (
-		<ModularDeleteEntityDialog
+		<ModularActionDialog
+			destructive
 			open={open}
-			onOpenChange={setOpen}
+			onClose={() => setOpen(false)}
 			message="You are deleting this job application, this is only reversible by administrative users, are you sure?"
 			title={`Delete job with id of ${jobID}`}
-			onClose={async () => {
+			onConfirm={async () => {
 				await toast.promise(
 					Promise.all([
 						api.DELETE('/jobs/{jobID}', {
@@ -53,7 +54,7 @@ export default function DeleteJobApplication({
 				}
 				setOpen(false);
 			}}
-			triggerButton={
+			trigger={
 				<Tooltip>
 					<TooltipTrigger
 						render={
@@ -73,7 +74,7 @@ export default function DeleteJobApplication({
 					</TooltipContent>
 				</Tooltip>
 			}
-			deleteButtonMessage="Delete Job Application"
+			actionLabel="Delete Job Application"
 		/>
 	);
 }
