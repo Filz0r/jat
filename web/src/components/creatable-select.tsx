@@ -58,6 +58,7 @@ export function CreatableSelect({
 	const [isCreating, setIsCreating] = useState(false);
 	const [createError, setCreateError] = useState<string | null>(null);
 	const [createdItems, setCreatedItems] = useState<CreatableSelectItem[]>([]);
+	const [open, setOpen] = useState<boolean>(false);
 
 	// Drop locally cached created items once the real list contains them.
 	useEffect(() => {
@@ -150,6 +151,8 @@ export function CreatableSelect({
 		<div className="flex flex-col gap-1.5">
 			<Label htmlFor={id ?? name}>{label}</Label>
 			<Combobox
+				open={open}
+				onOpenChange={(next) => setOpen(next)}
 				value={value === 0 ? null : value}
 				onValueChange={handleValueChange}
 				onInputValueChange={handleInputValueChange}
@@ -170,6 +173,19 @@ export function CreatableSelect({
 					showTrigger
 					showClear={false}
 					className="w-full"
+					onKeyDown={(e) => {
+						if (
+							e.key === 'Enter' &&
+							filteredItems.length === 0 &&
+							search.trim() &&
+							!exactMatch &&
+							!isCreating
+						) {
+							e.preventDefault();
+							e.stopPropagation();
+							void handleCreate();
+						}
+					}}
 				/>
 				<ComboboxContent>
 					{createError && (
