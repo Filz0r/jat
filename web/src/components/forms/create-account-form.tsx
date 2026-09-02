@@ -43,7 +43,10 @@ export function CreateAccount({ onSuccess }: CreateAccountProps) {
 				},
 			});
 
-			if (registerError || !registerData.ok || !registerData.data) {
+			if (
+				(registerError && !registerError.ok) ||
+				(registerData && !registerData.ok && !registerData.data)
+			) {
 				setServerError(
 					registerData?.message ?? 'Failed to create account. Please try again.',
 				);
