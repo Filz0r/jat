@@ -19,6 +19,7 @@ func (sm *ServiceManager) CreateUser(
 	}
 
 	user := database.User{
+		ID:        uuid.New(),
 		Username:  username,
 		Email:     email,
 		Password:  password,
@@ -33,6 +34,11 @@ func (sm *ServiceManager) CreateUser(
 	}
 
 	user.Password = hashedPW
+	user.UserSettings = database.UserSettings{
+		UserID:    user.ID,
+		SetupStep: 1,
+		IsEnabled: true,
+	}
 
 	result := sm.db.Create(&user)
 	if result.Error != nil {
@@ -108,7 +114,7 @@ func (sm *ServiceManager) IsUserAdmin(id uuid.UUID) bool {
 	if result.Error != nil {
 		return false
 	}
-	return user.IsAdmin
+	return user.UserSettings.IsAdmin
 }
 
 func (sm *ServiceManager) GetAllUsers() ([]database.User, error) {
@@ -132,7 +138,7 @@ func (sm *ServiceManager) SetUserDefaultApplicationStatus(id uuid.UUID, statusID
 	if result.Error != nil {
 		return result.Error
 	}
-	result = sm.db.Model(&user).Update("default_application_status_id", statusID)
+	result = sm.db.Model(&user.UserSettings).Update("default_application_status_id", statusID)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -147,7 +153,7 @@ func (sm *ServiceManager) ChangeUserAdminStatus(userID uuid.UUID, give bool) err
 	if err != nil {
 		return err
 	}
-	if user.IsAdmin == give {
+	if user.UserSettings.IsAdmin == give {
 		msg := "this user already "
 		if !give {
 			msg += "isn't an admin"
@@ -156,8 +162,8 @@ func (sm *ServiceManager) ChangeUserAdminStatus(userID uuid.UUID, give bool) err
 		}
 		return errors.New(msg)
 	}
-	user.IsAdmin = give
-	result := sm.db.Save(&user)
+	user.UserSettings.IsAdmin = give
+	result := sm.db.Save(&user.UserSettings)
 	if result.Error != nil {
 		return result.Error
 	}

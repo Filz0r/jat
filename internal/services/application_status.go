@@ -329,10 +329,10 @@ func (sm *ServiceManager) IsStatusDefault(statusID uint, userID uuid.UUID) bool 
 	if err != nil {
 		return false
 	}
-	if user.DefaultApplicationStatusID == nil {
+	if user.UserSettings.DefaultApplicationStatusID == nil {
 		return false
 	}
-	return *user.DefaultApplicationStatusID == statusID
+	return *user.UserSettings.DefaultApplicationStatusID == statusID
 }
 
 func (sm *ServiceManager) UnarchiveJobApplicationStatus(statusID uint, userID uuid.UUID) error {

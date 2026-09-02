@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -50,7 +52,18 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			s.respondWithError(w, 401, "email or password are incorrect", nil)
 			return
 		}
-
+		if dbUser.UserSettings.IsBanned || !dbUser.UserSettings.IsEnabled {
+			var err error
+			if dbUser.UserSettings.IsBanned {
+				err = errors.New("user is banned")
+			} else if !dbUser.UserSettings.IsEnabled {
+				err = errors.New("user is disabled")
+			} else {
+				err = fmt.Errorf("unknown error userID:%s settings:%+v", dbUser.ID.String(), dbUser.UserSettings)
+			}
+			s.respondWithError(w, 403, "you no longer have access to this platform", err)
+			return
+		}
 		token, err := auth.MakeJWT(dbUser.ID, s.jwtSecret, jwtLifetime)
 		if err != nil {
 			s.respondWithError(w, 401, "email or password are incorrect", err)
@@ -243,6 +256,7 @@ func (s *Server) handleUserLogout() http.HandlerFunc {
 // @Router /auth/revoke_token [get]
 func (s *Server) handleUserRevokeToken() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//TODO: this revokes the current token, but it should be able to revoke any token given instead of just the current refresh_token
 		clientType, ok := clientTypeFromContext(r.Context())
 		if !ok {
 			s.respondWithError(w, 401, "no client type found", nil)
