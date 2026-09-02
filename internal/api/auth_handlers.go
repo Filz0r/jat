@@ -84,10 +84,6 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 				MaxAge:   int(refreshTokenLifetime / time.Second),
 			})
 			response := apiResponse{
-				Data: loginResponse{
-					UserID: dbUser.ID.String(),
-					Email:  dbUser.Email,
-				},
 				Ok:      true,
 				Message: "User logged in",
 			}
@@ -97,12 +93,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 		}
 
 		response := apiResponse{
-			Data: loginResponse{
-				Token:        token,
-				RefreshToken: refreshToken.Token,
-				UserID:       dbUser.ID.String(),
-				Email:        dbUser.Email,
-			},
+			Data:    newLoginResponse(token, refreshToken.Token),
 			Message: "User logged in",
 			Ok:      true,
 		}

@@ -4,58 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/filz0r/jat/internal/database"
 	"github.com/google/uuid"
 )
-
-type userCreateRequest struct {
-	Email    string `json:"email" validate:"required"`
-	Password string `json:"password" validate:"required"`
-	Username string `json:"username" validate:"required"`
-}
-
-type userLoginRequest struct {
-	Email    string `json:"email" validate:"required"`
-	Password string `json:"password" validate:"required"`
-}
-
-type loginResponse struct {
-	Token        string `json:"token,omitempty"`
-	RefreshToken string `json:"refresh_token,omitempty"`
-	UserID       string `json:"user_id" validate:"required"`
-	Email        string `json:"email" validate:"required"`
-}
-
-type userCreateResponse struct {
-	UserID          uuid.UUID `json:"user_id" validate:"required"`
-	Email           string    `json:"email" validate:"required"`
-	CreatedAt       time.Time `json:"created_at" validate:"required"`
-	UpdatedAt       time.Time `json:"updated_at" validate:"required"`
-	Username        string    `json:"username" validate:"required"`
-	IsAdmin         bool      `json:"is_admin,omitempty"`
-	DefaultStatusID uint      `json:"default_status_id,omitempty"`
-}
-
-func createUserResponse(data database.User) userCreateResponse {
-	result := userCreateResponse{
-		UserID:    data.ID,
-		Email:     data.Email,
-		CreatedAt: data.CreatedAt,
-		UpdatedAt: data.UpdatedAt,
-		Username:  data.Username,
-	}
-
-	if data.IsAdmin {
-		result.IsAdmin = true
-	}
-	if data.DefaultApplicationStatusID != nil {
-		result.DefaultStatusID = *data.DefaultApplicationStatusID
-	}
-
-	return result
-}
 
 // @Summary Create user
 // @Description Creates the first user. If no admin exists and the service is not initialized, the new user becomes the first admin.
@@ -63,7 +14,7 @@ func createUserResponse(data database.User) userCreateResponse {
 // @Accept json
 // @Produce json
 // @Param request body userCreateRequest true "User creation payload"
-// @Success 201 {object} apiResponse{data=userCreateResponse}
+// @Success 201 {object} apiResponse
 // @Failure 400 {object} apiResponse
 // @Router /users [post]
 func (s *Server) handleUserCreate() http.HandlerFunc {
@@ -106,19 +57,8 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 				return
 			}
 		}
-		response := userCreateResponse{
-			UserID:    dbUser.ID,
-			Email:     dbUser.Email,
-			CreatedAt: dbUser.CreatedAt,
-			UpdatedAt: dbUser.UpdatedAt,
-			Username:  dbUser.Username,
-		}
-		if dbUser.DefaultApplicationStatusID != nil {
-			response.DefaultStatusID = *dbUser.DefaultApplicationStatusID
-		}
 		s.respondWithJSON(w, 201, apiResponse{
 			Ok:      true,
-			Data:    response,
 			Message: "User created",
 		})
 	}
@@ -130,7 +70,7 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} apiResponse{data=[]userCreateResponse}
+// @Success 200 {object} apiResponse{data=[]adminUserResponse}
 // @Failure 400 {object} apiResponse
 // @Failure 403 {object} apiResponse
 // @Router /users [get]
@@ -146,16 +86,9 @@ func (s *Server) handleGetAllUsers() http.HandlerFunc {
 			s.respondWithError(w, 400, "could not fetch users", err)
 			return
 		}
-		response := make([]userCreateResponse, 0, len(users))
+		response := make([]adminUserResponse, 0, len(users))
 		for _, user := range users {
-			temp := userCreateResponse{
-				UserID:    user.ID,
-				Email:     user.Email,
-				CreatedAt: user.CreatedAt,
-				UpdatedAt: user.UpdatedAt,
-				Username:  user.Username,
-				IsAdmin:   user.IsAdmin,
-			}
+			temp := newAdminUserResponse(user)
 			response = append(response, temp)
 		}
 		s.respondWithJSON(w, 200, apiResponse{
@@ -173,7 +106,7 @@ func (s *Server) handleGetAllUsers() http.HandlerFunc {
 // @Accept json
 // @Produce	json
 // @Security BearerAuth
-// @Success	200	{object} apiResponse{data=userCreateResponse}
+// @Success	200	{object} apiResponse{data=meUserResponse}
 // @Failure	401	{object} apiResponse
 // @Router /users/me [get]
 func (s *Server) handleGetCurrentUser() http.HandlerFunc {
@@ -184,17 +117,7 @@ func (s *Server) handleGetCurrentUser() http.HandlerFunc {
 			s.respondWithError(w, 404, "user not found", err)
 			return
 		}
-		response := userCreateResponse{
-			UserID:    user.ID,
-			IsAdmin:   user.IsAdmin,
-			Email:     user.Email,
-			Username:  user.Username,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-		}
-		if user.DefaultApplicationStatusID != nil {
-			response.DefaultStatusID = *user.DefaultApplicationStatusID
-		}
+		response := newMeUserResponse(user)
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Message: "User found",
@@ -206,13 +129,13 @@ func (s *Server) handleGetCurrentUser() http.HandlerFunc {
 // @Summary	Get a user
 // @Description	Returns a single user. Users can read their own record; admins can read any record.
 // @Tags users
+// @Tags admin
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param userID path string true "User UUID"
-// @Success 200 {object} apiResponse{data=userCreateResponse}
+// @Success 200 {object} apiResponse{data=adminUserResponse}
 // @Failure 401 {object} apiResponse
-// @Failure 403 {object} apiResponse
 // @Failure 404 {object} apiResponse
 // @Router /users/{userID} [get]
 func (s *Server) handleGetSingleUser() http.HandlerFunc {
@@ -238,14 +161,7 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 		response := apiResponse{
 			Ok:      true,
 			Message: "User found",
-			Data: userCreateResponse{
-				UserID:    user.ID,
-				IsAdmin:   user.IsAdmin,
-				Email:     user.Email,
-				Username:  user.Username,
-				CreatedAt: user.CreatedAt,
-				UpdatedAt: user.UpdatedAt,
-			},
+			Data:    newAdminUserResponse(user),
 		}
 		s.respondWithJSON(w, 200, response)
 	}
@@ -258,7 +174,7 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 // @Produce json
 // @Security BearerAuth
 // @Param request body userCreateRequest true "Updated user fields"
-// @Success 200 {object} apiResponse{data=userCreateResponse}
+// @Success 200 {object} apiResponse
 // @Failure 400 {object} apiResponse
 // @Failure 401 {object} apiResponse
 // @Router /users [put]
@@ -272,7 +188,7 @@ func (s *Server) handleUserUpdate() http.HandlerFunc {
 			return
 		}
 		userID, _ := userIDFromContext(r.Context())
-		dbUser, err := s.services.UpdateUser(
+		_, err = s.services.UpdateUser(
 			userID,
 			user.Username,
 			user.Password,
@@ -284,12 +200,7 @@ func (s *Server) handleUserUpdate() http.HandlerFunc {
 		}
 		response := apiResponse{
 			Ok:      true,
-			Message: "user updated",
-			Data: userCreateResponse{
-				UserID:   dbUser.ID,
-				Email:    dbUser.Email,
-				Username: dbUser.Username,
-			},
+			Message: "User updated",
 		}
 		s.respondWithJSON(w, 200, response)
 	}

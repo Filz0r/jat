@@ -16,15 +16,15 @@ type companyBodyRequest struct {
 }
 
 type companyResponse struct {
-	ID            uint                `json:"id,omitempty" validate:"required"`
-	Name          string              `json:"name" validate:"required"`
-	Website       string              `json:"website,omitempty"`
-	CreatedAt     time.Time           `json:"created_at" validate:"required"`
-	UpdatedAt     time.Time           `json:"updated_at" validate:"required"`
-	UserCount     int64               `json:"user_count,omitempty"`
-	TotalCount    int64               `json:"total_count,omitempty"`
-	CreatedByUser *userCreateResponse `json:"created_by_user,omitempty"`
-	UpdatedByUser *userCreateResponse `json:"updated_by_user,omitempty"`
+	ID            uint              `json:"id,omitempty" validate:"required"`
+	Name          string            `json:"name" validate:"required"`
+	Website       string            `json:"website,omitempty"`
+	CreatedAt     time.Time         `json:"created_at" validate:"required"`
+	UpdatedAt     time.Time         `json:"updated_at" validate:"required"`
+	UserCount     int64             `json:"user_count,omitempty"`
+	TotalCount    int64             `json:"total_count,omitempty"`
+	CreatedByUser *baseUserResponse `json:"created_by_user,omitempty"`
+	UpdatedByUser *baseUserResponse `json:"updated_by_user,omitempty"`
 }
 
 type companyListQuery struct {
@@ -38,15 +38,15 @@ type countCompanyQuery struct {
 }
 
 type companyChangeHistoryResponse struct {
-	ID         uint               `json:"id" validate:"required"`
-	CompanyID  uint               `json:"company_id" validate:"required"`
-	NewName    string             `json:"new_name,omitempty"`
-	OldWebsite string             `json:"old_website,omitempty"`
-	NewWebsite string             `json:"new_website,omitempty"`
-	OldName    string             `json:"old_name,omitempty"`
-	CreatedAt  time.Time          `json:"created_at" validate:"required"`
-	ChangedBy  userCreateResponse `json:"changed_by" validate:"required"`
-	Reverted   bool               `json:"reverted" validate:"required"`
+	ID         uint             `json:"id" validate:"required"`
+	CompanyID  uint             `json:"company_id" validate:"required"`
+	NewName    string           `json:"new_name,omitempty"`
+	OldWebsite string           `json:"old_website,omitempty"`
+	NewWebsite string           `json:"new_website,omitempty"`
+	OldName    string           `json:"old_name,omitempty"`
+	CreatedAt  time.Time        `json:"created_at" validate:"required"`
+	ChangedBy  baseUserResponse `json:"changed_by" validate:"required"`
+	Reverted   bool             `json:"reverted" validate:"required"`
 }
 
 //TODO: Fix 500 response codes when possible
@@ -66,11 +66,11 @@ func createCompanyResponse(data database.Company, totalCount, userCount int64, i
 		result.UserCount = userCount
 	}
 	if cbUser != nil {
-		userResponse := createUserResponse(*cbUser)
+		userResponse := newBaseUserResponse(*cbUser)
 		result.CreatedByUser = &userResponse
 	}
 	if ebUser != nil {
-		userResponse := createUserResponse(*ebUser)
+		userResponse := newBaseUserResponse(*ebUser)
 		result.UpdatedByUser = &userResponse
 	}
 	return result
@@ -82,7 +82,7 @@ func createCompanyChangeHistoryResponse(data database.CompanyChangeHistory) comp
 		CompanyID: data.CompanyID,
 		CreatedAt: data.CreatedAt,
 		Reverted:  data.Reverted,
-		ChangedBy: createUserResponse(data.ChangedByUser),
+		ChangedBy: newBaseUserResponse(data.ChangedByUser),
 	}
 	if data.OldNameValue != nil {
 		result.OldName = *data.OldNameValue
