@@ -74,7 +74,7 @@ func (s *Server) loadRoutes() {
 	s.apiMux.Handle("POST /users", s.handleUserCreate())
 	s.apiMux.Handle("GET /users/me", s.middlewareAuth(s.handleGetCurrentUser()))
 	s.apiMux.Handle("GET /users/{userID}",
-		s.middlewareAuth(s.handleGetSingleUser()))
+		s.middlewareAdminUser(s.handleGetSingleUser()))
 	s.apiMux.Handle("PUT /users", s.middlewareAuth(s.handleUserUpdate()))
 
 	// Company handlers

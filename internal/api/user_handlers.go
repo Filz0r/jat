@@ -127,7 +127,7 @@ func (s *Server) handleGetCurrentUser() http.HandlerFunc {
 }
 
 // @Summary	Get a user
-// @Description	Returns a single user. Users can read their own record; admins can read any record.
+// @Description	Returns a single user. (admin only)
 // @Tags users
 // @Tags admin
 // @Accept json
@@ -140,19 +140,13 @@ func (s *Server) handleGetCurrentUser() http.HandlerFunc {
 // @Router /users/{userID} [get]
 func (s *Server) handleGetSingleUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, _ := userIDFromContext(r.Context())
 		param := r.PathValue("userID")
 		paramUUID, err := uuid.Parse(param)
 		if err != nil {
 			s.respondWithError(w, 404, "user not found", nil)
 			return
 		}
-		// only admins can check other users
-		isAdmin := s.services.IsUserAdmin(userID)
-		if paramUUID != userID && !isAdmin {
-			s.respondWithError(w, 403, "forbidden", nil)
-			return
-		}
+
 		user, err := s.services.GetUserByID(paramUUID)
 		if err != nil {
 			s.respondWithError(w, 404, "user not found", err)
