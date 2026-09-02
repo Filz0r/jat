@@ -36,7 +36,7 @@ func (s *Server) healthHandler() http.Handler {
 // @Produce json
 // @Success 200 {object} apiResponse{data=systemResponse}
 // @Router /initialized [get]
-func (s *Server) InitializedHandler() http.Handler {
+func (s *Server) initializedHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		initialized := s.services.IsInitialized()
 		response := apiResponse{

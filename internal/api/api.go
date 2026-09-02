@@ -56,7 +56,7 @@ func (s *Server) Start() error {
 func (s *Server) loadRoutes() {
 	// system handlers
 	s.apiMux.Handle("GET /health", s.healthHandler())
-	s.apiMux.Handle("GET /initialized", s.InitializedHandler())
+	s.apiMux.Handle("GET /initialized", s.initializedHandler())
 	s.apiMux.Handle("GET /initialized/set", s.middlewareAdminUser(s.handleSetInitialized()))
 
 	//auth handlers
