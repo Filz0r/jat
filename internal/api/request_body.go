@@ -14,3 +14,12 @@ type userLoginRequest struct {
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
+
+// ---------------------------------------------//
+//			Application Status Structs			//
+// ---------------------------------------------//
+
+type applicationStatusRequest struct {
+	Status string `json:"status" validate:"required"`
+	Kind   string `json:"kind" validate:"required"`
+}

@@ -46,7 +46,7 @@ func convertNoteData(data database.ApplicationNote) noteData {
 	return noteData{
 		ID:        data.ID,
 		Body:      data.Body,
-		Status:    createApplicationStatusRequest(data.Status),
+		Status:    newApplicationStatusResponse(data.Status),
 		UserID:    data.UserID,
 		CreatedAt: data.CreatedAt,
 		UpdatedAt: data.UpdatedAt,

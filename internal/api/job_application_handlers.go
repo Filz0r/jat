@@ -44,7 +44,7 @@ func generateApplicationResponseFromRow(row database.JobApplication) application
 		Title:     row.Title,
 		URL:       row.Url,
 		Company:   createCompanyResponse(row.Company, 0, 0, false, nil, nil),
-		Status:    createApplicationStatusRequest(row.Status),
+		Status:    newApplicationStatusResponse(row.Status),
 	}
 	if row.Company.Website != nil {
 		res.Company.Website = *row.Company.Website

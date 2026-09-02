@@ -41,6 +41,28 @@ type loginResponse struct {
 }
 
 // ---------------------------------------------//
+//			Application Status Structs			//
+// ---------------------------------------------//
+
+type applicationStatusResponse struct {
+	ID        uint      `json:"id" validate:"required"`
+	Status    string    `json:"status" validate:"required"`
+	Kind      string    `json:"kind" validate:"required"`
+	UserID    uuid.UUID `json:"user_id,omitempty"`
+	UpdatedAt time.Time `json:"updated_at" validate:"required"`
+	CreatedAt time.Time `json:"created_at" validate:"required"`
+	Archived  bool      `json:"archived" validate:"required"`
+}
+
+type applicationStatusHistoryResponse struct {
+	ID            uint                       `json:"id" validate:"required"`
+	ApplicationID uint                       `json:"application_id" validate:"required"`
+	OldStatus     *applicationStatusResponse `json:"old_status,omitempty"`
+	NewStatus     applicationStatusResponse  `json:"new_status" validate:"required"`
+	CreatedAt     time.Time                  `json:"created_at" validate:"required"`
+}
+
+// ---------------------------------------------//
 //					 User Factories				//
 // ---------------------------------------------//
 
@@ -88,5 +110,37 @@ func newLoginResponse(token, refreshToken string) loginResponse {
 	return loginResponse{
 		Token:        token,
 		RefreshToken: refreshToken,
+	}
+}
+
+// ---------------------------------------------//
+//			Application Status Factories		//
+// ---------------------------------------------//
+
+func newApplicationHistoryResponse(d database.StatusHistory) applicationStatusHistoryResponse {
+	response := applicationStatusHistoryResponse{
+		ID:            d.ID,
+		ApplicationID: d.ApplicationID,
+		NewStatus:     newApplicationStatusResponse(d.NewStatus),
+		CreatedAt:     d.CreatedAt,
+	}
+
+	if d.OldStatus != nil {
+		old := newApplicationStatusResponse(*d.OldStatus)
+		response.OldStatus = &old
+	}
+
+	return response
+}
+
+func newApplicationStatusResponse(d database.ApplicationStatus) applicationStatusResponse {
+	return applicationStatusResponse{
+		ID:        d.ID,
+		Status:    d.Status,
+		Kind:      d.Kind.String(),
+		UpdatedAt: d.UpdatedAt,
+		CreatedAt: d.CreatedAt,
+		UserID:    d.UserID,
+		Archived:  d.Archived,
 	}
 }

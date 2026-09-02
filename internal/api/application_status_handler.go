@@ -5,70 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/filz0r/jat/internal/database"
-	"github.com/google/uuid"
 )
-
-type applicationStatusRequest struct {
-	Status string `json:"status" validate:"required"`
-	Kind   string `json:"kind" validate:"required"`
-}
-
-type applicationStatusResponse struct {
-	ID        uint      `json:"id" validate:"required"`
-	Status    string    `json:"status" validate:"required"`
-	Kind      string    `json:"kind" validate:"required"`
-	UserID    uuid.UUID `json:"user_id,omitempty"`
-	UpdatedAt time.Time `json:"updated_at" validate:"required"`
-	CreatedAt time.Time `json:"created_at" validate:"required"`
-	Archived  bool      `json:"archived" validate:"required"`
-}
-
-type applicationStatusHistoryResponse struct {
-	ID            uint                       `json:"id" validate:"required"`
-	ApplicationID uint                       `json:"application_id" validate:"required"`
-	OldStatus     *applicationStatusResponse `json:"old_status,omitempty"`
-	NewStatus     applicationStatusResponse  `json:"new_status" validate:"required"`
-	CreatedAt     time.Time                  `json:"created_at" validate:"required"`
-}
-
-type applicationStatusListQuery struct {
-	IncludeArchived bool `query:"include_archived"`
-}
-
-type applicationStatusSoftDeleteQuery struct {
-	SoftDelete bool `query:"soft_delete"`
-}
-
-func createApplicationHistoryRequest(d database.StatusHistory) applicationStatusHistoryResponse {
-	response := applicationStatusHistoryResponse{
-		ID:            d.ID,
-		ApplicationID: d.ApplicationID,
-		NewStatus:     createApplicationStatusRequest(d.NewStatus),
-		CreatedAt:     d.CreatedAt,
-	}
-
-	if d.OldStatus != nil {
-		old := createApplicationStatusRequest(*d.OldStatus)
-		response.OldStatus = &old
-	}
-
-	return response
-}
-
-func createApplicationStatusRequest(d database.ApplicationStatus) applicationStatusResponse {
-	return applicationStatusResponse{
-		ID:        d.ID,
-		Status:    d.Status,
-		Kind:      d.Kind.String(),
-		UpdatedAt: d.UpdatedAt,
-		CreatedAt: d.CreatedAt,
-		UserID:    d.UserID,
-		Archived:  d.Archived,
-	}
-}
 
 // @Summary List current user's application statuses
 // @Description Returns all application statuses belonging to the authenticated user.
@@ -96,7 +35,7 @@ func (s *Server) handleGetUserApplicationStatus() http.HandlerFunc {
 		}
 		converted := make([]applicationStatusResponse, 0, len(data))
 		for _, d := range data {
-			temp := createApplicationStatusRequest(d)
+			temp := newApplicationStatusResponse(d)
 			converted = append(converted, temp)
 		}
 
@@ -230,7 +169,7 @@ func (s *Server) handleGetAnApplicationStatus() http.HandlerFunc {
 		}
 		response := apiResponse{
 			Ok:      true,
-			Data:    createApplicationStatusRequest(record),
+			Data:    newApplicationStatusResponse(record),
 			Message: fmt.Sprintf("Found Application Status with ID %d", record.ID),
 		}
 		s.respondWithJSON(w, 200, response)
@@ -277,7 +216,7 @@ func (s *Server) handleCreateApplicationStatus() http.HandlerFunc {
 
 		response := apiResponse{
 			Ok:      true,
-			Data:    createApplicationStatusRequest(saved),
+			Data:    newApplicationStatusResponse(saved),
 			Message: "Created new application status",
 		}
 		s.respondWithJSON(w, 201, response)
@@ -361,7 +300,7 @@ func (s *Server) handleGetJobApplicationHistory() http.HandlerFunc {
 		}
 		result := make([]applicationStatusHistoryResponse, 0, len(data))
 		for _, d := range data {
-			temp := createApplicationHistoryRequest(d)
+			temp := newApplicationHistoryResponse(d)
 			result = append(result, temp)
 		}
 		s.respondWithJSON(w, 200, apiResponse{
