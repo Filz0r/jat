@@ -23,6 +23,24 @@ func ConnectDb(uri string, server bool) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	err = db.Callback().Query().Before("gorm:query").Register("auto_preload_user_settings", func(tx *gorm.DB) {
+		if tx.Error != nil {
+			return
+		}
+		switch tx.Statement.Model.(type) {
+		case User, *User, []User, *[]User:
+			if tx.Statement.Preloads == nil {
+				tx.Statement.Preloads = make(map[string][]interface{})
+			}
+			if _, ok := tx.Statement.Preloads["UserSettings"]; !ok {
+				tx.Statement.Preloads["UserSettings"] = nil
+			}
+		}
+	})
+	if err != nil {
+		return nil, err
+	}
 	sqlDb, err := db.DB()
 	if err != nil {
 		return nil, err
@@ -32,6 +50,8 @@ func ConnectDb(uri string, server bool) (*gorm.DB, error) {
 	sqlDb.SetConnMaxLifetime(time.Hour)
 	err = db.AutoMigrate(
 		&User{},
+		&UserSettings{},
+		&BanList{},
 		&ApplicationStatus{},
 		&Company{},
 		&JobApplication{},

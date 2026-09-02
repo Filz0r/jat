@@ -13,16 +13,38 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	Email                      string `gorm:"uniqueIndex"`
-	Username                   string `gorm:"uniqueIndex"`
-	Password                   string
-	IsAdmin                    bool               `gorm:"default:false"`
-	DefaultApplicationStatusID *uint              `gorm:"index"`
-	DefaultApplicationStatus   *ApplicationStatus `gorm:"-:migrate"`
+	Email    string `gorm:"uniqueIndex"`
+	Username string `gorm:"uniqueIndex"`
+	Password string
 
-	StatusList          []ApplicationStatus `gorm:"foreignKey:UserID"`
-	JobApplications     []JobApplication    `gorm:"foreignKey:UserID"`
-	JobApplicationNotes []ApplicationNote   `gorm:"foreignKey:UserID"`
+	UserSettingsID      uint                `gorm:"index"`
+	UserSettings        UserSettings        `gorm:"foreignKey:UserSettingsID;constraints:OnDelete:CASCADE"`
+	BanList             []BanList           `gorm:"foreignKey:UserID;constraints:OnDelete:CASCADE;-:migration"`
+	StatusList          []ApplicationStatus `gorm:"foreignKey:UserID;-:migration"`
+	JobApplications     []JobApplication    `gorm:"foreignKey:UserID;-:migration"`
+	JobApplicationNotes []ApplicationNote   `gorm:"foreignKey:UserID;-:migration"`
+}
+
+type UserSettings struct {
+	gorm.Model
+	UserID                     uuid.UUID          `gorm:"type:uuid;not null"`
+	SetupStep                  uint               `gorm:"default:1"` //0 means the account has been set up
+	DefaultApplicationStatusID *uint              `gorm:"index"`
+	DefaultApplicationStatus   *ApplicationStatus `gorm:"-:migration"`
+	IsBanned                   bool               `gorm:"default:false"`
+	IsEnabled                  bool               `gorm:"default:false"`
+	IsAdmin                    bool               `gorm:"default:false"`
+}
+
+type BanList struct {
+	gorm.Model
+	UserID       uuid.UUID     `gorm:"type:uuid;not null"`
+	BannedAt     time.Time     `gorm:"index;not null"`
+	BanDuration  time.Duration `gorm:"not null"`
+	BanReason    string        `gorm:"not null"`
+	Active       bool          `gorm:"default:true"`
+	BannedBy     uuid.UUID     `gorm:"not null"`
+	BannedByUser User          `gorm:"foreignKey:BannedBy;constraints:OnDelete:CASCADE"`
 }
 
 type ApplicationStatus struct {
@@ -45,7 +67,7 @@ type Company struct {
 	EditedBy     uuid.UUID `gorm:"type:uuid;not null;index"`
 	EditedByUser User      `gorm:"foreignKey:EditedBy"`
 
-	JobApplications []JobApplication `gorm:"constraints:OnDelete:CASCADE;foreignKey:CompanyID"`
+	JobApplications []JobApplication `gorm:"constraints:OnDelete:CASCADE;foreignKey:CompanyID;-:migration"`
 }
 
 type JobApplication struct {
