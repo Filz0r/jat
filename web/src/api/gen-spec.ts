@@ -1561,7 +1561,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.noteData'][];
+							data?: components['schemas']['api.noteDataResponse'][];
 						};
 					};
 				};
@@ -1609,7 +1609,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.noteData'];
+							data?: components['schemas']['api.noteDataResponse'];
 						};
 					};
 				};
@@ -1662,7 +1662,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.noteData'];
+							data?: components['schemas']['api.noteDataResponse'];
 						};
 					};
 				};
@@ -1711,7 +1711,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.noteData'];
+							data?: components['schemas']['api.noteDataResponse'];
 						};
 					};
 				};
@@ -2044,7 +2044,7 @@ export interface paths {
 		};
 		/**
 		 * Get a user
-		 * @description Returns a single user. Users can read their own record; admins can read any record.
+		 * @description Returns a single user. (admin only)
 		 */
 		get: {
 			parameters: {
@@ -2208,7 +2208,7 @@ export interface components {
 		'api.noteCreateRequest': {
 			body: string;
 		};
-		'api.noteData': {
+		'api.noteDataResponse': {
 			body: string;
 			created_at: string;
 			id: number;

@@ -1615,7 +1615,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/api.noteData"
+                                                "$ref": "#/definitions/api.noteDataResponse"
                                             }
                                         }
                                     }
@@ -1684,7 +1684,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/api.noteData"
+                                            "$ref": "#/definitions/api.noteDataResponse"
                                         }
                                     }
                                 }
@@ -1746,7 +1746,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/api.noteData"
+                                            "$ref": "#/definitions/api.noteDataResponse"
                                         }
                                     }
                                 }
@@ -1821,7 +1821,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/api.noteData"
+                                            "$ref": "#/definitions/api.noteDataResponse"
                                         }
                                     }
                                 }
@@ -2154,7 +2154,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns a single user. Users can read their own record; admins can read any record.",
+                "description": "Returns a single user. (admin only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -2604,7 +2604,7 @@
                 }
             }
         },
-        "api.noteData": {
+        "api.noteDataResponse": {
             "type": "object",
             "required": [
                 "body",

@@ -1816,7 +1816,7 @@
                                                 "data": {
                                                     "type": "array",
                                                     "items": {
-                                                        "$ref": "#/components/schemas/api.noteData"
+                                                        "$ref": "#/components/schemas/api.noteDataResponse"
                                                     }
                                                 }
                                             }
@@ -1887,7 +1887,7 @@
                                             "type": "object",
                                             "properties": {
                                                 "data": {
-                                                    "$ref": "#/components/schemas/api.noteData"
+                                                    "$ref": "#/components/schemas/api.noteDataResponse"
                                                 }
                                             }
                                         }
@@ -1955,7 +1955,7 @@
                                             "type": "object",
                                             "properties": {
                                                 "data": {
-                                                    "$ref": "#/components/schemas/api.noteData"
+                                                    "$ref": "#/components/schemas/api.noteDataResponse"
                                                 }
                                             }
                                         }
@@ -2034,7 +2034,7 @@
                                             "type": "object",
                                             "properties": {
                                                 "data": {
-                                                    "$ref": "#/components/schemas/api.noteData"
+                                                    "$ref": "#/components/schemas/api.noteDataResponse"
                                                 }
                                             }
                                         }
@@ -2409,7 +2409,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns a single user. Users can read their own record; admins can read any record.",
+                "description": "Returns a single user. (admin only)",
                 "tags": [
                     "users",
                     "admin"
@@ -2904,7 +2904,7 @@
                     }
                 }
             },
-            "api.noteData": {
+            "api.noteDataResponse": {
                 "type": "object",
                 "required": [
                     "body",

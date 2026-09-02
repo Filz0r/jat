@@ -273,7 +273,7 @@ definitions:
     required:
     - body
     type: object
-  api.noteData:
+  api.noteDataResponse:
     properties:
       body:
         type: string
@@ -1348,7 +1348,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/api.noteData'
+                    $ref: '#/definitions/api.noteDataResponse'
                   type: array
               type: object
         "400":
@@ -1390,7 +1390,7 @@ paths:
             - $ref: '#/definitions/api.apiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/api.noteData'
+                  $ref: '#/definitions/api.noteDataResponse'
               type: object
         "400":
           description: Bad Request
@@ -1458,7 +1458,7 @@ paths:
             - $ref: '#/definitions/api.apiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/api.noteData'
+                  $ref: '#/definitions/api.noteDataResponse'
               type: object
         "400":
           description: Bad Request
@@ -1504,7 +1504,7 @@ paths:
             - $ref: '#/definitions/api.apiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/api.noteData'
+                  $ref: '#/definitions/api.noteDataResponse'
               type: object
         "400":
           description: Bad Request
@@ -1653,8 +1653,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns a single user. Users can read their own record; admins
-        can read any record.
+      description: Returns a single user. (admin only)
       parameters:
       - description: User UUID
         in: path
