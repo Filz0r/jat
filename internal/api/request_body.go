@@ -1,5 +1,7 @@
 package api
 
+import "time"
+
 // ---------------------------------------------//
 //					 User Structs				//
 // ---------------------------------------------//
@@ -13,6 +15,18 @@ type userCreateRequest struct {
 type userLoginRequest struct {
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
+}
+
+// ---------------------------------------------//
+//			Job Application Structs				//
+// ---------------------------------------------//
+
+type applicationRequest struct {
+	Title     string    `json:"title" validate:"required"`
+	URL       string    `json:"url" validate:"required"`
+	StatusID  int       `json:"status_id" validate:"required"`
+	CompanyID int       `json:"company_id" validate:"required"`
+	CreatedAt time.Time `json:"created_at" validate:"required"`
 }
 
 // ---------------------------------------------//

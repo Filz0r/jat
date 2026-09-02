@@ -5,52 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
-
-	"github.com/filz0r/jat/internal/database"
-	"github.com/google/uuid"
 )
-
-type applicationResponse struct {
-	ID        uint                      `json:"id" validate:"required"`
-	Title     string                    `json:"title" validate:"required"`
-	URL       string                    `json:"url" validate:"required"`
-	UserID    uuid.UUID                 `json:"user_id" validate:"required"`
-	CreatedAt time.Time                 `json:"created_at" validate:"required"`
-	UpdatedAt time.Time                 `json:"updated_at" validate:"required"`
-	Status    applicationStatusResponse `json:"status" validate:"required"`
-	Company   companyResponse           `json:"company" validate:"required"`
-}
-
-type applicationRequest struct {
-	Title     string    `json:"title" validate:"required"`
-	URL       string    `json:"url" validate:"required"`
-	StatusID  int       `json:"status_id" validate:"required"`
-	CompanyID int       `json:"company_id" validate:"required"`
-	CreatedAt time.Time `json:"created_at" validate:"required"`
-}
-
-type jobApplicationQueries struct {
-	StatusID  []uint `query:"status_id"`
-	CompanyID []uint `query:"company_id"`
-}
-
-func generateApplicationResponseFromRow(row database.JobApplication) applicationResponse {
-	res := applicationResponse{
-		ID:        row.ID,
-		CreatedAt: row.CreatedAt,
-		UpdatedAt: row.UpdatedAt,
-		UserID:    row.UserID,
-		Title:     row.Title,
-		URL:       row.Url,
-		Company:   newCompanyResponse(row.Company, 0, 0, false, nil, nil),
-		Status:    newApplicationStatusResponse(row.Status),
-	}
-	if row.Company.Website != nil {
-		res.Company.Website = *row.Company.Website
-	}
-	return res
-}
 
 // @Summary List current user's job applications
 // @Description Returns all job applications belonging to the authenticated user.
@@ -79,7 +34,7 @@ func (s *Server) handleGetUserJobApplications() http.HandlerFunc {
 		}
 		res := make([]applicationResponse, 0, len(data))
 		for _, job := range data {
-			temp := generateApplicationResponseFromRow(job)
+			temp := newApplicationResponse(job)
 			res = append(res, temp)
 		}
 		response := apiResponse{
@@ -130,7 +85,7 @@ func (s *Server) handleCreateJobApplication() http.HandlerFunc {
 			return
 		}
 		response := apiResponse{
-			Data:    generateApplicationResponseFromRow(row),
+			Data:    newApplicationResponse(row),
 			Ok:      true,
 			Message: "Created job application",
 		}
@@ -170,7 +125,7 @@ func (s *Server) handleGetJobApplication() http.HandlerFunc {
 			return
 		}
 		response := apiResponse{
-			Data:    generateApplicationResponseFromRow(job),
+			Data:    newApplicationResponse(job),
 			Ok:      true,
 			Message: "Found job application",
 		}
@@ -221,7 +176,7 @@ func (s *Server) handleUpdateJobApplicationStatus() http.HandlerFunc {
 			return
 		}
 		response := apiResponse{
-			Data:    generateApplicationResponseFromRow(res),
+			Data:    newApplicationResponse(res),
 			Ok:      true,
 			Message: "Updated job application",
 		}

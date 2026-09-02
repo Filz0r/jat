@@ -1,6 +1,15 @@
 package api
 
 // ---------------------------------------------//
+//			Job Application Queries				//
+// ---------------------------------------------//
+
+type jobApplicationQueries struct {
+	StatusID  []uint `query:"status_id"`
+	CompanyID []uint `query:"company_id"`
+}
+
+// ---------------------------------------------//
 //			Application Status Queries			//
 // ---------------------------------------------//
 

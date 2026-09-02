@@ -41,6 +41,21 @@ type loginResponse struct {
 }
 
 // ---------------------------------------------//
+//			Job Application Structs				//
+// ---------------------------------------------//
+
+type applicationResponse struct {
+	ID        uint                      `json:"id" validate:"required"`
+	Title     string                    `json:"title" validate:"required"`
+	URL       string                    `json:"url" validate:"required"`
+	UserID    uuid.UUID                 `json:"user_id" validate:"required"`
+	CreatedAt time.Time                 `json:"created_at" validate:"required"`
+	UpdatedAt time.Time                 `json:"updated_at" validate:"required"`
+	Status    applicationStatusResponse `json:"status" validate:"required"`
+	Company   companyResponse           `json:"company" validate:"required"`
+}
+
+// ---------------------------------------------//
 //			Application Status Structs			//
 // ---------------------------------------------//
 
@@ -139,6 +154,27 @@ func newLoginResponse(token, refreshToken string) loginResponse {
 		Token:        token,
 		RefreshToken: refreshToken,
 	}
+}
+
+// ---------------------------------------------//
+//			Job Application Factories			//
+// ---------------------------------------------//
+
+func newApplicationResponse(row database.JobApplication) applicationResponse {
+	res := applicationResponse{
+		ID:        row.ID,
+		CreatedAt: row.CreatedAt,
+		UpdatedAt: row.UpdatedAt,
+		UserID:    row.UserID,
+		Title:     row.Title,
+		URL:       row.Url,
+		Company:   newCompanyResponse(row.Company, 0, 0, false, nil, nil),
+		Status:    newApplicationStatusResponse(row.Status),
+	}
+	if row.Company.Website != nil {
+		res.Company.Website = *row.Company.Website
+	}
+	return res
 }
 
 // ---------------------------------------------//
