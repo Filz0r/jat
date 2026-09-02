@@ -5,25 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
-	"github.com/filz0r/jat/internal/database"
 	"github.com/google/uuid"
 )
-
-type noteData struct {
-	ID        uint                      `json:"id" validate:"required"`
-	Body      string                    `json:"body" validate:"required"`
-	Status    applicationStatusResponse `json:"status" validate:"required"`
-	UserID    uuid.UUID                 `json:"user_id" validate:"required"`
-	JobID     uint                      `json:"job_id" validate:"required"`
-	CreatedAt time.Time                 `json:"created_at" validate:"required"`
-	UpdatedAt time.Time                 `json:"updated_at" validate:"required"`
-}
-
-type noteCreateRequest struct {
-	Body string `json:"body" validate:"required"`
-}
 
 func extractRequiredNoteData(r *http.Request, extractNote bool) (uint, uint, uuid.UUID, error) {
 	jobIDParam := r.PathValue("jobID")
@@ -42,18 +26,6 @@ func extractRequiredNoteData(r *http.Request, extractNote bool) (uint, uint, uui
 	return jobID, noteID, userID, nil
 }
 
-func convertNoteData(data database.ApplicationNote) noteData {
-	return noteData{
-		ID:        data.ID,
-		Body:      data.Body,
-		Status:    newApplicationStatusResponse(data.Status),
-		UserID:    data.UserID,
-		CreatedAt: data.CreatedAt,
-		UpdatedAt: data.UpdatedAt,
-		JobID:     data.ApplicationID,
-	}
-}
-
 // @Summary List notes for a job application
 // @Description Returns all notes belonging to a specific job application.
 // @Tags job_application_notes
@@ -61,7 +33,7 @@ func convertNoteData(data database.ApplicationNote) noteData {
 // @Produce json
 // @Security BearerAuth
 // @Param jobID path int true "Job application ID"
-// @Success 200 {object} apiResponse{data=[]noteData}
+// @Success 200 {object} apiResponse{data=[]noteDataResponse}
 // @Failure 400 {object} apiResponse
 // @Failure 404 {object} apiResponse
 // @Router /jobs/{jobID}/notes [get]
@@ -77,9 +49,9 @@ func (s *Server) handleGetJobNotes() http.HandlerFunc {
 			s.respondWithError(w, 404, "Note not found", err)
 			return
 		}
-		res := make([]noteData, 0, len(dbNotes))
+		res := make([]noteDataResponse, 0, len(dbNotes))
 		for _, note := range dbNotes {
-			temp := convertNoteData(note)
+			temp := newNoteDataResponse(note)
 			res = append(res, temp)
 		}
 		s.respondWithJSON(w, 200, apiResponse{
@@ -98,7 +70,7 @@ func (s *Server) handleGetJobNotes() http.HandlerFunc {
 // @Security BearerAuth
 // @Param jobID path int true "Job application ID"
 // @Param request body noteCreateRequest true "Note body"
-// @Success 201 {object} apiResponse{data=noteData}
+// @Success 201 {object} apiResponse{data=noteDataResponse}
 // @Failure 400 {object} apiResponse
 // @Router /jobs/{jobID}/notes [post]
 func (s *Server) handleCreateJobNote() http.HandlerFunc {
@@ -128,7 +100,7 @@ func (s *Server) handleCreateJobNote() http.HandlerFunc {
 			return
 		}
 		s.respondWithJSON(w, 201, apiResponse{
-			Data:    convertNoteData(data),
+			Data:    newNoteDataResponse(data),
 			Ok:      true,
 			Message: "Created new job application note",
 		})
@@ -144,7 +116,7 @@ func (s *Server) handleCreateJobNote() http.HandlerFunc {
 // @Param jobID path int true "Job application ID"
 // @Param noteID path int true "Note ID"
 // @Param request body noteCreateRequest true "Note body"
-// @Success 200 {object} apiResponse{data=noteData}
+// @Success 200 {object} apiResponse{data=noteDataResponse}
 // @Failure 400 {object} apiResponse
 // @Router /jobs/{jobID}/notes/{noteID} [put]
 func (s *Server) handleUpdateJobNote() http.HandlerFunc {
@@ -175,7 +147,7 @@ func (s *Server) handleUpdateJobNote() http.HandlerFunc {
 			return
 		}
 		s.respondWithJSON(w, 200, apiResponse{
-			Data:    convertNoteData(updated),
+			Data:    newNoteDataResponse(updated),
 			Ok:      true,
 			Message: "Updated job application note",
 		})
@@ -220,7 +192,7 @@ func (s *Server) handleDeleteJobNote() http.HandlerFunc {
 // @Security BearerAuth
 // @Param jobID path int true "Job application ID"
 // @Param noteID path int true "Note ID"
-// @Success 200 {object} apiResponse{data=noteData}
+// @Success 200 {object} apiResponse{data=noteDataResponse}
 // @Failure 400 {object} apiResponse
 // @Failure 404 {object} apiResponse
 // @Router /jobs/{jobID}/notes/{noteID} [get]
@@ -237,7 +209,7 @@ func (s *Server) handleGetJobNote() http.HandlerFunc {
 			return
 		}
 		s.respondWithJSON(w, 200, apiResponse{
-			Data:    convertNoteData(data),
+			Data:    newNoteDataResponse(data),
 			Ok:      true,
 			Message: "Application note found",
 		})

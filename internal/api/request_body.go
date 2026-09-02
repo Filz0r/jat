@@ -30,6 +30,14 @@ type applicationRequest struct {
 }
 
 // ---------------------------------------------//
+//		Job Application Notes Structs			//
+// ---------------------------------------------//
+
+type noteCreateRequest struct {
+	Body string `json:"body" validate:"required"`
+}
+
+// ---------------------------------------------//
 //			Application Status Structs			//
 // ---------------------------------------------//
 

@@ -56,6 +56,20 @@ type applicationResponse struct {
 }
 
 // ---------------------------------------------//
+//		Job Application Notes Structs			//
+// ---------------------------------------------//
+
+type noteDataResponse struct {
+	ID        uint                      `json:"id" validate:"required"`
+	Body      string                    `json:"body" validate:"required"`
+	Status    applicationStatusResponse `json:"status" validate:"required"`
+	UserID    uuid.UUID                 `json:"user_id" validate:"required"`
+	JobID     uint                      `json:"job_id" validate:"required"`
+	CreatedAt time.Time                 `json:"created_at" validate:"required"`
+	UpdatedAt time.Time                 `json:"updated_at" validate:"required"`
+}
+
+// ---------------------------------------------//
 //			Application Status Structs			//
 // ---------------------------------------------//
 
@@ -175,6 +189,22 @@ func newApplicationResponse(row database.JobApplication) applicationResponse {
 		res.Company.Website = *row.Company.Website
 	}
 	return res
+}
+
+// ---------------------------------------------//
+//		Job Application Notes Factories			//
+// ---------------------------------------------//
+
+func newNoteDataResponse(data database.ApplicationNote) noteDataResponse {
+	return noteDataResponse{
+		ID:        data.ID,
+		Body:      data.Body,
+		Status:    newApplicationStatusResponse(data.Status),
+		UserID:    data.UserID,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: data.UpdatedAt,
+		JobID:     data.ApplicationID,
+	}
 }
 
 // ---------------------------------------------//
