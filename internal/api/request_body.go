@@ -23,3 +23,12 @@ type applicationStatusRequest struct {
 	Status string `json:"status" validate:"required"`
 	Kind   string `json:"kind" validate:"required"`
 }
+
+// ---------------------------------------------//
+//				Company Structs					//
+// ---------------------------------------------//
+
+type companyBodyRequest struct {
+	Name    string `json:"name" validate:"required"`
+	Website string `json:"website,omitempty"`
+}

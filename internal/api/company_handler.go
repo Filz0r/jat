@@ -5,99 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/filz0r/jat/internal/database"
 )
 
-type companyBodyRequest struct {
-	Name    string `json:"name" validate:"required"`
-	Website string `json:"website,omitempty"`
-}
-
-type companyResponse struct {
-	ID            uint              `json:"id,omitempty" validate:"required"`
-	Name          string            `json:"name" validate:"required"`
-	Website       string            `json:"website,omitempty"`
-	CreatedAt     time.Time         `json:"created_at" validate:"required"`
-	UpdatedAt     time.Time         `json:"updated_at" validate:"required"`
-	UserCount     int64             `json:"user_count,omitempty"`
-	TotalCount    int64             `json:"total_count,omitempty"`
-	CreatedByUser *baseUserResponse `json:"created_by_user,omitempty"`
-	UpdatedByUser *baseUserResponse `json:"updated_by_user,omitempty"`
-}
-
-type companyListQuery struct {
-	UserCount    bool `query:"user_count"`
-	TotalCount   bool `query:"total_count"`
-	PreloadUsers bool `query:"preload_users"`
-}
-
-type countCompanyQuery struct {
-	TotalCount bool `query:"total_count"`
-}
-
-type companyChangeHistoryResponse struct {
-	ID         uint             `json:"id" validate:"required"`
-	CompanyID  uint             `json:"company_id" validate:"required"`
-	NewName    string           `json:"new_name,omitempty"`
-	OldWebsite string           `json:"old_website,omitempty"`
-	NewWebsite string           `json:"new_website,omitempty"`
-	OldName    string           `json:"old_name,omitempty"`
-	CreatedAt  time.Time        `json:"created_at" validate:"required"`
-	ChangedBy  baseUserResponse `json:"changed_by" validate:"required"`
-	Reverted   bool             `json:"reverted" validate:"required"`
-}
-
 //TODO: Fix 500 response codes when possible
-
-func createCompanyResponse(data database.Company, totalCount, userCount int64, includeCounts bool, cbUser, ebUser *database.User) companyResponse {
-	result := companyResponse{
-		ID:        data.ID,
-		Name:      data.Name,
-		CreatedAt: data.CreatedAt,
-		UpdatedAt: data.UpdatedAt,
-	}
-	if data.Website != nil {
-		result.Website = *data.Website
-	}
-	if includeCounts {
-		result.TotalCount = totalCount
-		result.UserCount = userCount
-	}
-	if cbUser != nil {
-		userResponse := newBaseUserResponse(*cbUser)
-		result.CreatedByUser = &userResponse
-	}
-	if ebUser != nil {
-		userResponse := newBaseUserResponse(*ebUser)
-		result.UpdatedByUser = &userResponse
-	}
-	return result
-}
-
-func createCompanyChangeHistoryResponse(data database.CompanyChangeHistory) companyChangeHistoryResponse {
-	result := companyChangeHistoryResponse{
-		ID:        data.ID,
-		CompanyID: data.CompanyID,
-		CreatedAt: data.CreatedAt,
-		Reverted:  data.Reverted,
-		ChangedBy: newBaseUserResponse(data.ChangedByUser),
-	}
-	if data.OldNameValue != nil {
-		result.OldName = *data.OldNameValue
-	}
-	if data.NewNameValue != nil {
-		result.NewName = *data.NewNameValue
-	}
-	if data.OldWebsiteValue != nil {
-		result.OldWebsite = *data.OldWebsiteValue
-	}
-	if data.NewWebsiteValue != nil {
-		result.NewWebsite = *data.NewWebsiteValue
-	}
-	return result
-}
 
 // @Summary Create company
 // @Description Creates a new company.
@@ -133,7 +45,7 @@ func (s *Server) handleCreateCompany() http.HandlerFunc {
 			return
 		}
 
-		response := createCompanyResponse(company, 0, 0, false, nil, nil)
+		response := newCompanyResponse(company, 0, 0, false, nil, nil)
 		s.respondWithJSON(w, 201, apiResponse{
 			Ok:      true,
 			Data:    response,
@@ -189,7 +101,7 @@ func (s *Server) handleGetAllCompanies() http.HandlerFunc {
 				cbUser = nil
 				ebUser = nil
 			}
-			temp := createCompanyResponse(
+			temp := newCompanyResponse(
 				company,
 				counts[company.ID].TotalCount,
 				counts[company.ID].UserCount,
@@ -241,7 +153,7 @@ func (s *Server) handleUpdateACompany() http.HandlerFunc {
 			s.respondWithError(w, 400, "error updating company", err)
 			return
 		}
-		response := createCompanyResponse(company, 0, 0, false, nil, nil)
+		response := newCompanyResponse(company, 0, 0, false, nil, nil)
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Data:    response,
@@ -284,7 +196,7 @@ func (s *Server) handleGetACompany() http.HandlerFunc {
 			return
 		}
 		includeCounts := params.UserCount || params.TotalCount
-		response := createCompanyResponse(data, counts.TotalCount, counts.UserCount, includeCounts, nil, nil)
+		response := newCompanyResponse(data, counts.TotalCount, counts.UserCount, includeCounts, nil, nil)
 		if data.Website != nil {
 			response.Website = *data.Website
 		}
@@ -400,7 +312,7 @@ func (s *Server) handleGetCompanyHistory() http.HandlerFunc {
 		}
 		responseData := make([]companyChangeHistoryResponse, 0, len(history))
 		for _, record := range history {
-			temp := createCompanyChangeHistoryResponse(record)
+			temp := newCompanyChangeHistoryResponse(record)
 			responseData = append(responseData, temp)
 		}
 		s.respondWithJSON(w, 200, apiResponse{

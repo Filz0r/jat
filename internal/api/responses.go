@@ -63,6 +63,34 @@ type applicationStatusHistoryResponse struct {
 }
 
 // ---------------------------------------------//
+//				Company Structs					//
+// ---------------------------------------------//
+
+type companyResponse struct {
+	ID            uint              `json:"id,omitempty" validate:"required"`
+	Name          string            `json:"name" validate:"required"`
+	Website       string            `json:"website,omitempty"`
+	CreatedAt     time.Time         `json:"created_at" validate:"required"`
+	UpdatedAt     time.Time         `json:"updated_at" validate:"required"`
+	UserCount     int64             `json:"user_count,omitempty"`
+	TotalCount    int64             `json:"total_count,omitempty"`
+	CreatedByUser *baseUserResponse `json:"created_by_user,omitempty"`
+	UpdatedByUser *baseUserResponse `json:"updated_by_user,omitempty"`
+}
+
+type companyChangeHistoryResponse struct {
+	ID         uint             `json:"id" validate:"required"`
+	CompanyID  uint             `json:"company_id" validate:"required"`
+	NewName    string           `json:"new_name,omitempty"`
+	OldWebsite string           `json:"old_website,omitempty"`
+	NewWebsite string           `json:"new_website,omitempty"`
+	OldName    string           `json:"old_name,omitempty"`
+	CreatedAt  time.Time        `json:"created_at" validate:"required"`
+	ChangedBy  baseUserResponse `json:"changed_by" validate:"required"`
+	Reverted   bool             `json:"reverted" validate:"required"`
+}
+
+// ---------------------------------------------//
 //					 User Factories				//
 // ---------------------------------------------//
 
@@ -143,4 +171,56 @@ func newApplicationStatusResponse(d database.ApplicationStatus) applicationStatu
 		UserID:    d.UserID,
 		Archived:  d.Archived,
 	}
+}
+
+// ---------------------------------------------//
+//				Company Factories				//
+// ---------------------------------------------//
+
+func newCompanyResponse(data database.Company, totalCount, userCount int64, includeCounts bool, cbUser, ebUser *database.User) companyResponse {
+	result := companyResponse{
+		ID:        data.ID,
+		Name:      data.Name,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: data.UpdatedAt,
+	}
+	if data.Website != nil {
+		result.Website = *data.Website
+	}
+	if includeCounts {
+		result.TotalCount = totalCount
+		result.UserCount = userCount
+	}
+	if cbUser != nil {
+		userResponse := newBaseUserResponse(*cbUser)
+		result.CreatedByUser = &userResponse
+	}
+	if ebUser != nil {
+		userResponse := newBaseUserResponse(*ebUser)
+		result.UpdatedByUser = &userResponse
+	}
+	return result
+}
+
+func newCompanyChangeHistoryResponse(data database.CompanyChangeHistory) companyChangeHistoryResponse {
+	result := companyChangeHistoryResponse{
+		ID:        data.ID,
+		CompanyID: data.CompanyID,
+		CreatedAt: data.CreatedAt,
+		Reverted:  data.Reverted,
+		ChangedBy: newBaseUserResponse(data.ChangedByUser),
+	}
+	if data.OldNameValue != nil {
+		result.OldName = *data.OldNameValue
+	}
+	if data.NewNameValue != nil {
+		result.NewName = *data.NewNameValue
+	}
+	if data.OldWebsiteValue != nil {
+		result.OldWebsite = *data.OldWebsiteValue
+	}
+	if data.NewWebsiteValue != nil {
+		result.NewWebsite = *data.NewWebsiteValue
+	}
+	return result
 }
