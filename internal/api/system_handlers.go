@@ -4,10 +4,6 @@ import (
 	"net/http"
 )
 
-type systemResponse struct {
-	Initialized bool `json:"initialized"`
-}
-
 // @Summary Health check
 // @Description Returns a success message if the database is reachable.
 // @Tags system

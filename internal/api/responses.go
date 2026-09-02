@@ -120,6 +120,14 @@ type companyChangeHistoryResponse struct {
 }
 
 // ---------------------------------------------//
+//				System Structs					//
+// ---------------------------------------------//
+
+type systemResponse struct {
+	Initialized bool `json:"initialized"`
+}
+
+// ---------------------------------------------//
 //					 User Factories				//
 // ---------------------------------------------//
 
