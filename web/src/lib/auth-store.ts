@@ -1,6 +1,4 @@
-import type { components } from '#/api/gen-spec';
-
-export type User = components['schemas']['api.userCreateResponse'];
+import type { User } from '#/api/types.ts';
 
 export type AuthState = {
 	initialized: boolean | null;

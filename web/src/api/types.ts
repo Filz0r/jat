@@ -1,5 +1,7 @@
 import type { components } from './gen-spec.ts';
 
+export type User = components['schemas']['api.meUserResponse'];
+
 export type JobApplication = components['schemas']['api.applicationResponse'];
 export type JobApplicationStatus = components['schemas']['api.applicationStatusResponse'];
 export type JobApplicationNote = components['schemas']['api.noteData'];

@@ -1,12 +1,10 @@
 import type { ReactNode, Context } from 'react';
+import type { User } from '#/api/types.ts';
 import type { QueryClient } from '@tanstack/react-query';
-import type { components } from '#/api/gen-spec';
 
 import { createContext, useCallback, useMemo, useSyncExternalStore } from 'react';
 import { api } from '#/api/client';
 import { authStore } from '#/lib/auth-store';
-
-export type User = components['schemas']['api.userCreateResponse'];
 
 export interface AuthContextValue {
 	initialized: boolean | null;
