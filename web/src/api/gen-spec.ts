@@ -1870,7 +1870,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.userCreateResponse'][];
+							data?: components['schemas']['api.adminUserResponse'][];
 						};
 					};
 				};
@@ -1918,9 +1918,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.userCreateResponse'];
-						};
+						'application/json': components['schemas']['api.apiResponse'];
 					};
 				};
 				/** @description Bad Request */
@@ -1967,9 +1965,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.userCreateResponse'];
-						};
+						'application/json': components['schemas']['api.apiResponse'];
 					};
 				};
 				/** @description Bad Request */
@@ -2016,7 +2012,7 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.userCreateResponse'];
+							data?: components['schemas']['api.meUserResponse'];
 						};
 					};
 				};
@@ -2069,21 +2065,12 @@ export interface paths {
 					};
 					content: {
 						'application/json': components['schemas']['api.apiResponse'] & {
-							data?: components['schemas']['api.userCreateResponse'];
+							data?: components['schemas']['api.adminUserResponse'];
 						};
 					};
 				};
 				/** @description Unauthorized */
 				401: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json': components['schemas']['api.apiResponse'];
-					};
-				};
-				/** @description Forbidden */
-				403: {
 					headers: {
 						[name: string]: unknown;
 					};
@@ -2114,6 +2101,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		'api.adminUserResponse': {
+			create_at: string;
+			email: string;
+			is_admin: boolean;
+			is_banned: boolean;
+			is_enabled: boolean;
+			is_setup: boolean;
+			update_at: string;
+			user_id: string;
+			username: string;
+		};
 		'api.apiCountResult': {
 			count: number;
 		};
@@ -2159,12 +2157,19 @@ export interface components {
 			updated_at: string;
 			user_id?: string;
 		};
+		'api.baseUserResponse': {
+			create_at: string;
+			email: string;
+			update_at: string;
+			user_id: string;
+			username: string;
+		};
 		'api.companyBodyRequest': {
 			name: string;
 			website?: string;
 		};
 		'api.companyChangeHistoryResponse': {
-			changed_by: components['schemas']['api.userCreateResponse'];
+			changed_by: components['schemas']['api.baseUserResponse'];
 			company_id: number;
 			created_at: string;
 			id: number;
@@ -2176,20 +2181,29 @@ export interface components {
 		};
 		'api.companyResponse': {
 			created_at: string;
-			created_by_user?: components['schemas']['api.userCreateResponse'];
+			created_by_user?: components['schemas']['api.baseUserResponse'];
 			id: number;
 			name: string;
 			total_count?: number;
 			updated_at: string;
-			updated_by_user?: components['schemas']['api.userCreateResponse'];
+			updated_by_user?: components['schemas']['api.baseUserResponse'];
 			user_count?: number;
 			website?: string;
 		};
 		'api.loginResponse': {
-			email: string;
 			refresh_token?: string;
 			token?: string;
+		};
+		'api.meUserResponse': {
+			create_at: string;
+			default_status_id: number;
+			email: string;
+			is_admin?: boolean;
+			is_setup: boolean;
+			setup_step: number;
+			update_at: string;
 			user_id: string;
+			username: string;
 		};
 		'api.noteCreateRequest': {
 			body: string;
@@ -2209,15 +2223,6 @@ export interface components {
 		'api.userCreateRequest': {
 			email: string;
 			password: string;
-			username: string;
-		};
-		'api.userCreateResponse': {
-			created_at: string;
-			default_status_id?: number;
-			email: string;
-			is_admin?: boolean;
-			updated_at: string;
-			user_id: string;
 			username: string;
 		};
 		'api.userLoginRequest': {

@@ -2226,7 +2226,7 @@
                                                 "data": {
                                                     "type": "array",
                                                     "items": {
-                                                        "$ref": "#/components/schemas/api.userCreateResponse"
+                                                        "$ref": "#/components/schemas/api.adminUserResponse"
                                                     }
                                                 }
                                             }
@@ -2286,19 +2286,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "allOf": [
-                                        {
-                                            "$ref": "#/components/schemas/api.apiResponse"
-                                        },
-                                        {
-                                            "type": "object",
-                                            "properties": {
-                                                "data": {
-                                                    "$ref": "#/components/schemas/api.userCreateResponse"
-                                                }
-                                            }
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/api.apiResponse"
                                 }
                             }
                         }
@@ -2348,19 +2336,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "allOf": [
-                                        {
-                                            "$ref": "#/components/schemas/api.apiResponse"
-                                        },
-                                        {
-                                            "type": "object",
-                                            "properties": {
-                                                "data": {
-                                                    "$ref": "#/components/schemas/api.userCreateResponse"
-                                                }
-                                            }
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/api.apiResponse"
                                 }
                             }
                         }
@@ -2404,7 +2380,7 @@
                                             "type": "object",
                                             "properties": {
                                                 "data": {
-                                                    "$ref": "#/components/schemas/api.userCreateResponse"
+                                                    "$ref": "#/components/schemas/api.meUserResponse"
                                                 }
                                             }
                                         }
@@ -2435,7 +2411,8 @@
                 ],
                 "description": "Returns a single user. Users can read their own record; admins can read any record.",
                 "tags": [
-                    "users"
+                    "users",
+                    "admin"
                 ],
                 "summary": "Get a user",
                 "parameters": [
@@ -2463,7 +2440,7 @@
                                             "type": "object",
                                             "properties": {
                                                 "data": {
-                                                    "$ref": "#/components/schemas/api.userCreateResponse"
+                                                    "$ref": "#/components/schemas/api.adminUserResponse"
                                                 }
                                             }
                                         }
@@ -2474,16 +2451,6 @@
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/api.apiResponse"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2544,6 +2511,49 @@
             }
         },
         "schemas": {
+            "api.adminUserResponse": {
+                "type": "object",
+                "required": [
+                    "create_at",
+                    "email",
+                    "is_admin",
+                    "is_banned",
+                    "is_enabled",
+                    "is_setup",
+                    "update_at",
+                    "user_id",
+                    "username"
+                ],
+                "properties": {
+                    "create_at": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "is_admin": {
+                        "type": "boolean"
+                    },
+                    "is_banned": {
+                        "type": "boolean"
+                    },
+                    "is_enabled": {
+                        "type": "boolean"
+                    },
+                    "is_setup": {
+                        "type": "boolean"
+                    },
+                    "update_at": {
+                        "type": "string"
+                    },
+                    "user_id": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    }
+                }
+            },
             "api.apiCountResult": {
                 "type": "object",
                 "required": [
@@ -2712,6 +2722,33 @@
                     }
                 }
             },
+            "api.baseUserResponse": {
+                "type": "object",
+                "required": [
+                    "create_at",
+                    "email",
+                    "update_at",
+                    "user_id",
+                    "username"
+                ],
+                "properties": {
+                    "create_at": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "update_at": {
+                        "type": "string"
+                    },
+                    "user_id": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    }
+                }
+            },
             "api.companyBodyRequest": {
                 "type": "object",
                 "required": [
@@ -2737,7 +2774,7 @@
                 ],
                 "properties": {
                     "changed_by": {
-                        "$ref": "#/components/schemas/api.userCreateResponse"
+                        "$ref": "#/components/schemas/api.baseUserResponse"
                     },
                     "company_id": {
                         "type": "integer"
@@ -2778,7 +2815,7 @@
                         "type": "string"
                     },
                     "created_by_user": {
-                        "$ref": "#/components/schemas/api.userCreateResponse"
+                        "$ref": "#/components/schemas/api.baseUserResponse"
                     },
                     "id": {
                         "type": "integer"
@@ -2793,7 +2830,7 @@
                         "type": "string"
                     },
                     "updated_by_user": {
-                        "$ref": "#/components/schemas/api.userCreateResponse"
+                        "$ref": "#/components/schemas/api.baseUserResponse"
                     },
                     "user_count": {
                         "type": "integer"
@@ -2805,21 +2842,53 @@
             },
             "api.loginResponse": {
                 "type": "object",
-                "required": [
-                    "email",
-                    "user_id"
-                ],
                 "properties": {
-                    "email": {
-                        "type": "string"
-                    },
                     "refresh_token": {
                         "type": "string"
                     },
                     "token": {
                         "type": "string"
+                    }
+                }
+            },
+            "api.meUserResponse": {
+                "type": "object",
+                "required": [
+                    "create_at",
+                    "default_status_id",
+                    "email",
+                    "is_setup",
+                    "setup_step",
+                    "update_at",
+                    "user_id",
+                    "username"
+                ],
+                "properties": {
+                    "create_at": {
+                        "type": "string"
+                    },
+                    "default_status_id": {
+                        "type": "integer"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "is_admin": {
+                        "type": "boolean"
+                    },
+                    "is_setup": {
+                        "type": "boolean"
+                    },
+                    "setup_step": {
+                        "type": "integer"
+                    },
+                    "update_at": {
+                        "type": "string"
                     },
                     "user_id": {
+                        "type": "string"
+                    },
+                    "username": {
                         "type": "string"
                     }
                 }
@@ -2890,39 +2959,6 @@
                         "type": "string"
                     },
                     "password": {
-                        "type": "string"
-                    },
-                    "username": {
-                        "type": "string"
-                    }
-                }
-            },
-            "api.userCreateResponse": {
-                "type": "object",
-                "required": [
-                    "created_at",
-                    "email",
-                    "updated_at",
-                    "user_id",
-                    "username"
-                ],
-                "properties": {
-                    "created_at": {
-                        "type": "string"
-                    },
-                    "default_status_id": {
-                        "type": "integer"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "is_admin": {
-                        "type": "boolean"
-                    },
-                    "updated_at": {
-                        "type": "string"
-                    },
-                    "user_id": {
                         "type": "string"
                     },
                     "username": {

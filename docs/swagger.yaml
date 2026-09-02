@@ -1,5 +1,36 @@
 basePath: /api
 definitions:
+  api.adminUserResponse:
+    properties:
+      create_at:
+        type: string
+      email:
+        type: string
+      is_admin:
+        type: boolean
+      is_banned:
+        type: boolean
+      is_enabled:
+        type: boolean
+      is_setup:
+        type: boolean
+      update_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    required:
+    - create_at
+    - email
+    - is_admin
+    - is_banned
+    - is_enabled
+    - is_setup
+    - update_at
+    - user_id
+    - username
+    type: object
   api.apiCountResult:
     properties:
       count:
@@ -117,6 +148,25 @@ definitions:
     - status
     - updated_at
     type: object
+  api.baseUserResponse:
+    properties:
+      create_at:
+        type: string
+      email:
+        type: string
+      update_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    required:
+    - create_at
+    - email
+    - update_at
+    - user_id
+    - username
+    type: object
   api.companyBodyRequest:
     properties:
       name:
@@ -129,7 +179,7 @@ definitions:
   api.companyChangeHistoryResponse:
     properties:
       changed_by:
-        $ref: '#/definitions/api.userCreateResponse'
+        $ref: '#/definitions/api.baseUserResponse'
       company_id:
         type: integer
       created_at:
@@ -158,7 +208,7 @@ definitions:
       created_at:
         type: string
       created_by_user:
-        $ref: '#/definitions/api.userCreateResponse'
+        $ref: '#/definitions/api.baseUserResponse'
       id:
         type: integer
       name:
@@ -168,7 +218,7 @@ definitions:
       updated_at:
         type: string
       updated_by_user:
-        $ref: '#/definitions/api.userCreateResponse'
+        $ref: '#/definitions/api.baseUserResponse'
       user_count:
         type: integer
       website:
@@ -181,17 +231,40 @@ definitions:
     type: object
   api.loginResponse:
     properties:
-      email:
-        type: string
       refresh_token:
         type: string
       token:
         type: string
+    type: object
+  api.meUserResponse:
+    properties:
+      create_at:
+        type: string
+      default_status_id:
+        type: integer
+      email:
+        type: string
+      is_admin:
+        type: boolean
+      is_setup:
+        type: boolean
+      setup_step:
+        type: integer
+      update_at:
+        type: string
       user_id:
         type: string
+      username:
+        type: string
     required:
+    - create_at
+    - default_status_id
     - email
+    - is_setup
+    - setup_step
+    - update_at
     - user_id
+    - username
     type: object
   api.noteCreateRequest:
     properties:
@@ -241,29 +314,6 @@ definitions:
     required:
     - email
     - password
-    - username
-    type: object
-  api.userCreateResponse:
-    properties:
-      created_at:
-        type: string
-      default_status_id:
-        type: integer
-      email:
-        type: string
-      is_admin:
-        type: boolean
-      updated_at:
-        type: string
-      user_id:
-        type: string
-      username:
-        type: string
-    required:
-    - created_at
-    - email
-    - updated_at
-    - user_id
     - username
     type: object
   api.userLoginRequest:
@@ -1526,7 +1576,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/api.userCreateResponse'
+                    $ref: '#/definitions/api.adminUserResponse'
                   type: array
               type: object
         "400":
@@ -1560,12 +1610,7 @@ paths:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/api.apiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/api.userCreateResponse'
-              type: object
+            $ref: '#/definitions/api.apiResponse'
         "400":
           description: Bad Request
           schema:
@@ -1590,12 +1635,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/api.apiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/api.userCreateResponse'
-              type: object
+            $ref: '#/definitions/api.apiResponse'
         "400":
           description: Bad Request
           schema:
@@ -1631,14 +1671,10 @@ paths:
             - $ref: '#/definitions/api.apiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/api.userCreateResponse'
+                  $ref: '#/definitions/api.adminUserResponse'
               type: object
         "401":
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/api.apiResponse'
-        "403":
-          description: Forbidden
           schema:
             $ref: '#/definitions/api.apiResponse'
         "404":
@@ -1650,6 +1686,7 @@ paths:
       summary: Get a user
       tags:
       - users
+      - admin
   /users/me:
     get:
       consumes:
@@ -1667,7 +1704,7 @@ paths:
             - $ref: '#/definitions/api.apiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/api.userCreateResponse'
+                  $ref: '#/definitions/api.meUserResponse'
               type: object
         "401":
           description: Unauthorized
