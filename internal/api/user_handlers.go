@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // @Summary Create user
@@ -267,6 +268,59 @@ func (s *Server) handleChangeDefaultApplicationStatus() http.HandlerFunc {
 		s.respondWithJSON(w, 200, apiResponse{
 			Ok:      true,
 			Message: fmt.Sprintf("Default application status updated to %d", body.StatusID),
+		})
+	}
+}
+
+// @Summary Get User Statistics
+// @Description Gives statistics related to a user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} apiResponse{data=baseUserStatsResponse}
+// @Failure 400 {object} apiResponse
+// @Router /users/stats [get]
+func (s *Server) handleUserStats() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, _ := userIDFromContext(r.Context())
+		response := baseUserStatsResponse{}
+		err := s.db.Transaction(func(tx *gorm.DB) error {
+			applicationStatuses, err := s.services.CountApplicationStatusByKind(tx, userID, false)
+			if err != nil {
+				return err
+			}
+			totalApplications, err := s.services.CountUserJobApplications(tx, userID)
+			if err != nil {
+				return err
+			}
+			totalCompaniesCreated, err := s.services.GetCompanyCreationsByUser(tx, userID)
+			if err != nil {
+				return err
+			}
+			rejectionPercentage, err := s.services.GetRejectionPercentage(tx, userID)
+			if err != nil {
+				return err
+			}
+			applicationByStatusKind, err := s.services.CountApplicationStatusByKind(tx, userID, true)
+			if err != nil {
+				return err
+			}
+			response.JobApplicationsByStatusKind = &applicationByStatusKind
+			response.ApplicationStatusCounts = &applicationStatuses
+			response.TotalApplications = totalApplications
+			response.TotalCompaniesCreated = totalCompaniesCreated
+			response.RejectionPercentage = rejectionPercentage
+			return nil
+		})
+		if err != nil {
+			s.respondWithError(w, 400, "error fetching user statistics", err)
+			return
+		}
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:      true,
+			Message: "User stats were found",
+			Data:    response,
 		})
 	}
 }

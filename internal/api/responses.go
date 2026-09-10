@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/filz0r/jat/internal/database"
+	"github.com/filz0r/jat/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -38,6 +39,14 @@ type adminUserResponse struct {
 type loginResponse struct {
 	Token        string `json:"token,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
+}
+
+type baseUserStatsResponse struct {
+	ApplicationStatusCounts     *utils.ApplicationStatusKindCounts `json:"application_status" validate:"required"`
+	JobApplicationsByStatusKind *utils.ApplicationStatusKindCounts `json:"job_applications_by_status_kind" validate:"required"`
+	TotalApplications           int64                              `json:"total_applications" validate:"required"`
+	TotalCompaniesCreated       int64                              `json:"total_companies_created" validate:"required"`
+	RejectionPercentage         float64                            `json:"rejection_percentage" validate:"required"`
 }
 
 // ---------------------------------------------//
