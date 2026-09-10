@@ -11,9 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
-import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppAccountIndexRouteImport } from './routes/_app.account.index'
 import { Route as AppAdminIndexRouteImport } from './routes/_app.admin.index'
 import { Route as AppApplication_statusIndexRouteImport } from './routes/_app.application_status.index'
 import { Route as AppApplication_statusStatusIDRouteImport } from './routes/_app.application_status.$statusID'
@@ -34,6 +35,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
@@ -44,9 +50,9 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const AppAccountIndexRoute = AppAccountIndexRouteImport.update({
+  id: '/account/',
+  path: '/account/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
@@ -105,12 +111,13 @@ const AppAdminUsersUserIDRoute = AppAdminUsersUserIDRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
-  '/settings': typeof AppSettingsRoute
   '/application_status/$statusID': typeof AppApplication_statusStatusIDRoute
   '/companies/$companyID': typeof AppCompaniesCompanyIDRoute
   '/jobs/$jobID': typeof AppJobsJobIDRoute
   '/jobs/new': typeof AppJobsNewRoute
+  '/account/': typeof AppAccountIndexRoute
   '/admin/': typeof AppAdminIndexRoute
   '/application_status/': typeof AppApplication_statusIndexRoute
   '/companies/': typeof AppCompaniesIndexRoute
@@ -120,13 +127,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
-  '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
   '/application_status/$statusID': typeof AppApplication_statusStatusIDRoute
   '/companies/$companyID': typeof AppCompaniesCompanyIDRoute
   '/jobs/$jobID': typeof AppJobsJobIDRoute
   '/jobs/new': typeof AppJobsNewRoute
+  '/account': typeof AppAccountIndexRoute
   '/admin': typeof AppAdminIndexRoute
   '/application_status': typeof AppApplication_statusIndexRoute
   '/companies': typeof AppCompaniesIndexRoute
@@ -138,13 +146,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/setup': typeof SetupRoute
-  '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
   '/_app/application_status/$statusID': typeof AppApplication_statusStatusIDRoute
   '/_app/companies/$companyID': typeof AppCompaniesCompanyIDRoute
   '/_app/jobs/$jobID': typeof AppJobsJobIDRoute
   '/_app/jobs/new': typeof AppJobsNewRoute
+  '/_app/account/': typeof AppAccountIndexRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/application_status/': typeof AppApplication_statusIndexRoute
   '/_app/companies/': typeof AppCompaniesIndexRoute
@@ -157,12 +166,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/register'
     | '/setup'
-    | '/settings'
     | '/application_status/$statusID'
     | '/companies/$companyID'
     | '/jobs/$jobID'
     | '/jobs/new'
+    | '/account/'
     | '/admin/'
     | '/application_status/'
     | '/companies/'
@@ -172,13 +182,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/register'
     | '/setup'
-    | '/settings'
     | '/'
     | '/application_status/$statusID'
     | '/companies/$companyID'
     | '/jobs/$jobID'
     | '/jobs/new'
+    | '/account'
     | '/admin'
     | '/application_status'
     | '/companies'
@@ -189,13 +200,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/login'
+    | '/register'
     | '/setup'
-    | '/_app/settings'
     | '/_app/'
     | '/_app/application_status/$statusID'
     | '/_app/companies/$companyID'
     | '/_app/jobs/$jobID'
     | '/_app/jobs/new'
+    | '/_app/account/'
     | '/_app/admin/'
     | '/_app/application_status/'
     | '/_app/companies/'
@@ -207,6 +219,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
   SetupRoute: typeof SetupRoute
 }
 
@@ -226,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/setup': {
       id: '/setup'
       path: '/setup'
@@ -240,11 +260,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
+    '/_app/account/': {
+      id: '/_app/account/'
+      path: '/account'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AppAccountIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/admin/': {
@@ -321,12 +341,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppApplication_statusStatusIDRoute: typeof AppApplication_statusStatusIDRoute
   AppCompaniesCompanyIDRoute: typeof AppCompaniesCompanyIDRoute
   AppJobsJobIDRoute: typeof AppJobsJobIDRoute
   AppJobsNewRoute: typeof AppJobsNewRoute
+  AppAccountIndexRoute: typeof AppAccountIndexRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
   AppApplication_statusIndexRoute: typeof AppApplication_statusIndexRoute
   AppCompaniesIndexRoute: typeof AppCompaniesIndexRoute
@@ -336,12 +356,12 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
   AppApplication_statusStatusIDRoute: AppApplication_statusStatusIDRoute,
   AppCompaniesCompanyIDRoute: AppCompaniesCompanyIDRoute,
   AppJobsJobIDRoute: AppJobsJobIDRoute,
   AppJobsNewRoute: AppJobsNewRoute,
+  AppAccountIndexRoute: AppAccountIndexRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
   AppApplication_statusIndexRoute: AppApplication_statusIndexRoute,
   AppCompaniesIndexRoute: AppCompaniesIndexRoute,
@@ -355,6 +375,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   SetupRoute: SetupRoute,
 }
 export const routeTree = rootRouteImport
