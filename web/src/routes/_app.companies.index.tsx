@@ -217,7 +217,7 @@ function RouteComponent() {
 	return (
 		<main className="mx-4">
 			<div className="py-4 text-center text-2xl">
-				<h1>Job Application Status</h1>
+				<h1>Companies</h1>
 			</div>
 			<div className="flex justify-end px-2 py-2">{CreateButton}</div>
 			{isLoading ? (
