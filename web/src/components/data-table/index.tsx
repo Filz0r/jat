@@ -101,9 +101,9 @@ export function DataTable<TData extends RowData>({
 				</TableBody>
 			</Table>
 
-			<div className="border-t-accent mt-2 flex items-center justify-between border-t p-2">
+			<div className="border-t-accent bg-muted flex items-center justify-between border-t p-2 pt-2">
 				<div className="flex items-center space-x-2">
-					<p className="text-sm font-medium">Rows per page</p>
+					<p className="text-xs">Rows per page</p>
 					<Select
 						value={`${table.state.pagination.pageSize}`}
 						onValueChange={(value) => {
@@ -122,7 +122,7 @@ export function DataTable<TData extends RowData>({
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="flex w-25 items-center justify-center text-sm font-medium">
+				<div className="flex w-25 items-center justify-center text-xs">
 					Page {table.state.pagination.pageIndex + 1} of {table.getPageCount()}
 				</div>
 				<div className="flex items-center space-x-2">
