@@ -40,7 +40,7 @@ export default function ModularFormDialog({
 	return (
 		<Dialog open={open}>
 			<DialogTrigger render={TriggerButton} />
-			<DialogContent className="p-0 sm:max-w-sm" showCloseButton={false}>
+			<DialogContent className="border p-0 sm:max-w-sm" showCloseButton={false}>
 				<form
 					noValidate
 					onSubmit={(e) => {
@@ -50,10 +50,12 @@ export default function ModularFormDialog({
 					}}
 					className="space-y-4"
 				>
-					<DialogHeader className="border-b px-2 pt-3 pb-2">
-						<DialogTitle className="text-primary text-center">{title}</DialogTitle>
+					<DialogHeader className="border-b px-2 pt-3">
+						<DialogTitle className="text-primary pb-1 text-center text-lg">
+							{title}
+						</DialogTitle>
 						{description && (
-							<DialogDescription className="bg-muted rounded-lg px-1 py-2 text-center text-[11px] font-extralight">
+							<DialogDescription className="bg-muted mb-3 rounded-lg px-1 py-2 text-center text-[11px] font-extralight italic">
 								{description}
 							</DialogDescription>
 						)}
