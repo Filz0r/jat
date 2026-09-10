@@ -167,7 +167,7 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body userCreateRequest true "Updated user fields"
+// @Param request body userUpdateRequest true "Updated user fields"
 // @Success 200 {object} apiResponse
 // @Failure 400 {object} apiResponse
 // @Failure 401 {object} apiResponse
@@ -175,7 +175,7 @@ func (s *Server) handleGetSingleUser() http.HandlerFunc {
 func (s *Server) handleUserUpdate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
-		user := userCreateRequest{}
+		user := userUpdateRequest{}
 		err := decoder.Decode(&user)
 		if err != nil {
 			s.respondWithError(w, 400, "invalid body", err)
