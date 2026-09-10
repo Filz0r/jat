@@ -48,6 +48,10 @@ export const updateAccountSchema = z
 		path: ['confirmPassword'],
 	});
 
+export const defaultUserTabSchema = z.object({
+	tab: z.enum(['settings', 'account']).default('settings').catch('settings').optional(),
+});
+
 export const defaultApplicationStatusSelectSchema = z.object({
 	status_id: z.number().positive('The server only accepts unsigned integers'),
 });
@@ -55,6 +59,7 @@ export const defaultApplicationStatusSelectSchema = z.object({
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdateAccountSchema = z.infer<typeof updateAccountSchema>;
+export type DefaultUserTabSchema = z.infer<typeof defaultUserTabSchema>;
 export type DefaultApplicationStatusSelectSchema = z.infer<
 	typeof defaultApplicationStatusSelectSchema
 >;
