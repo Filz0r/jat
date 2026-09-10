@@ -1,5 +1,5 @@
 import { SidebarInset, SidebarProvider, useSidebar } from '#components/ui/sidebar';
-import { AppSidebar } from '#/components/app-sidebar.tsx';
+import AppSidebar from '#/components/sidebar';
 import { Button } from '#components/ui/button';
 import { IconLayoutSidebar } from '@tabler/icons-react';
 import type { ReactNode } from 'react';

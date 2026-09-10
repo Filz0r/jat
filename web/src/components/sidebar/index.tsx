@@ -1,11 +1,4 @@
-import {
-	IconBriefcase,
-	IconBuilding,
-	IconHome,
-	IconSettings,
-	IconLayoutSidebar,
-	IconChartColumn,
-} from '@tabler/icons-react';
+import type { NavItem } from '#/components/sidebar/nav-group.tsx';
 
 import {
 	Sidebar,
@@ -18,32 +11,21 @@ import {
 	SidebarRail,
 	useSidebar,
 } from '#components/ui/sidebar';
-import { NavGroup } from '#/components/nav-group.tsx';
-import type { NavItem } from '#/components/nav-group.tsx';
-import { ThemeToggle } from '#/components/theme-toggle.tsx';
-import { LogoutButton } from '#/components/logout-button.tsx';
 import { Link } from '@tanstack/react-router';
+import { NavGroup } from '#/components/sidebar/nav-group.tsx';
+import { IconBriefcase, IconBuilding, IconChartColumn, IconHome } from '@tabler/icons-react';
+import UserMenu from '#/components/sidebar/user-menu.tsx';
 
 const mainNavItems: NavItem[] = [
 	{ title: 'Home', to: '/', icon: IconHome },
 	{ title: 'Jobs', to: '/jobs', icon: IconBriefcase },
 	{ title: 'Application Status', to: '/application_status', icon: IconChartColumn },
 	{ title: 'Companies', to: '/companies', icon: IconBuilding },
-	{ title: 'Account Settings', to: '/settings', icon: IconSettings },
 ];
 
-function SidebarToggle() {
-	const { toggleSidebar } = useSidebar();
-	return (
-		<SidebarMenuButton onClick={toggleSidebar}>
-			<IconLayoutSidebar />
-			<span>Toggle Sidebar</span>
-		</SidebarMenuButton>
-	);
-}
-
-export function AppSidebar() {
+export default function AppSidebar() {
 	const { open } = useSidebar();
+
 	return (
 		<Sidebar collapsible="icon">
 			<SidebarHeader>
@@ -72,17 +54,7 @@ export function AppSidebar() {
 			</SidebarContent>
 
 			<SidebarFooter>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<ThemeToggle />
-					</SidebarMenuItem>
-					<SidebarMenuItem>
-						<SidebarToggle />
-					</SidebarMenuItem>
-					<SidebarMenuItem>
-						<LogoutButton />
-					</SidebarMenuItem>
-				</SidebarMenu>
+				<UserMenu />
 			</SidebarFooter>
 
 			<SidebarRail />

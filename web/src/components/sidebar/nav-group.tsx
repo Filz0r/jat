@@ -6,7 +6,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	useSidebar,
-} from '#components/ui/sidebar';
+} from '#/components/ui/sidebar.tsx';
 
 export interface NavItem {
 	title: string;
@@ -40,6 +40,7 @@ export function NavGroup({ items }: NavGroupProps) {
 							isActive={isActive}
 							tooltip={item.title}
 							render={<Link to={item.to} />}
+							className="my-0.5"
 						>
 							<Icon />
 							{open && <span>{item.title}</span>}
