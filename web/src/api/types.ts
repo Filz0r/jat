@@ -8,5 +8,7 @@ export type JobApplicationNote = components['schemas']['api.noteDataResponse'];
 export type JobApplicationHistory = components['schemas']['api.applicationStatusHistoryResponse'];
 export type CompanyData = components['schemas']['api.companyResponse'];
 export type CompanyChangeData = components['schemas']['api.companyChangeHistoryResponse'];
+export type UserStats = components['schemas']['api.baseUserStatsResponse'];
+export type ApplicationStatusChart = UserStats['application_status'];
 
 export type APIResponse = components['schemas']['api.apiResponse'];
