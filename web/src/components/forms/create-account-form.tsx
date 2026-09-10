@@ -70,22 +70,22 @@ export function CreateAccount({ onSuccess }: CreateAccountProps) {
 	});
 
 	return (
-		<Card className="w-full max-w-md">
+		<Card className="w-full max-w-md space-x-2">
 			<form
-				onSubmit={(e) => {
+				onSubmit={async (e) => {
 					e.preventDefault();
 					e.stopPropagation();
-					form.handleSubmit();
+					await form.handleSubmit();
 				}}
 			>
-				<CardHeader>
-					<CardTitle>Create your account</CardTitle>
-					<CardDescription>
+				<CardHeader className="pb-2.5">
+					<CardTitle className="text-center text-lg">Create your account</CardTitle>
+					<CardDescription className="text-center">
 						Set up the first admin account to start using JAT.
 					</CardDescription>
 				</CardHeader>
 
-				<CardContent className="flex flex-col gap-4">
+				<CardContent className="mx-2 mt-2 mb-4 flex flex-col gap-4">
 					<form.Field
 						name="username"
 						validators={{
@@ -169,11 +169,11 @@ export function CreateAccount({ onSuccess }: CreateAccountProps) {
 					{serverError && <p className="text-destructive text-xs">{serverError}</p>}
 				</CardContent>
 
-				<CardFooter>
+				<CardFooter className="mt-4 flex justify-end">
 					<form.Subscribe
 						selector={(state) => [state.canSubmit, state.isSubmitting]}
 						children={([canSubmit, isSubmitting]) => (
-							<Button type="submit" disabled={!canSubmit || isSubmitting}>
+							<Button type="submit" disabled={!canSubmit || isSubmitting} size="lg">
 								{isSubmitting ? 'Creating account...' : 'Create account'}
 							</Button>
 						)}
