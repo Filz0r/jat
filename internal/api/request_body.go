@@ -23,6 +23,10 @@ type userLoginRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type userChangeDefaultApplicationStatusRequest struct {
+	StatusID uint `json:"status_id" validate:"required"`
+}
+
 // ---------------------------------------------//
 //			Job Application Structs				//
 // ---------------------------------------------//

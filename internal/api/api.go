@@ -76,6 +76,8 @@ func (s *Server) loadRoutes() {
 	s.apiMux.Handle("GET /users/{userID}",
 		s.middlewareAdminUser(s.handleGetSingleUser()))
 	s.apiMux.Handle("PUT /users", s.middlewareAuth(s.handleUserUpdate()))
+	s.apiMux.Handle("PUT /users/default_status",
+		s.middlewareAuth(s.handleChangeDefaultApplicationStatus()))
 
 	// Company handlers
 	s.apiMux.Handle("POST /company", s.middlewareAuth(s.handleCreateCompany()))

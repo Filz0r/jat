@@ -235,3 +235,38 @@ func (s *Server) handleMakeUserAdmin(give bool) http.HandlerFunc {
 		})
 	}
 }
+
+// @Summary Change Default Application Status
+// @Description Changes the default application status of an individual user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body userChangeDefaultApplicationStatusRequest true "ID of the new Default Application Status"
+// @Success 200 {object} apiResponse
+// @Failure 400 {object} apiResponse
+// @Failure 403 {object} apiResponse
+// @Failure 404 {object} apiResponse
+// @Router /users/default_status [put]
+func (s *Server) handleChangeDefaultApplicationStatus() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, _ := userIDFromContext(r.Context())
+
+		decoder := json.NewDecoder(r.Body)
+		body := &userChangeDefaultApplicationStatusRequest{}
+		err := decoder.Decode(body)
+		if err != nil {
+			s.respondWithError(w, 400, "invalid request body", err)
+			return
+		}
+		err = s.services.SetUserDefaultApplicationStatus(userID, body.StatusID)
+		if err != nil {
+			s.respondWithError(w, 400, "could not change default application status", err)
+			return
+		}
+		s.respondWithJSON(w, 200, apiResponse{
+			Ok:      true,
+			Message: fmt.Sprintf("Default application status updated to %d", body.StatusID),
+		})
+	}
+}
