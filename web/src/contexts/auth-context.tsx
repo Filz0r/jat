@@ -12,6 +12,7 @@ export interface AuthContextValue {
 	isLoading: boolean;
 	refreshUser: () => Promise<void>;
 	clearSession: () => void;
+	loadInit: () => Promise<void>;
 }
 
 const AUTH_CONTEXT_KEY = '__jat_auth_context__';
@@ -46,10 +47,12 @@ export function AuthProvider({
 }) {
 	const { initialized, user, isLoading } = useAuthStoreState();
 
-	const refreshUser = useCallback(async () => {
-		authStore.resetBoot();
+	const loadInit = useCallback(async () => {
 		authStore.setState({ isLoading: true });
-
+		authStore.resetBoot();
+		if (initialized) {
+			return;
+		}
 		try {
 			const initResult = await queryClient.fetchQuery({
 				queryKey: ['initialized'],
@@ -68,7 +71,22 @@ export function AuthProvider({
 				});
 				return;
 			}
+		} catch (e) {
+			console.error('Failed to refresh auth state', e);
+			authStore.setState({
+				initialized: false,
+				user: null,
+				isLoading: false,
+			});
+			return;
+		}
+	}, [queryClient]);
 
+	const refreshUser = useCallback(async () => {
+		authStore.resetBoot();
+		authStore.setState({ isLoading: true });
+
+		try {
 			let nextUser: User | null = null;
 
 			const meResult = await queryClient.fetchQuery({
@@ -82,7 +100,6 @@ export function AuthProvider({
 			}
 
 			authStore.setState({
-				initialized: true,
 				user: nextUser,
 				isLoading: false,
 			});
@@ -108,8 +125,9 @@ export function AuthProvider({
 			isLoading,
 			refreshUser,
 			clearSession,
+			loadInit,
 		}),
-		[initialized, user, isLoading, refreshUser, clearSession],
+		[initialized, user, isLoading, loadInit, refreshUser, clearSession],
 	);
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

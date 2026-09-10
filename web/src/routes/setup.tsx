@@ -27,11 +27,11 @@ export const Route = createFileRoute('/setup')({
 function RouteComponent() {
 	const { step } = useSearch({ from: '/setup' });
 	const navigate = useNavigate({ from: '/setup' });
-	const { refreshUser } = useAuth();
+	const { refreshUser, loadInit } = useAuth();
 
 	const goToStep = useCallback(
-		(next: SetupStep) => {
-			navigate({
+		async (next: SetupStep) => {
+			await navigate({
 				to: '/setup',
 				search: { step: next },
 				replace: true,
@@ -42,7 +42,8 @@ function RouteComponent() {
 
 	const handleAccountCreated = async () => {
 		await refreshUser();
-		goToStep('finish');
+		await loadInit();
+		await goToStep('finish');
 	};
 
 	const handleFinishSetup = async () => {
@@ -54,6 +55,7 @@ function RouteComponent() {
 		}
 
 		await refreshUser();
+		await loadInit();
 		await navigate({ to: '/' });
 	};
 
