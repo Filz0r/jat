@@ -14,7 +14,7 @@ import { AuthProvider } from '#/contexts/auth-context.tsx';
 import { ThemeProvider } from '#/contexts/theme-context.tsx';
 import { api, registerSessionExpiredHandler } from '#/api/client';
 import { authStore } from '#/lib/auth-store';
-import type { User } from '#/lib/auth-store';
+import type { User } from '#/api/types';
 import type { RouterContext } from '#/router';
 import { Toaster } from '#/components/ui/toast.tsx';
 import { TooltipProvider } from '#/components/ui/tooltip.tsx';
