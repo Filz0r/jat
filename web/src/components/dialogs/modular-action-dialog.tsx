@@ -43,9 +43,9 @@ export default function ModularActionDialog({
 	return (
 		<AlertDialog open={open} onOpenChange={onClose}>
 			<AlertDialogTrigger render={trigger} />
-			<AlertDialogContent className="px-0 sm:max-w-sm">
+			<AlertDialogContent className="border px-0 sm:max-w-sm">
 				<AlertDialogHeader>
-					<AlertDialogTitle className="text-primary w-full border-b px-2 pb-2 text-center">
+					<AlertDialogTitle className="text-primary w-full border-b px-2 pb-4 text-center text-lg">
 						{title}
 					</AlertDialogTitle>
 					<AlertDialogDescription className="mx-2.5 py-1 text-center">
