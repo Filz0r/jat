@@ -25,7 +25,7 @@ function MobileSidebarToggle() {
 
 export function AppShell({ children }: AppShellProps) {
 	return (
-		<SidebarProvider>
+		<SidebarProvider defaultOpen={false}>
 			<AppSidebar />
 			<SidebarInset className="flex min-w-0 flex-col">
 				<main className="min-w-0 flex-1 overflow-auto">{children}</main>
