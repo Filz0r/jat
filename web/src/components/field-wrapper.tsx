@@ -35,7 +35,9 @@ export default function FieldWrapper({ field, label, children, className }: Fiel
 
 	return (
 		<div className={cn('flex flex-col gap-1.5', className)}>
-			<Label htmlFor={field.name}>{label}</Label>
+			<Label htmlFor={field.name} className="mb-0.5 pl-0.5 text-[13px] font-bold">
+				{label}
+			</Label>
 			{children}
 			{showErrors && messages.length > 0 && (
 				<p className="text-destructive text-xs">{messages.join(', ')}</p>
