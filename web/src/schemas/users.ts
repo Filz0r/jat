@@ -20,5 +20,12 @@ export const loginSchema = z.object({
 	password: z.string().min(1, 'Password is required'),
 });
 
+export const defaultApplicationStatusSelectSchema = z.object({
+	status_id: z.number().positive('The server only accepts unsigned integers'),
+});
+
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type DefaultApplicationStatusSelectSchema = z.infer<
+	typeof defaultApplicationStatusSelectSchema
+>;
