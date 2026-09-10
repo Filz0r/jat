@@ -30,6 +30,10 @@ func (sm *ServiceManager) CreateInitialApplicationStatus(userID uuid.UUID) error
 			name: "Ghosted",
 		},
 		{
+			kind: database.Rejected,
+			name: "Rejected",
+		},
+		{
 			kind: database.Interviewed,
 			name: "Contacted",
 		},
