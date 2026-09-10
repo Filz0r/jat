@@ -2037,7 +2037,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.userCreateRequest"
+                            "$ref": "#/definitions/api.userUpdateRequest"
                         }
                     }
                 ],
@@ -2101,6 +2101,63 @@
                 }
             }
         },
+        "/users/default_status": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Changes the default application status of an individual user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Change Default Application Status",
+                "parameters": [
+                    {
+                        "description": "ID of the new Default Application Status",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.userChangeDefaultApplicationStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/me": {
             "get": {
                 "security": [
@@ -2140,6 +2197,52 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.apiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Gives statistics related to a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get User Statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.apiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/api.baseUserStatsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/api.apiResponse"
                         }
@@ -2449,6 +2552,33 @@
                 }
             }
         },
+        "api.baseUserStatsResponse": {
+            "type": "object",
+            "required": [
+                "application_status",
+                "job_applications_by_status_kind",
+                "rejection_percentage",
+                "total_applications",
+                "total_companies_created"
+            ],
+            "properties": {
+                "application_status": {
+                    "$ref": "#/definitions/utils.ApplicationStatusKindCounts"
+                },
+                "job_applications_by_status_kind": {
+                    "$ref": "#/definitions/utils.ApplicationStatusKindCounts"
+                },
+                "rejection_percentage": {
+                    "type": "number"
+                },
+                "total_applications": {
+                    "type": "integer"
+                },
+                "total_companies_created": {
+                    "type": "integer"
+                }
+            }
+        },
         "api.companyBodyRequest": {
             "type": "object",
             "required": [
@@ -2647,6 +2777,17 @@
                 }
             }
         },
+        "api.userChangeDefaultApplicationStatusRequest": {
+            "type": "object",
+            "required": [
+                "status_id"
+            ],
+            "properties": {
+                "status_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "api.userCreateRequest": {
             "type": "object",
             "required": [
@@ -2678,6 +2819,51 @@
                 },
                 "password": {
                     "type": "string"
+                }
+            }
+        },
+        "api.userUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.ApplicationStatusKindCounts": {
+            "type": "object",
+            "required": [
+                "accepted",
+                "applied",
+                "ghosted",
+                "interviewed",
+                "irrelevant",
+                "rejected"
+            ],
+            "properties": {
+                "accepted": {
+                    "type": "integer"
+                },
+                "applied": {
+                    "type": "integer"
+                },
+                "ghosted": {
+                    "type": "integer"
+                },
+                "interviewed": {
+                    "type": "integer"
+                },
+                "irrelevant": {
+                    "type": "integer"
+                },
+                "rejected": {
+                    "type": "integer"
                 }
             }
         }

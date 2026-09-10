@@ -167,6 +167,25 @@ definitions:
     - user_id
     - username
     type: object
+  api.baseUserStatsResponse:
+    properties:
+      application_status:
+        $ref: '#/definitions/utils.ApplicationStatusKindCounts'
+      job_applications_by_status_kind:
+        $ref: '#/definitions/utils.ApplicationStatusKindCounts'
+      rejection_percentage:
+        type: number
+      total_applications:
+        type: integer
+      total_companies_created:
+        type: integer
+    required:
+    - application_status
+    - job_applications_by_status_kind
+    - rejection_percentage
+    - total_applications
+    - total_companies_created
+    type: object
   api.companyBodyRequest:
     properties:
       name:
@@ -303,6 +322,13 @@ definitions:
       initialized:
         type: boolean
     type: object
+  api.userChangeDefaultApplicationStatusRequest:
+    properties:
+      status_id:
+        type: integer
+    required:
+    - status_id
+    type: object
   api.userCreateRequest:
     properties:
       email:
@@ -325,6 +351,37 @@ definitions:
     required:
     - email
     - password
+    type: object
+  api.userUpdateRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  utils.ApplicationStatusKindCounts:
+    properties:
+      accepted:
+        type: integer
+      applied:
+        type: integer
+      ghosted:
+        type: integer
+      interviewed:
+        type: integer
+      irrelevant:
+        type: integer
+      rejected:
+        type: integer
+    required:
+    - accepted
+    - applied
+    - ghosted
+    - interviewed
+    - irrelevant
+    - rejected
     type: object
 info:
   contact: {}
@@ -1628,7 +1685,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/api.userCreateRequest'
+          $ref: '#/definitions/api.userUpdateRequest'
       produces:
       - application/json
       responses:
@@ -1686,6 +1743,42 @@ paths:
       tags:
       - users
       - admin
+  /users/default_status:
+    put:
+      consumes:
+      - application/json
+      description: Changes the default application status of an individual user
+      parameters:
+      - description: ID of the new Default Application Status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.userChangeDefaultApplicationStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Change Default Application Status
+      tags:
+      - users
   /users/me:
     get:
       consumes:
@@ -1712,6 +1805,32 @@ paths:
       security:
       - BearerAuth: []
       summary: Get current user
+      tags:
+      - users
+  /users/stats:
+    get:
+      consumes:
+      - application/json
+      description: Gives statistics related to a user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.apiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/api.baseUserStatsResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.apiResponse'
+      security:
+      - BearerAuth: []
+      summary: Get User Statistics
       tags:
       - users
 securityDefinitions:

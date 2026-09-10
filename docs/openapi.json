@@ -2273,7 +2273,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/api.userCreateRequest"
+                                "$ref": "#/components/schemas/api.userUpdateRequest"
                             }
                         }
                     },
@@ -2354,6 +2354,73 @@
                 }
             }
         },
+        "/users/default_status": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Changes the default application status of an individual user",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Change Default Application Status",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/api.userChangeDefaultApplicationStatusRequest"
+                            }
+                        }
+                    },
+                    "description": "ID of the new Default Application Status",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.apiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.apiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.apiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.apiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/users/me": {
             "get": {
                 "security": [
@@ -2391,6 +2458,54 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.apiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Gives statistics related to a user",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get User Statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/components/schemas/api.apiResponse"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "data": {
+                                                    "$ref": "#/components/schemas/api.baseUserStatsResponse"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2749,6 +2864,33 @@
                     }
                 }
             },
+            "api.baseUserStatsResponse": {
+                "type": "object",
+                "required": [
+                    "application_status",
+                    "job_applications_by_status_kind",
+                    "rejection_percentage",
+                    "total_applications",
+                    "total_companies_created"
+                ],
+                "properties": {
+                    "application_status": {
+                        "$ref": "#/components/schemas/utils.ApplicationStatusKindCounts"
+                    },
+                    "job_applications_by_status_kind": {
+                        "$ref": "#/components/schemas/utils.ApplicationStatusKindCounts"
+                    },
+                    "rejection_percentage": {
+                        "type": "number"
+                    },
+                    "total_applications": {
+                        "type": "integer"
+                    },
+                    "total_companies_created": {
+                        "type": "integer"
+                    }
+                }
+            },
             "api.companyBodyRequest": {
                 "type": "object",
                 "required": [
@@ -2947,6 +3089,17 @@
                     }
                 }
             },
+            "api.userChangeDefaultApplicationStatusRequest": {
+                "type": "object",
+                "required": [
+                    "status_id"
+                ],
+                "properties": {
+                    "status_id": {
+                        "type": "integer"
+                    }
+                }
+            },
             "api.userCreateRequest": {
                 "type": "object",
                 "required": [
@@ -2978,6 +3131,51 @@
                     },
                     "password": {
                         "type": "string"
+                    }
+                }
+            },
+            "api.userUpdateRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    }
+                }
+            },
+            "utils.ApplicationStatusKindCounts": {
+                "type": "object",
+                "required": [
+                    "accepted",
+                    "applied",
+                    "ghosted",
+                    "interviewed",
+                    "irrelevant",
+                    "rejected"
+                ],
+                "properties": {
+                    "accepted": {
+                        "type": "integer"
+                    },
+                    "applied": {
+                        "type": "integer"
+                    },
+                    "ghosted": {
+                        "type": "integer"
+                    },
+                    "interviewed": {
+                        "type": "integer"
+                    },
+                    "irrelevant": {
+                        "type": "integer"
+                    },
+                    "rejected": {
+                        "type": "integer"
                     }
                 }
             }

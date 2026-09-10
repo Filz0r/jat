@@ -1908,7 +1908,7 @@ export interface paths {
 			/** @description Updated user fields */
 			requestBody: {
 				content: {
-					'application/json': components['schemas']['api.userCreateRequest'];
+					'application/json': components['schemas']['api.userUpdateRequest'];
 				};
 			};
 			responses: {
@@ -1985,6 +1985,77 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/users/default_status': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/**
+		 * Change Default Application Status
+		 * @description Changes the default application status of an individual user
+		 */
+		put: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description ID of the new Default Application Status */
+			requestBody: {
+				content: {
+					'application/json': components['schemas']['api.userChangeDefaultApplicationStatusRequest'];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Forbidden */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+			};
+		};
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/users/me': {
 		parameters: {
 			query?: never;
@@ -2018,6 +2089,56 @@ export interface paths {
 				};
 				/** @description Unauthorized */
 				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/users/stats': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get User Statistics
+		 * @description Gives statistics related to a user
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['api.apiResponse'] & {
+							data?: components['schemas']['api.baseUserStatsResponse'];
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
 					headers: {
 						[name: string]: unknown;
 					};
@@ -2164,6 +2285,13 @@ export interface components {
 			user_id: string;
 			username: string;
 		};
+		'api.baseUserStatsResponse': {
+			application_status: components['schemas']['utils.ApplicationStatusKindCounts'];
+			job_applications_by_status_kind: components['schemas']['utils.ApplicationStatusKindCounts'];
+			rejection_percentage: number;
+			total_applications: number;
+			total_companies_created: number;
+		};
 		'api.companyBodyRequest': {
 			name: string;
 			website?: string;
@@ -2220,6 +2348,9 @@ export interface components {
 		'api.systemResponse': {
 			initialized?: boolean;
 		};
+		'api.userChangeDefaultApplicationStatusRequest': {
+			status_id: number;
+		};
 		'api.userCreateRequest': {
 			email: string;
 			password: string;
@@ -2228,6 +2359,19 @@ export interface components {
 		'api.userLoginRequest': {
 			email: string;
 			password: string;
+		};
+		'api.userUpdateRequest': {
+			email?: string;
+			password?: string;
+			username?: string;
+		};
+		'utils.ApplicationStatusKindCounts': {
+			accepted: number;
+			applied: number;
+			ghosted: number;
+			interviewed: number;
+			irrelevant: number;
+			rejected: number;
 		};
 	};
 	responses: never;
