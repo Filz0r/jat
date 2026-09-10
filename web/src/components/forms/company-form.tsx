@@ -100,6 +100,7 @@ export default function CompanyForm({
 			await queryClient.refetchQueries({
 				queryKey: ['get', '/company'],
 			});
+			await queryClient.refetchQueries({ queryKey: ['get', '/users/stats'] });
 
 			form.reset();
 			toast.add({

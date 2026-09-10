@@ -100,6 +100,7 @@ export default function ApplicationStatusForm({
 			await queryClient.refetchQueries({
 				queryKey: ['get', '/application_statuses'],
 			});
+			await queryClient.refetchQueries({ queryKey: ['get', '/users/stats'] });
 			form.reset();
 			setIsOpen(false);
 		},

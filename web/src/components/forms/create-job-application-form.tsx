@@ -65,6 +65,7 @@ export default function CreateJobApplicationForm({
 			await queryClient.refetchQueries({
 				queryKey: ['get', '/jobs'],
 			});
+			await queryClient.refetchQueries({ queryKey: ['get', '/users/stats'] });
 			void navigate({ to: '/jobs', replace: true });
 		},
 	});
