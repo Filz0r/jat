@@ -2,7 +2,9 @@ package services
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/filz0r/jat/internal/database"
 	"github.com/filz0r/jat/internal/utils"
@@ -363,4 +365,42 @@ func (sm *ServiceManager) UnarchiveJobApplicationStatus(statusID uint, userID uu
 		return nil
 	})
 	return err
+}
+
+func (sm *ServiceManager) CountApplicationStatusByKind(tx *gorm.DB, userID uuid.UUID, byJobs bool) (utils.ApplicationStatusKindCounts, error) {
+	if sm.db == nil {
+		return utils.ApplicationStatusKindCounts{}, errors.New("database not initialized")
+	}
+	var rows []utils.KindCount
+	var result *gorm.DB
+	if !byJobs {
+		result = tx.Model(&database.ApplicationStatus{}).
+			Select("kind, count(*) as count").
+			Where("user_id = ?", userID).
+			Group("kind").
+			Find(&rows)
+	} else {
+		result = tx.Model(&database.ApplicationStatus{}).
+			Select("application_statuses.kind, count(*) as count").
+			Joins("inner join job_applications on job_applications.status_id = application_statuses.id").
+			Where("application_statuses.user_id = ?", userID).
+			Group("application_statuses.kind").
+			Find(&rows)
+	}
+
+	if result.Error != nil {
+		return utils.ApplicationStatusKindCounts{}, result.Error
+	}
+	byKind := make(map[database.ApplicationStatusKind]int64)
+	for _, row := range rows {
+		byKind[row.Kind] = row.Count
+	}
+	counts := utils.ApplicationStatusKindCounts{}
+	v := reflect.ValueOf(&counts).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Type().Field(i)
+		key, _, _ := strings.Cut(field.Tag.Get("json"), ",")
+		v.Field(i).SetInt(byKind[database.ApplicationStatusKind(key)])
+	}
+	return counts, nil
 }

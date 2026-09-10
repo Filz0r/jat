@@ -329,3 +329,17 @@ func (sm *ServiceManager) GetAllCompanyApplications(tx *gorm.DB, companyID uint)
 	}
 	return companies.JobApplications, nil
 }
+
+func (sm *ServiceManager) GetCompanyCreationsByUser(tx *gorm.DB, userID uuid.UUID) (int64, error) {
+	if sm.db == nil {
+		return 0, errors.New("database not initialized")
+	}
+
+	db := sm.transactionOrDefault(tx)
+	var count int64
+	result := db.Model(&database.Company{}).Where("created_by = ?", userID).Count(&count)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return count, nil
+}

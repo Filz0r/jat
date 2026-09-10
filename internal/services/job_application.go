@@ -259,3 +259,49 @@ func (sm *ServiceManager) FindJobApplicationByStatus(userID uuid.UUID, statusID 
 	}
 	return jobApplications, nil
 }
+
+func (sm *ServiceManager) CountUserJobApplications(tx *gorm.DB, userID uuid.UUID) (int64, error) {
+	if sm.db == nil {
+		return 0, errors.New("database not initialized")
+	}
+	db := sm.transactionOrDefault(tx)
+	var count int64
+	result := db.Model(&database.JobApplication{}).
+		Where("user_id = ?", userID).
+		Count(&count)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return count, nil
+}
+
+func (sm *ServiceManager) GetRejectionPercentage(tx *gorm.DB, userID uuid.UUID) (float64, error) {
+	if sm.db == nil {
+		return 0, errors.New("database not initialized")
+	}
+	db := sm.transactionOrDefault(tx)
+
+	var result float64
+	totalCount, err := sm.CountUserJobApplications(tx, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	if totalCount == 0 {
+		return 0, nil
+	}
+
+	var rejectedCount int64
+	query := db.Model(&database.JobApplication{}).
+		Joins("JOIN application_statuses ON application_statuses.id = job_applications.status_id").
+		Where("job_applications.user_id = ? and application_statuses.kind = ?", userID, database.Rejected).
+		Count(&rejectedCount)
+
+	if query.Error != nil {
+		return 0, nil
+	}
+
+	result = float64(rejectedCount) / float64(totalCount) * 100
+
+	return result, nil
+}
