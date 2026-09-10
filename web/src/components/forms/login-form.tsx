@@ -16,6 +16,7 @@ import { loginSchema } from '#/schemas/users.ts';
 import type { LoginInput } from '#/schemas/users.ts';
 import FieldWrapper from '#/components/field-wrapper.tsx';
 import { useState } from 'react';
+import { Link, linkOptions } from '@tanstack/react-router';
 
 interface LoginFormProps {
 	onSuccess?: () => void;
@@ -50,6 +51,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 		},
 	});
 
+	const registerLinkOpts = linkOptions({ to: '/register' });
+
 	return (
 		<Card className="w-full max-w-md">
 			<form
@@ -59,14 +62,17 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 					form.handleSubmit();
 				}}
 			>
-				<CardHeader>
-					<CardTitle>Log in</CardTitle>
-					<CardDescription>
+				<CardHeader className="pb-2">
+					<CardTitle className="text-center text-lg">Log in</CardTitle>
+					<CardDescription className="flex flex-col text-center">
 						Enter your credentials to access your account.
+						<Link {...registerLinkOpts} className="text-primary text-[10px] underline">
+							Don't have an account? Create one here
+						</Link>
 					</CardDescription>
 				</CardHeader>
 
-				<CardContent className="flex flex-col gap-4">
+				<CardContent className="mx-2 mt-2 mb-4 flex flex-col gap-4">
 					<form.Field
 						name="email"
 						validators={{
@@ -112,11 +118,11 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 					{serverError && <p className="text-destructive text-xs">{serverError}</p>}
 				</CardContent>
 
-				<CardFooter>
+				<CardFooter className="mt-2 flex justify-end">
 					<form.Subscribe
 						selector={(state) => [state.canSubmit, state.isSubmitting]}
 						children={([canSubmit, isSubmitting]) => (
-							<Button type="submit" disabled={!canSubmit || isSubmitting}>
+							<Button type="submit" size="lg" disabled={!canSubmit || isSubmitting}>
 								{isSubmitting ? 'Logging in...' : 'Log in'}
 							</Button>
 						)}
