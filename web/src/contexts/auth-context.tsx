@@ -115,7 +115,7 @@ export function AuthProvider({
 
 	const clearSession = useCallback(() => {
 		authStore.setState({ user: null });
-		queryClient.removeQueries({ queryKey: ['me'] });
+		queryClient.clear();
 	}, [queryClient]);
 
 	const value = useMemo(
