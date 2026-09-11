@@ -30,28 +30,24 @@ clean_server:
 	@echo "Removing old server binary"
 	@rm -rf $(NAME)
 
-test:
-	@echo $(GIT_COMMIT)
-	@echo $(CC) $(FLAGS)
-
 build_server: $(NAME)
 
 re: clean_server build_server
 
 generate_api:
-	@swag init -g main.go
-	@rm -f docs/docs.go
-	@cd web && npx swagger2openapi ../docs/swagger.json -o ../docs/openapi.json
-	@cd web && npx openapi-typescript ../docs/openapi.json -o ./src/api/gen-spec.ts
+	@swag init -g main.go -o docs/api
+	@rm -f docs/api/docs.go
+	@cd web && npx swagger2openapi ../docs/api/swagger.json -o ../docs/api/openapi.json
+	@cd web && npx openapi-typescript ../docs/api/openapi.json -o ./src/api/gen-spec.ts
 	@cd web && npx prettier --write src/api/gen-spec.ts
-
-install_web:
-	@cd web && npm install
 
 build_web:
 	@cd web && npm run build
 	@rm -rf internal/api/webdist
 	@cp -r web/dist internal/api/webdist
+
+dev_setup_web:
+	@cd web && npm install
 
 dev_backend:
 	@air
