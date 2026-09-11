@@ -1,5 +1,5 @@
 NAME=jat
-CURRENT_RELEASE=v0.1.1
+CURRENT_RELEASE=v0.2.0
 GIT_COMMIT=$(shell git rev-parse --short HEAD)
 BUILD_DATE=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 CC=go
