@@ -376,7 +376,7 @@ func (sm *ServiceManager) CountApplicationStatusByKind(tx *gorm.DB, userID uuid.
 	if !byJobs {
 		result = tx.Model(&database.ApplicationStatus{}).
 			Select("kind, count(*) as count").
-			Where("user_id = ?", userID).
+			Where("user_id = ? and archived = false and deleted_at is null", userID).
 			Group("kind").
 			Find(&rows)
 	} else {
