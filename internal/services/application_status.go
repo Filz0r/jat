@@ -383,7 +383,7 @@ func (sm *ServiceManager) CountApplicationStatusByKind(tx *gorm.DB, userID uuid.
 		result = tx.Model(&database.ApplicationStatus{}).
 			Select("application_statuses.kind, count(*) as count").
 			Joins("inner join job_applications on job_applications.status_id = application_statuses.id").
-			Where("application_statuses.user_id = ?", userID).
+			Where("application_statuses.user_id = ? and job_applications.deleted_at is null", userID).
 			Group("application_statuses.kind").
 			Find(&rows)
 	}
