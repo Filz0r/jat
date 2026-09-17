@@ -37,7 +37,7 @@ export default function ApplicationStatusRenderer({ data }: { data: JobApplicati
 							<div className="flex flex-col items-center">
 								<p className="text-primary text-lg">Status</p>
 								<Badge className={getColorFromKind(data.kind)}>
-									{data.status ? data.status + ' (Archived)' : data.status}
+									{data.archived ? data.status + ' (Archived)' : data.status}
 								</Badge>
 							</div>
 							<div className="flex flex-col items-center">
