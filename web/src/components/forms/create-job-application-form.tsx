@@ -260,13 +260,14 @@ export default function CreateJobApplicationForm({
 						</div>
 						{serverError && <p className="text-destructive text-xs">{serverError}</p>}
 					</CardContent>
-					<CardFooter className="flex flex-col gap-3 sm:flex-row sm:justify-stretch">
+					<CardFooter className="flex flex-col justify-center gap-3 sm:flex-row sm:justify-stretch">
 						<form.Subscribe
 							selector={(state) => [state.canSubmit, state.isSubmitting]}
 							children={([canSubmit, isSubmitting]) => (
 								<Button
 									type="submit"
-									className="w-full sm:min-w-32 sm:flex-1"
+									size="lg"
+									className="w-full flex-1 sm:min-w-32"
 									disabled={!canSubmit || isSubmitting}
 								>
 									{isSubmitting ? 'Creating job posting...' : 'Save'}
@@ -276,7 +277,8 @@ export default function CreateJobApplicationForm({
 
 						<Button
 							type="reset"
-							className="w-full bg-red-500 hover:bg-red-700 sm:min-w-32 sm:flex-1"
+							size="lg"
+							className="w-full flex-1 bg-red-500 hover:bg-red-700 sm:min-w-32"
 							onClick={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
@@ -285,9 +287,7 @@ export default function CreateJobApplicationForm({
 						>
 							Reset
 						</Button>
-						<div className="w-full sm:flex-1">
-							<LogForm form={form} />
-						</div>
+						<LogForm form={form} />
 					</CardFooter>
 				</Card>
 			</form>

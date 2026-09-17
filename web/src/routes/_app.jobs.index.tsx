@@ -6,7 +6,7 @@ import { apiClient } from '#/api/client.ts';
 import { DataTable } from '#/components/data-table';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Button } from '#/components/ui/button.tsx';
-import { ArrowUpDown, ArrowUpRightIcon, Eye, Plus } from 'lucide-react';
+import { IconLink, IconArrowsUpDown, IconEye, IconPlus } from '@tabler/icons-react';
 import { getColorFromKind } from '#/lib/utils.ts';
 import { Badge } from '#/components/ui/badge.tsx';
 import UpdateJobStatusForm from '#/components/forms/update-job-status-form.tsx';
@@ -32,7 +32,7 @@ function RouteComponent() {
 						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 						className="flex cursor-pointer items-center justify-center text-center"
 					>
-						<ArrowUpDown />
+						<IconArrowsUpDown />
 						ID
 					</Button>
 				</div>
@@ -61,7 +61,7 @@ function RouteComponent() {
 						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 						className="cursor-pointer text-center"
 					>
-						<ArrowUpDown />
+						<IconArrowsUpDown />
 						Status
 					</Button>
 				</div>
@@ -70,7 +70,11 @@ function RouteComponent() {
 				const cellData = cell.getValue();
 				return (
 					<div className="flex items-center justify-center">
-						<Badge className={'w-full py-2.5 ' + getColorFromKind(cellData.kind)}>
+						<Badge
+							className={
+								'text-md my-1 w-full py-3.5 ' + getColorFromKind(cellData.kind)
+							}
+						>
 							{cellData.archived ? cellData.status + ' (Archived)' : cellData.status}
 						</Badge>
 					</div>
@@ -84,10 +88,11 @@ function RouteComponent() {
 				return (
 					<div className="flex items-center justify-center">
 						<Badge
-							className="w-fit py-2.5"
+							className="text-md my-1 w-fit py-3.5"
 							render={
 								<a href={value}>
-									Link <ArrowUpRightIcon data-icon="inline-end" />
+									Link
+									<IconLink size={40} className="flex-1" data-icon="inline-end" />
 								</a>
 							}
 						/>
@@ -104,7 +109,7 @@ function RouteComponent() {
 						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 						className="flex cursor-pointer items-center justify-between text-center"
 					>
-						<ArrowUpDown />
+						<IconArrowsUpDown />
 						Created At
 					</Button>
 				</div>
@@ -112,7 +117,9 @@ function RouteComponent() {
 			cell: (cell) => {
 				const value = cell.getValue();
 				const converted = new Date(value);
-				return <div className="text-center">{converted.toDateString()}</div>;
+				const dateString = converted.toLocaleDateString();
+				const timeString = converted.toLocaleTimeString();
+				return <div className="text-center">{dateString + ' ' + timeString}</div>;
 			},
 		}),
 		columnHelper.accessor('updated_at', {
@@ -123,7 +130,7 @@ function RouteComponent() {
 						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 						className="flex cursor-pointer items-center justify-between text-center"
 					>
-						<ArrowUpDown />
+						<IconArrowsUpDown />
 						Last Update
 					</Button>
 				</div>
@@ -131,7 +138,9 @@ function RouteComponent() {
 			cell: (cell) => {
 				const value = cell.getValue();
 				const converted = new Date(value);
-				return <div className="text-center">{converted.toDateString()}</div>;
+				const dateString = converted.toLocaleDateString();
+				const timeString = converted.toLocaleTimeString();
+				return <div className="text-center">{dateString + ' ' + timeString}</div>;
 			},
 		}),
 
@@ -157,7 +166,7 @@ function RouteComponent() {
 											});
 										}}
 									>
-										<Eye />
+										<IconEye />
 										<span className="sr-only">View Job Application</span>
 									</Button>
 								}
@@ -182,7 +191,7 @@ function RouteComponent() {
 	const CreateButton = (
 		<Button className="space-x-2 p-2" size="lg">
 			<Link to="/jobs/new">New Job Application</Link>
-			<Plus size={32} />
+			<IconPlus size={32} />
 		</Button>
 	);
 

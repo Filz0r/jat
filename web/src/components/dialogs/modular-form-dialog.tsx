@@ -28,7 +28,11 @@ interface ModularFormDialogProps {
 
 export default function ModularFormDialog({
 	TriggerButton = <Button variant="outline">Open Dialog</Button>,
-	CloseButton = <Button variant="outline">Cancel</Button>,
+	CloseButton = (
+		<Button variant="outline" size="lg">
+			Cancel
+		</Button>
+	),
 	title,
 	description,
 	form,
@@ -68,6 +72,7 @@ export default function ModularFormDialog({
 							children={([canSubmit, isSubmitting]) => (
 								<Button
 									type="submit"
+									size="lg"
 									className="w-full sm:min-w-32 sm:flex-1"
 									disabled={!canSubmit || isSubmitting}
 								>

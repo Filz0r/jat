@@ -7,8 +7,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { Button } from '#/components/ui/button.tsx';
 import { DataTable } from '#/components/data-table';
 import { Skeleton } from '#/components/ui/skeleton.tsx';
-import { IconArrowsUpDown, IconCheck, IconX } from '@tabler/icons-react';
-import { ArrowUpDown, Eye } from 'lucide-react';
+import { IconArrowsUpDown, IconCheck, IconEye, IconX } from '@tabler/icons-react';
 import { Badge } from '#/components/ui/badge.tsx';
 import { getColorFromKind } from '#/lib/utils.ts';
 import CreateApplicationStatusForm from '#/components/forms/application-status-form.tsx';
@@ -63,7 +62,7 @@ function RouteComponent() {
 						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 						className="cursor-pointer text-center"
 					>
-						<ArrowUpDown />
+						<IconArrowsUpDown />
 						Kind
 					</Button>
 				</div>
@@ -72,7 +71,7 @@ function RouteComponent() {
 				const cellData = cell.getValue();
 				return (
 					<div className="flex items-center justify-center">
-						<Badge className={'w-full py-2.5 ' + getColorFromKind(cellData)}>
+						<Badge className={'w-full py-3.5 ' + getColorFromKind(cellData)}>
 							{cellData.toUpperCase()}
 						</Badge>
 					</div>
@@ -87,7 +86,7 @@ function RouteComponent() {
 						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 						className="flex cursor-pointer items-center justify-between text-center"
 					>
-						<ArrowUpDown />
+						<IconArrowsUpDown />
 						Created At
 					</Button>
 				</div>
@@ -106,7 +105,7 @@ function RouteComponent() {
 						onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 						className="flex cursor-pointer items-center justify-between text-center"
 					>
-						<ArrowUpDown />
+						<IconArrowsUpDown />
 						Last Update
 					</Button>
 				</div>
@@ -154,7 +153,7 @@ function RouteComponent() {
 											});
 										}}
 									>
-										<Eye />
+										<IconEye />
 										<span className="sr-only">
 											View Application Status Page
 										</span>

@@ -33,7 +33,7 @@ export default function ModularActionDialog({
 	destructive = false,
 	actionLabel = 'Confirm',
 }: ModularActionDialogProps) {
-	let actionStyles = 'cursor-pointer';
+	let actionStyles = 'cursor-pointer flex-1';
 	if (destructive && actionLabel === 'Confirm') {
 		actionLabel = 'Delete';
 	}
@@ -52,11 +52,11 @@ export default function ModularActionDialog({
 						<p>{message}</p>
 					</AlertDialogDescription>
 				</AlertDialogHeader>
-				<AlertDialogFooter className="border-t px-2 pt-3">
+				<AlertDialogFooter className="justify-center border-t px-2 pt-3">
 					<AlertDialogCancel
 						variant={!destructive ? 'destructive' : 'secondary'}
 						size="lg"
-						className="cursor-pointer"
+						className="flex-1 cursor-pointer"
 					>
 						Cancel
 					</AlertDialogCancel>
