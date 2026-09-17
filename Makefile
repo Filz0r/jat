@@ -69,4 +69,18 @@ reset_db:
 connect_db:
 	@docker exec -it $(NAME) psql -U postgres -d $(NAME)
 
-.PHONY: all re test clean_server build_server generate_api install_web build_web dev-backend dev-frontend dev
+demo:
+	@echo "Building JAT"
+	@make &> /dev/null
+	@cp .env.sample .env
+	@echo "launching database server using docker"
+	@make dev_db_up &> /dev/null
+	@echo "resetting database to blank state"
+	@make reset_db &> /dev/null
+	@echo "Seeding database with 'docs/assets/demo-db.sql'"
+	@docker exec -i jat psql -U postgres -d jat < docs/assets/demo-db.sql &> /dev/null
+	@echo "launching server on http://localhost:4200"
+	@./jat server
+
+
+.PHONY: all re test clean_server build_server generate_api dev_setup_web build_web dev_backend dev_frontend reset_db dev_db_up dev_db_down demo
