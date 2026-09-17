@@ -27,6 +27,7 @@ release:
 	@git push origin "$(CURRENT_RELEASE)"
 
 clean_server:
+	@rm -rf ./internal/api/webdist
 	@echo "Removing old server binary"
 	@rm -rf $(NAME)
 
