@@ -33,7 +33,7 @@ export default function ArchiveOrDeleteApplicationStatus({
 			open={open}
 			// onOpenChange={setOpen}
 			message={message}
-			title={`${softDelete ? 'Delete' : 'Archive'} note with id of ${data.id}`}
+			title={`${softDelete ? 'Delete' : 'Archive'} Application Status with id of ${data.id}`}
 			onConfirm={async () => {
 				await toast.promise(
 					Promise.all([

@@ -27,7 +27,7 @@ export default function DeleteJobApplication({
 			open={open}
 			onClose={() => setOpen(false)}
 			message="You are deleting this job application, this is only reversible by administrative users, are you sure?"
-			title={`Delete job with id of ${jobID}`}
+			title={`Delete Job Application with ID: ${jobID}`}
 			onConfirm={async () => {
 				await toast.promise(
 					Promise.all([
