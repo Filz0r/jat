@@ -41,7 +41,10 @@ export function DatePicker({
 						name={name}
 						disabled={disabled}
 						onBlur={onBlur}
-						className={cn('w-full justify-start font-normal', className)}
+						className={cn(
+							'h-[max(1.75rem,calc(100vw/1920*28))] w-full justify-start font-normal',
+							className,
+						)}
 					>
 						{value ? (
 							format(value, 'PPP')
