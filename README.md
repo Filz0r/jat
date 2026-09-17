@@ -1,6 +1,6 @@
 # JAT - Job Application Tracker
 
-<video src="./docs/assets/demo-clip.mp4" poster="./docs/assets/demo-clip.jpg" controls muted preload="metadata"></video>
+![app demo](./docs/assets/demo-clip.mp4)
 
 JAT is a self-hosted job application tracker designed to help users manage their job search pipeline, from initial applications to final offers.
 **Great for people that simply want to track their job applications without using an Excel sheet.**
